@@ -13,7 +13,11 @@ class AuthService {
 
     static _makeJwt(user, expiresIn = '7d') {
         return jwt.sign(
-            { id: user._id, role: user.role },
+            {
+                id: user._id,
+                role: user.role,
+                tokenVersion: user.token_version || 0,
+            },
             process.env.JWT_SECRET,
             { expiresIn }
         );
@@ -62,7 +66,7 @@ class AuthService {
      * Tạo user mới → gửi OTP xác minh số điện thoại.
      * Nếu số đã đăng ký nhưng chưa xác minh → gửi lại OTP.
      */
-    static async signup(phone_number, password) {
+    static async signup(phone_number, password, full_name) {
         const existing = await User.findOne({ phone_number });
 
         if (existing) {
@@ -71,7 +75,10 @@ class AuthService {
             }
             // Chưa verified → cập nhật mật khẩu mới và gửi lại OTP
             const password_hash = await bcrypt.hash(password, 10);
-            await User.findByIdAndUpdate(existing._id, { password: password_hash });
+            await User.findByIdAndUpdate(existing._id, {
+                password: password_hash,
+                full_name: full_name ? String(full_name).trim() : existing.full_name,
+            });
             await this._sendOtp(phone_number, 'SIGNUP');
             return { message: 'OTP đã được gửi lại.' };
         }
@@ -80,6 +87,7 @@ class AuthService {
         await User.create({
             phone_number,
             password: password_hash,
+            full_name: full_name ? String(full_name).trim() : null,
             onboarding_step: 1,   // Bước tiếp theo: xác minh OTP
         });
 
@@ -99,32 +107,42 @@ class AuthService {
         const payload = ticket.getPayload();
         const { sub: google_id, email, name, picture } = payload;
 
-        // Tìm user theo oauth hoặc email
-        let user = await User.findOne({
-            $or: [
-                { oauth_provider: 'GOOGLE', oauth_id: google_id },
-                { email },
-            ],
-        });
+        // 1) Ưu tiên match theo oauth_id (đã liên kết Google trước đó)
+        let user = await User.findOne({ oauth_provider: 'GOOGLE', oauth_id: google_id });
 
         if (!user) {
-            // Tạo user mới
-            user = await User.create({
-                full_name:         name,
-                email,
-                avatar_url:        picture,
-                oauth_provider:    'GOOGLE',
-                oauth_id:          google_id,
-                is_phone_verified: false,
-                role:              'UNSET',
-                onboarding_step:   0,
-                profile_completed: false,
-            });
-        } else if (!user.oauth_id) {
-            // User đã có email, liên kết Google
-            user.oauth_provider = 'GOOGLE';
-            user.oauth_id       = google_id;
-            await user.save();
+            // 2) Có account local cùng email? Chỉ auto-link nếu account đó CHƯA có password
+            //    (tức là chỉ là shell từ lần signup dở dang). Nếu đã có password → từ chối
+            //    để tránh attacker dùng Google trùng email chiếm tài khoản.
+            const existingByEmail = await User.findOne({ email });
+            if (existingByEmail) {
+                if (existingByEmail.password) {
+                    throw this._error(
+                        'Email này đã được dùng để đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng mật khẩu hoặc dùng tài khoản Google khác.',
+                        409,
+                    );
+                }
+                existingByEmail.oauth_provider = 'GOOGLE';
+                existingByEmail.oauth_id       = google_id;
+                if (!existingByEmail.avatar_url) existingByEmail.avatar_url = picture;
+                if (!existingByEmail.full_name)  existingByEmail.full_name  = name;
+                await existingByEmail.save();
+                user = existingByEmail;
+            } else {
+                // 3) Tạo user mới
+                user = await User.create({
+                    full_name:         name,
+                    email,
+                    avatar_url:        picture,
+                    oauth_provider:    'GOOGLE',
+                    oauth_id:          google_id,
+                    is_phone_verified: false,
+                    is_email_verified: true,
+                    role:              'UNSET',
+                    onboarding_step:   0,
+                    profile_completed: false,
+                });
+            }
         }
 
         const accessToken = this._makeJwt(user);
@@ -266,7 +284,13 @@ class AuthService {
         }
 
         const password_hash = await bcrypt.hash(new_password, 10);
-        await User.findOneAndUpdate({ phone_number: payload.phone_number }, { password: password_hash });
+        await User.findOneAndUpdate(
+            { phone_number: payload.phone_number },
+            {
+                password: password_hash,
+                $inc: { token_version: 1 },
+            },
+        );
 
         return { message: 'Mật khẩu đã được đặt lại thành công.' };
     }
@@ -293,7 +317,11 @@ class AuthService {
     // ─────────────────────────────── LOGOUT ────────────────────────────────
 
     static async logout(userId) {
-        await User.findByIdAndUpdate(userId, { fcm_token: '' });
+        // Tăng token_version để vô hiệu hoá tất cả JWT đã phát hành cho user này.
+        await User.findByIdAndUpdate(userId, {
+            fcm_token: '',
+            $inc: { token_version: 1 },
+        });
         return { message: 'Đăng xuất thành công.' };
     }
 }

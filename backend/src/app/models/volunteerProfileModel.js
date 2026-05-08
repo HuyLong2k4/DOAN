@@ -6,6 +6,7 @@ const AVAILABILITY_TIME   = ['MORNING', 'AFTERNOON', 'NIGHT', 'OTHER'];
 
 const VolunteerProfileSchema = new mongoose.Schema({
     user_id:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    contact_name: { type: String, default: null },
 
     address_line: { type: String, required: true },
     pin_code:     { type: String, default: null },

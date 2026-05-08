@@ -55,7 +55,8 @@ class UserService {
             email,
             password: passwordHash,
             avatar_url: defaultAvatarUrl,
-            role: safeRole
+            role: safeRole,
+            is_phone_verified: safeRole === 'ADMIN',
         });
 
         return user;
@@ -144,6 +145,7 @@ class UserService {
         const passwordHash = await bcrypt.hash(newPassword, salt);
 
         user.password = passwordHash;
+        user.token_version = (user.token_version || 0) + 1;
         await user.save();
 
         return { message: 'Đổi mật khẩu thành công' };

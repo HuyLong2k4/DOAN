@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+const FOOD_TYPE = ['COOKED', 'RAW', 'FROZEN', 'PACKAGED'];
 const FOOD_PREFERENCE = ['VEG', 'NON_VEG', 'BOTH'];
 const REQUEST_STATUS  = ['PENDING', 'ACCEPTED', 'FULFILLED', 'CANCELLED'];
 
@@ -11,9 +12,12 @@ const FoodRequestSchema = new mongoose.Schema({
 
     requested_quantity: { type: Number, required: true, min: 1 },
     unit:               { type: String, default: 'portion' },
+    food_type:          { type: String, enum: FOOD_TYPE, default: 'COOKED' },
     food_preference:    { type: String, enum: FOOD_PREFERENCE, default: 'BOTH' },
 
     needed_before: { type: Date, default: null },
+    accepted_by_donor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    linked_donation_id: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodDonation', default: null },
     status:        { type: String, enum: REQUEST_STATUS, default: 'PENDING' },
 }, {
     timestamps: true,

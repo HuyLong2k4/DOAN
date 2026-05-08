@@ -18,7 +18,13 @@ class FoodDonationController {
     // ── GET /api/food-donations ─────────────────────────────────────────────
     static async getDonations(req, res) {
         try {
-            const donations = await FoodDonationService.getDonations(req.user);
+            const filter = {};
+            if (req.user.role === 'ADMIN' && req.query.status) {
+                const statuses = String(req.query.status).split(',').map((s) => s.trim()).filter(Boolean);
+                if (statuses.length === 1) filter.status = statuses[0];
+                else if (statuses.length > 1) filter.status = { $in: statuses };
+            }
+            const donations = await FoodDonationService.getDonations(req.user, filter);
             return res.status(200).json({ success: true, data: donations });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -30,6 +36,20 @@ class FoodDonationController {
         try {
             const donations = await FoodDonationService.getMyDonations(req.user.id);
             return res.status(200).json({ success: true, data: donations });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── GET /api/food-donations/volunteer/summary ───────────────────────
+    static async getVolunteerSummary(req, res) {
+        try {
+            if (req.user.role !== 'VOLUNTEER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Volunteer mới có thể xem thống kê.' });
+            }
+
+            const data = await FoodDonationService.getVolunteerSummary(req.user.id);
+            return res.status(200).json({ success: true, data });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }
@@ -113,7 +133,12 @@ class FoodDonationController {
                 return res.status(403).json({ success: false, message: 'Chỉ Volunteer mới có thể xác nhận lấy hàng.' });
             }
 
-            const result = await FoodDonationService.startPickupByVolunteer(req.params.id, req.user.id);
+            const pickupCode = req.body?.pickup_code ?? null;
+            const result = await FoodDonationService.startPickupByVolunteer(
+                req.params.id,
+                req.user.id,
+                pickupCode,
+            );
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -181,41 +206,48 @@ class FoodDonationController {
         }
     }
 
-    // ── PATCH /api/food-donations/:id/receiver-requests/:receiverId/approve ──
-    static async approveReceiverRequest(req, res) {
+    // ── PATCH /api/food-donations/:id/confirm-received ────────────────────
+    static async confirmDeliveryReceived(req, res) {
         try {
-            if (req.user.role !== 'DONOR') {
-                return res.status(403).json({ success: false, message: 'Chỉ Donor mới có thể approve receiver.' });
+            if (req.user.role !== 'RECEIVER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể xác nhận đã nhận hàng.' });
             }
 
-            const result = await FoodDonationService.approveReceiverRequest(
-                req.params.id,
-                req.user.id,
-                req.params.receiverId,
-            );
+            const result = await FoodDonationService.confirmDeliveryReceived(req.params.id, req.user.id);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }
     }
 
-    // ── PATCH /api/food-donations/:id/receiver-requests/:receiverId/reject ───
-    static async rejectReceiverRequest(req, res) {
+    // ── PATCH /api/food-donations/:id/cancel ──────────────────────────────
+    static async cancelDonation(req, res) {
         try {
             if (req.user.role !== 'DONOR') {
-                return res.status(403).json({ success: false, message: 'Chỉ Donor mới có thể reject receiver.' });
+                return res.status(403).json({ success: false, message: 'Chỉ Donor mới có thể huỷ đơn.' });
             }
 
-            const result = await FoodDonationService.rejectReceiverRequest(
-                req.params.id,
-                req.user.id,
-                req.params.receiverId,
-            );
+            const result = await FoodDonationService.cancelDonationByDonor(req.params.id, req.user.id);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }
     }
+
+    // ── PATCH /api/food-donations/:id/release ─────────────────────────────
+    static async releaseDonation(req, res) {
+        try {
+            if (req.user.role !== 'VOLUNTEER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Volunteer mới có thể trả đơn.' });
+            }
+
+            const result = await FoodDonationService.releaseDonationByVolunteer(req.params.id, req.user.id);
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
 }
 
 module.exports = FoodDonationController;
