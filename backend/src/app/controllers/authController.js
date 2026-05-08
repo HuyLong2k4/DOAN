@@ -5,10 +5,13 @@ class AuthController {
     // ── POST /api/auth/signup ──────────────────────────────────────────────
     static async signup(req, res) {
         try {
-            const { phone_number, password, confirm_password } = req.body;
+            const { full_name, phone_number, password, confirm_password } = req.body;
 
-            if (!phone_number || !password || !confirm_password) {
+            if (!full_name || !phone_number || !password || !confirm_password) {
                 return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin.' });
+            }
+            if (!String(full_name).trim()) {
+                return res.status(400).json({ success: false, message: 'Tên không được để trống.' });
             }
             if (!/^\d{9,15}$/.test(phone_number)) {
                 return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ.' });
@@ -20,7 +23,7 @@ class AuthController {
                 return res.status(400).json({ success: false, message: 'Mật khẩu xác nhận không khớp.' });
             }
 
-            const result = await AuthService.signup(phone_number, password);
+            const result = await AuthService.signup(phone_number, password, String(full_name).trim());
             return res.status(201).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

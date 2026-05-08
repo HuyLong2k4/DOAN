@@ -1,7 +1,15 @@
 const mongoose = require('mongoose');
 
 const DELIVERY_TYPE   = ['VIA_AGENT', 'SELF_PICKUP'];
-const DELIVERY_STATUS = ['WAITING_AGENT', 'SELF_PICKUP_READY', 'AGENT_ASSIGNED', 'ON_THE_WAY', 'DELIVERED', 'CANCELLED'];
+const DELIVERY_STATUS = [
+    'WAITING_AGENT',          // VIA_AGENT chưa có volunteer
+    'SELF_PICKUP_READY',      // Receiver tự lấy
+    'AGENT_ASSIGNED',         // Volunteer đã accept
+    'ON_THE_WAY',             // Volunteer đang giao
+    'AWAITING_CONFIRMATION',  // Volunteer báo đã giao, chờ receiver xác nhận
+    'DELIVERED',              // Hoàn tất
+    'CANCELLED',
+];
 
 const DeliverySchema = new mongoose.Schema({
     // Chỉ 1 trong 2 field donation_id / request_id có giá trị

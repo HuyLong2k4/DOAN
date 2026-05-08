@@ -67,6 +67,7 @@ class ProfileService {
             address_line, pin_code, city,
             latitude, longitude,
         } = data;
+        const normalizedContactName = contact_name ? String(contact_name).trim() : null;
 
         if (!donor_type || !address_line || !city) {
             throw this._error('donor_type, address_line, city là bắt buộc.');
@@ -83,7 +84,7 @@ class ProfileService {
                 user_id: userId,
                 donor_type,
                 business_name,
-                contact_name,
+                contact_name: normalizedContactName,
                 address_line,
                 pin_code,
                 city,
@@ -95,6 +96,9 @@ class ProfileService {
 
         const userUpdate = { onboarding_step: 4, profile_completed: true };
         if (email) userUpdate.email = email.trim();
+        if (normalizedContactName) {
+            userUpdate.full_name = normalizedContactName;
+        }
 
         const user = await User.findByIdAndUpdate(
             userId,
@@ -115,6 +119,7 @@ class ProfileService {
             address_line, pin_code, city,
             latitude, longitude,
         } = data;
+        const normalizedContactName = contact_name ? String(contact_name).trim() : null;
 
         if (!receiver_type || !address_line || !city) {
             throw this._error('receiver_type, address_line, city là bắt buộc.');
@@ -131,7 +136,7 @@ class ProfileService {
                 user_id: userId,
                 receiver_type,
                 organization_name,
-                contact_name,
+                contact_name: normalizedContactName,
                 address_line,
                 pin_code,
                 city,
@@ -141,9 +146,14 @@ class ProfileService {
             { upsert: true, new: true, runValidators: true }
         );
 
+        const userUpdate = { onboarding_step: 4, profile_completed: true };
+        if (normalizedContactName) {
+            userUpdate.full_name = normalizedContactName;
+        }
+
         const user = await User.findByIdAndUpdate(
             userId,
-            { onboarding_step: 4, profile_completed: true },
+            userUpdate,
             { new: true }
         );
 
@@ -156,12 +166,14 @@ class ProfileService {
     // ──────────────────────────────────────────────────────────────────────
     static async completeVolunteerProfile(userId, data) {
         const {
+            contact_name,
             address_line, pin_code, city,
             latitude, longitude,
             verification_document_type, verification_document_url,
             availability_days, availability_time,
             delivery_goal,
         } = data;
+        const normalizedContactName = contact_name ? String(contact_name).trim() : null;
 
         if (!address_line || !city) {
             throw this._error('address_line, city là bắt buộc.');
@@ -171,6 +183,7 @@ class ProfileService {
             { user_id: userId },
             {
                 user_id: userId,
+                contact_name: normalizedContactName,
                 address_line, pin_code, city, latitude, longitude,
                 verification_document_type, verification_document_url,
                 availability_days, availability_time,
@@ -179,9 +192,14 @@ class ProfileService {
             { upsert: true, new: true, runValidators: true }
         );
 
+        const userUpdate = { onboarding_step: 4, profile_completed: true };
+        if (normalizedContactName) {
+            userUpdate.full_name = normalizedContactName;
+        }
+
         const user = await User.findByIdAndUpdate(
             userId,
-            { onboarding_step: 4, profile_completed: true },
+            userUpdate,
             { new: true }
         );
 

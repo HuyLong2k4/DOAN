@@ -87,6 +87,9 @@ class UserController {
             }
 
             const allowedFields = ['full_name', 'phone_number', 'email', 'avatar_url'];
+            if (req.user.role === 'ADMIN') {
+                allowedFields.push('role');
+            }
             const updateData = {};
 
             allowedFields.forEach(field => {

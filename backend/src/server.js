@@ -1,9 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const morgan = require('morgan');
+const cors = require('cors');
 const connectDB = require('./config/db/index');
 const admin = require('firebase-admin');
 const path = require('path');
+const { createChatSocketServer } = require('./socket/chatSocket');
+const FoodDonationService = require('./app/services/foodDonationService');
 
 // ========== Khởi tạo Firebase Admin ==========
 const serviceAccount = require('./config/firebase/food-482bb-firebase-adminsdk-fbsvc-c869e919a3.json');
@@ -19,7 +23,9 @@ const app = express();
 const PORT = process.env.PORT;
 
 app.use(morgan('combined'));
+app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ========== Routes ==========
 const authRoutes         = require('./app/routes/authRoutes');
@@ -27,15 +33,56 @@ const userRoutes         = require('./app/routes/userRoutes');
 const profileRoutes      = require('./app/routes/profileRoutes');
 const foodDonationRoutes = require('./app/routes/foodDonationRoutes');
 const foodRequestRoutes  = require('./app/routes/foodRequestRoutes');
+const chatRoutes         = require('./app/routes/chatRoutes');
+const feedbackRoutes     = require('./app/routes/feedbackRoutes');
+const notificationRoutes = require('./app/routes/notificationRoutes');
 
 app.use('/api/auth',            authRoutes);
 app.use('/api/users',           userRoutes);
 app.use('/api/profile',         profileRoutes);
 app.use('/api/food-donations',  foodDonationRoutes);
 app.use('/api/food-requests',   foodRequestRoutes);
+app.use('/api/chat',            chatRoutes);
+app.use('/api/feedback',        feedbackRoutes);
+app.use('/api/notifications',   notificationRoutes);
 
 app.get('/', (_, res) => res.send('Hello world'));
 
-app.listen(PORT, "0.0.0.0", () =>
-    console.log(`Server listening on http://192.168.0.227:${PORT}`)
+const server = http.createServer(app);
+createChatSocketServer(server);
+
+server.listen(PORT, '0.0.0.0', () =>
+  console.log(`Server listening on http://172.31.22.174:${PORT}`)
 );
+
+// ── Cron tasks ──────────────────────────────────────────────────────────────
+const EXPIRE_INTERVAL_MS = 15 * 60 * 1000;        // 15 phút
+const AUTO_CONFIRM_INTERVAL_MS = 60 * 60 * 1000;  // 1 giờ
+const AUTO_CONFIRM_TIMEOUT_HOURS = 24;            // auto-confirm sau 24h không phản hồi
+
+const runExpireSweep = () => {
+  FoodDonationService.expireOverdueDonations()
+    .then((res) => {
+      if (res?.expired_count > 0) {
+        console.log(`[expire-cron] expired ${res.expired_count} donations`);
+      }
+    })
+    .catch((err) => console.error('[expire-cron] error:', err?.message || err));
+};
+
+const runAutoConfirmSweep = () => {
+  FoodDonationService.autoConfirmStaleDeliveries(AUTO_CONFIRM_TIMEOUT_HOURS)
+    .then((res) => {
+      if (res?.confirmed_count > 0) {
+        console.log(`[auto-confirm-cron] auto-confirmed ${res.confirmed_count} deliveries`);
+      }
+    })
+    .catch((err) => console.error('[auto-confirm-cron] error:', err?.message || err));
+};
+
+// Chạy lần đầu sau 60s (đợi DB connect ổn định).
+setTimeout(runExpireSweep, 60 * 1000);
+setTimeout(runAutoConfirmSweep, 90 * 1000);
+
+setInterval(runExpireSweep, EXPIRE_INTERVAL_MS);
+setInterval(runAutoConfirmSweep, AUTO_CONFIRM_INTERVAL_MS);

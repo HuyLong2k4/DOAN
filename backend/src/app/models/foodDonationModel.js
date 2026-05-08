@@ -33,7 +33,6 @@ const FoodDonationSchema = new mongoose.Schema({
     expiration_datetime: { type: Date, required: true },
 
     status: { type: String, enum: DONATION_STATUS, default: 'PENDING' },
-    interested_receivers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     rejected_by: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, {
     timestamps: true,

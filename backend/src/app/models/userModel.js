@@ -28,6 +28,11 @@ const UserSchema = new mongoose.Schema({
     }],
 
     fcm_token: { type: String, default: '' },
+
+    // Tăng mỗi lần logout / đổi mật khẩu để vô hiệu hoá toàn bộ JWT cũ.
+    token_version: { type: Number, default: 0 },
+    // Cho phép admin khoá tài khoản mà không xoá hẳn dữ liệu.
+    is_active: { type: Boolean, default: true },
 }, {
     timestamps: true,
 });

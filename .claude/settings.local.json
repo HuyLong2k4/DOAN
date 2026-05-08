@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"d:/Đồ án/adminWeb\" && rm -rf src/App.tsx src/styles.css src/components src/utils src/types && ls src/)"
+    ],
+    "additionalDirectories": [
+      "d:\\Đồ án\\adminWeb\\src"
+    ]
+  }
+}
