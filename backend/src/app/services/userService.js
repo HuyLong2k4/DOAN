@@ -1,7 +1,10 @@
 const User = require('../models/userModel');
+const FoodDonation = require('../models/foodDonationModel');
+const Feedback = require('../models/feedbackModel');
 const bcrypt = require('bcryptjs');
 
 const USER_ROLE = ['ADMIN', 'DONOR', 'RECEIVER', 'VOLUNTEER'];
+const LEADERBOARD_ROLE = ['DONOR', 'VOLUNTEER'];
 
 class UserService {
     static async getUserById(id) {
@@ -163,12 +166,80 @@ class UserService {
         return { message: 'Xóa user thành công' };
     }
 
-    static async getLeaderboard(limit = 20) {
-        const users = await User.find({ profile_completed: true })
+    static async getLeaderboard(limit = 20, role = null) {
+        const filter = { profile_completed: true };
+        if (role && LEADERBOARD_ROLE.includes(role)) {
+            filter.role = role;
+        }
+        const users = await User.find(filter)
             .select('full_name phone_number avatar_url points role')
             .sort({ points: -1 })
             .limit(limit);
         return users;
+    }
+
+    static async updateAvatar(userId, avatarUrl) {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { avatar_url: avatarUrl },
+            { new: true }
+        ).select('-password');
+        if (!user) {
+            const error = new Error('Không tìm thấy user');
+            error.statusCode = 404;
+            throw error;
+        }
+        return user;
+    }
+
+    static async getUserStats(userId, role) {
+        const sumPortions = async (filter) => {
+            const result = await FoodDonation.aggregate([
+                { $match: filter },
+                { $group: { _id: null, total: { $sum: '$quantity' } } },
+            ]);
+            return result[0]?.total || 0;
+        };
+
+        if (role === 'DONOR') {
+            const [donations, feedbackReceived, totalPortions] = await Promise.all([
+                FoodDonation.countDocuments({ donor_id: userId, status: 'COMPLETED' }),
+                Feedback.countDocuments({ to_user_id: userId }),
+                sumPortions({ donor_id: userId, status: 'COMPLETED' }),
+            ]);
+            const user = await User.findById(userId).select('points').lean();
+            return { donations, feedbackReceived, totalPortions, points: user?.points || 0 };
+        }
+
+        if (role === 'VOLUNTEER') {
+            const [deliveries, feedbackReceived, totalPortions] = await Promise.all([
+                FoodDonation.countDocuments({ volunteer_id: userId, status: 'COMPLETED' }),
+                Feedback.countDocuments({ to_user_id: userId }),
+                sumPortions({ volunteer_id: userId, status: 'COMPLETED' }),
+            ]);
+            const user = await User.findById(userId).select('points').lean();
+            return { deliveries, feedbackReceived, totalPortions, points: user?.points || 0 };
+        }
+
+        if (role === 'RECEIVER') {
+            const [mealsReceived, feedbackSent, distinctNgos, totalPortions] = await Promise.all([
+                FoodDonation.countDocuments({ selected_receiver_id: userId, status: 'COMPLETED' }),
+                Feedback.countDocuments({ from_user_id: userId }),
+                FoodDonation.distinct('donor_id', {
+                    selected_receiver_id: userId,
+                    status: 'COMPLETED',
+                }),
+                sumPortions({ selected_receiver_id: userId, status: 'COMPLETED' }),
+            ]);
+            return {
+                mealsReceived,
+                ngosConnected: Array.isArray(distinctNgos) ? distinctNgos.length : 0,
+                feedbackSent,
+                totalPortions,
+            };
+        }
+
+        return {};
     }
 }
 

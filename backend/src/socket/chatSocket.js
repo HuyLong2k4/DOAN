@@ -19,9 +19,14 @@ function extractToken(socket) {
 }
 
 function createChatSocketServer(httpServer) {
+    const allowedOriginsEnv = (process.env.ALLOWED_ORIGINS || '').trim();
+    const corsOrigin = allowedOriginsEnv && allowedOriginsEnv !== '*'
+        ? allowedOriginsEnv.split(',').map((s) => s.trim()).filter(Boolean)
+        : '*';
+
     const io = new Server(httpServer, {
         cors: {
-            origin: '*',
+            origin: corsOrigin,
             methods: ['GET', 'POST'],
         },
     });

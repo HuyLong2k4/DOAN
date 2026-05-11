@@ -4,28 +4,31 @@ const http = require('http');
 const morgan = require('morgan');
 const cors = require('cors');
 const connectDB = require('./config/db/index');
-const admin = require('firebase-admin');
 const path = require('path');
+const { initFirebase } = require('./config/firebase/index');
 const { createChatSocketServer } = require('./socket/chatSocket');
 const FoodDonationService = require('./app/services/foodDonationService');
 
-// ========== Khởi tạo Firebase Admin ==========
-const serviceAccount = require('./config/firebase/food-482bb-firebase-adminsdk-fbsvc-c869e919a3.json');
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-console.log('Firebase Admin initialized');
+initFirebase();
 
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
-app.use(morgan('combined'));
-app.use(cors());
+// CORS: đọc whitelist từ env. Để trống hoặc "*" → cho phép tất cả (dev only).
+const allowedOriginsEnv = (process.env.ALLOWED_ORIGINS || '').trim();
+const corsOptions = allowedOriginsEnv && allowedOriginsEnv !== '*'
+  ? { origin: allowedOriginsEnv.split(',').map((s) => s.trim()).filter(Boolean), credentials: true }
+  : { origin: true, credentials: true };
+
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Healthcheck cho Docker / load balancer
+app.get('/health', (_, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
 
 // ========== Routes ==========
 const authRoutes         = require('./app/routes/authRoutes');
@@ -52,7 +55,7 @@ const server = http.createServer(app);
 createChatSocketServer(server);
 
 server.listen(PORT, '0.0.0.0', () =>
-  console.log(`Server listening on http://172.31.22.174:${PORT}`)
+  console.log(`Server listening on port ${PORT}`)
 );
 
 // ── Cron tasks ──────────────────────────────────────────────────────────────
