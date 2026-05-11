@@ -9,16 +9,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5000
 
-# Tạo user non-root
-RUN addgroup -S app && adduser -S app -G app
-
 COPY --from=deps /app/node_modules ./node_modules
-COPY --chown=app:app . .
+COPY . .
 
-# Thư mục lưu uploads — sẽ được mount volume từ host/compose
-RUN mkdir -p /app/uploads/avatars /app/uploads/chat && chown -R app:app /app/uploads
+# Tạo sẵn thư mục uploads. Khi Railway mount volume vào /app/uploads,
+# volume sẽ chiếm chỗ này và container (chạy root) có quyền tạo subfolder.
+RUN mkdir -p /app/uploads/avatars /app/uploads/chat
 
-USER app
 EXPOSE 5000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
