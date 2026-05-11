@@ -16,6 +16,10 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Tin proxy của Railway/Nginx → req.protocol đọc đúng X-Forwarded-Proto (https).
+// Cần thiết để URL upload (avatar/chat) được sinh ra với https://, không bị mixed-content.
+app.set('trust proxy', 1);
+
 // CORS: đọc whitelist từ env. Để trống hoặc "*" → cho phép tất cả (dev only).
 const allowedOriginsEnv = (process.env.ALLOWED_ORIGINS || '').trim();
 const corsOptions = allowedOriginsEnv && allowedOriginsEnv !== '*'
