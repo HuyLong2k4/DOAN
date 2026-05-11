@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: food-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    # MONGO_URI lấy từ backend/.env (trỏ tới MongoDB Atlas).
+    environment:
+      # Trỏ Firebase Admin SDK vào file JSON được mount bên dưới.
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-admin.json
+    volumes:
+      - backend_uploads:/app/uploads
+      # Mount file service account vào container (read-only).
+      # Đổi tên file nếu của bạn khác.
+      - ./backend/src/config/firebase/food-482bb-firebase-adminsdk-fbsvc-c869e919a3.json:/run/secrets/firebase-admin.json:ro
+    ports:
+      - "5000:5000"
+    networks:
+      - food-net
+
+  adminweb:
+    build:
+      context: ./adminWeb
+      dockerfile: Dockerfile
+      args:
+        # API URL mà browser dùng để gọi backend.
+        # Đổi thành domain thật khi deploy (vd https://api.example.com/api).
+        VITE_API_URL: ${ADMIN_API_URL:-http://localhost:5000/api}
+    container_name: food-adminweb
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - food-net
+
+volumes:
+  backend_uploads:
+
+networks:
+  food-net:
+    driver: bridge

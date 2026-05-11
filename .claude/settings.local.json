@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd \"d:/Đồ án/adminWeb\" && rm -rf src/App.tsx src/styles.css src/components src/utils src/types && ls src/)"
+      "Bash(cd \"d:/Đồ án/adminWeb\" && rm -rf src/App.tsx src/styles.css src/components src/utils src/types && ls src/)",
+      "PowerShell(npx tsc --noEmit -p tsconfig.json 2>&1 | Where-Object { $_ -notmatch \"app-example\" } | Select-Object -First 40)",
+      "PowerShell($out = npx tsc --noEmit 2>&1; $out | Where-Object { $_ -notmatch \"app-example\" } | Select-Object -First 50)",
+      "PowerShell($out = \\(npx tsc --noEmit\\) 2>&1 | Out-String; $filtered = \\($out -split \"`n\"\\) | Where-Object { $_ -notmatch \"app-example\" -and $_.Trim\\(\\) -ne \"\" }; $filtered | Select-Object -First 40)",
+      "PowerShell(npx tsc --noEmit 2>&1 > tsc-out.txt; \"Done\")",
+      "Bash(node -e \"require\\('./backend/src/app/services/userService.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/src/app/controllers/userController.js'\\); require\\('./backend/src/app/routes/userRoutes.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/src/app/models/rewardItemModel'\\); require\\('./backend/src/app/models/redemptionModel'\\); require\\('./backend/src/app/services/rewardService'\\); require\\('./backend/src/app/controllers/rewardController'\\); require\\('./backend/src/app/routes/rewardRoutes'\\); console.log\\('OK'\\)\")",
+      "Bash(rm \"backend/src/app/models/rewardItemModel.js\" \"backend/src/app/models/redemptionModel.js\" \"backend/src/app/services/rewardService.js\" \"backend/src/app/controllers/rewardController.js\" \"backend/src/app/routes/rewardRoutes.js\" \"backend/src/scripts/seedRewards.js\")",
+      "Bash(rmdir \"backend/src/scripts\")",
+      "Bash(node -e \"require\\('./backend/src/server.js'\\)\")",
+      "Bash(node -e \"require\\('./backend/src/app/routes/userRoutes'\\); console.log\\('OK'\\)\")"
     ],
     "additionalDirectories": [
       "d:\\Đồ án\\adminWeb\\src"

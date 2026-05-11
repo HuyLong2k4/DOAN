@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const UserService = require('../services/userService');
 
 class UserController {
@@ -167,9 +169,42 @@ class UserController {
     static async getLeaderboard(req, res) {
         try {
             const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-            const data = await UserService.getLeaderboard(limit);
+            const role = typeof req.query.role === 'string' ? req.query.role.toUpperCase() : null;
+            const data = await UserService.getLeaderboard(limit, role);
             return res.status(200).json({ success: true, data });
         } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // GET /api/users/me/stats
+    static async getMyStats(req, res) {
+        try {
+            const data = await UserService.getUserStats(req.user.id, req.user.role);
+            return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // POST /api/users/me/avatar
+    static async uploadAvatar(req, res) {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'Không có ảnh nào được tải lên.' });
+            }
+
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const avatarUrl = `${baseUrl}/uploads/avatars/${encodeURIComponent(path.basename(req.file.filename))}`;
+
+            const user = await UserService.updateAvatar(req.user.id, avatarUrl);
+
+            return res.status(200).json({ success: true, data: user });
+        } catch (err) {
+            // Clean up uploaded file on failure to avoid orphan files.
+            if (req.file?.path) {
+                fs.unlink(req.file.path, () => {});
+            }
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }
     }
