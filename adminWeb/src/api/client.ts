@@ -22,6 +22,8 @@ export function resolveDefaultApiBaseUrl(): string {
   return normalizeBaseUrl(`http://${host}:5000`);
 }
 
+// apiBaseUrl giữ ở localStorage (config, không nhạy cảm).
+// token + user lưu vào sessionStorage → đóng tab là mất phiên, buộc đăng nhập lại.
 export const storage = {
   getApiBaseUrl(): string {
     return localStorage.getItem(STORAGE_KEYS.apiBaseUrl) || '';
@@ -31,14 +33,14 @@ export const storage = {
     else localStorage.removeItem(STORAGE_KEYS.apiBaseUrl);
   },
   getToken(): string {
-    return localStorage.getItem(STORAGE_KEYS.token) || '';
+    return sessionStorage.getItem(STORAGE_KEYS.token) || '';
   },
   setToken(value: string): void {
-    if (value) localStorage.setItem(STORAGE_KEYS.token, value);
-    else localStorage.removeItem(STORAGE_KEYS.token);
+    if (value) sessionStorage.setItem(STORAGE_KEYS.token, value);
+    else sessionStorage.removeItem(STORAGE_KEYS.token);
   },
   getUser<T = unknown>(): T | null {
-    const raw = localStorage.getItem(STORAGE_KEYS.user);
+    const raw = sessionStorage.getItem(STORAGE_KEYS.user);
     if (!raw) return null;
     try {
       return JSON.parse(raw) as T;
@@ -47,12 +49,12 @@ export const storage = {
     }
   },
   setUser(value: unknown): void {
-    if (value) localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(value));
-    else localStorage.removeItem(STORAGE_KEYS.user);
+    if (value) sessionStorage.setItem(STORAGE_KEYS.user, JSON.stringify(value));
+    else sessionStorage.removeItem(STORAGE_KEYS.user);
   },
   clearSession(): void {
-    localStorage.removeItem(STORAGE_KEYS.token);
-    localStorage.removeItem(STORAGE_KEYS.user);
+    sessionStorage.removeItem(STORAGE_KEYS.token);
+    sessionStorage.removeItem(STORAGE_KEYS.user);
   },
 };
 
