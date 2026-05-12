@@ -265,7 +265,7 @@ class AuthService {
     static async logout(userId) {
         // Tăng token_version để vô hiệu hoá tất cả JWT đã phát hành cho user này.
         await User.findByIdAndUpdate(userId, {
-            fcm_token: '',
+            push_token: '',
             $inc: { token_version: 1 },
         });
         return { message: 'Đăng xuất thành công.' };

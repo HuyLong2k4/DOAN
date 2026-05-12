@@ -187,6 +187,20 @@ class UserController {
         }
     }
 
+    // POST /api/users/me/push-token
+    static async updatePushToken(req, res) {
+        try {
+            const { token } = req.body;
+            if (typeof token !== 'string') {
+                return res.status(400).json({ success: false, message: 'token là bắt buộc (string).' });
+            }
+            await UserService.updatePushToken(req.user.id, token.trim());
+            return res.status(200).json({ success: true });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
     // POST /api/users/me/avatar
     static async uploadAvatar(req, res) {
         try {

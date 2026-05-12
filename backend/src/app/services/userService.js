@@ -84,14 +84,13 @@ class UserService {
         return user.earned_badges;
     }
 
-    // 1. Cập nhật token (sau khi login)
-    static async updateFCMToken(userId, token) {
-        await User.findByIdAndUpdate(userId, { fcm_token: token });
+    // Cập nhật push token (gọi sau khi login + cấp quyền notification)
+    static async updatePushToken(userId, token) {
+        await User.findByIdAndUpdate(userId, { push_token: token || '' });
     }
 
-    // 2. Xóa token (khi logout)
-    static async clearFCMToken(userId) {
-        await User.findByIdAndUpdate(userId, { fcm_token: '' });
+    static async clearPushToken(userId) {
+        await User.findByIdAndUpdate(userId, { push_token: '' });
     }
 
     static async updateUser(id, updateData) {

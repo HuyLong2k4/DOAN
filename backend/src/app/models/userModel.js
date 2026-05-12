@@ -23,7 +23,8 @@ const UserSchema = new mongoose.Schema({
         earned_at: { type: Date, default: Date.now }
     }],
 
-    fcm_token: { type: String, default: '' },
+    // Expo Push Token (ExponentPushToken[...]). Để rỗng khi user chưa cấp quyền hoặc đã logout.
+    push_token: { type: String, default: '' },
 
     // Tăng mỗi lần logout / đổi mật khẩu để vô hiệu hoá toàn bộ JWT cũ.
     token_version: { type: Number, default: 0 },

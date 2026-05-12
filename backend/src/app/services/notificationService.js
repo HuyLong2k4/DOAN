@@ -1,337 +1,204 @@
-const admin = require('firebase-admin');
 const User = require('../models/userModel');
 
-class NotificationService {
-    // ============ QUẢN LÝ FCM TOKEN ============
-    
-    /**
-     * Cập nhật FCM token khi user đăng nhập vào app mobile
-     * Gọi API này ngay sau khi user login thành công
-     */
-    static async updateUserToken(userId, fcmToken) {
-        try {
-            const user = await User.findByIdAndUpdate(
-                userId,
-                { fcm_token: fcmToken },
-                { new: true }
-            );
+const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
+const EXPO_TOKEN_PREFIX = ['ExponentPushToken[', 'ExpoPushToken['];
 
-            if (!user) {
-                throw new Error('User không tồn tại');
+function isExpoToken(token) {
+    if (!token || typeof token !== 'string') return false;
+    return EXPO_TOKEN_PREFIX.some((p) => token.startsWith(p));
+}
+
+async function postToExpo(messages) {
+    if (!messages.length) return { tickets: [], invalidTokens: [] };
+
+    const res = await fetch(EXPO_PUSH_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+        },
+        body: JSON.stringify(messages),
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Expo Push API ${res.status}: ${text || res.statusText}`);
+    }
+
+    const json = await res.json();
+    const tickets = Array.isArray(json?.data) ? json.data : [];
+
+    // Token nào trả về DeviceNotRegistered hoặc InvalidCredentials → cần xoá khỏi DB.
+    const invalidTokens = [];
+    tickets.forEach((ticket, idx) => {
+        if (ticket?.status === 'error') {
+            const code = ticket.details?.error;
+            if (code === 'DeviceNotRegistered' || code === 'InvalidCredentials') {
+                invalidTokens.push(messages[idx].to);
             }
-
-            return { success: true, message: 'FCM token đã được cập nhật' };
-        } catch (error) {
-            console.error('Error updating FCM token:', error);
-            throw error;
         }
-    }
+    });
 
-    /**
-     * Xóa FCM token khi user đăng xuất
-     * Tránh gửi notification đến device đã logout
-     */
-    static async removeUserToken(userId) {
-        try {
-            await User.findByIdAndUpdate(userId, { fcm_token: '' });
-            return { success: true, message: 'FCM token đã được xóa' };
-        } catch (error) {
-            console.error('Error removing FCM token:', error);
-            throw error;
-        }
-    }
+    return { tickets, invalidTokens };
+}
 
-    // ============ GỬI THÔNG BÁO ============
+async function clearTokens(tokens) {
+    if (!tokens.length) return;
+    await User.updateMany({ push_token: { $in: tokens } }, { push_token: '' });
+}
 
-    /**
-     * Gửi thông báo cho 1 user cụ thể
-     */
+class NotificationService {
+    // Gửi 1 push notification tới 1 user.
     static async sendToUser(userId, notification) {
         try {
-            const user = await User.findById(userId).select('fcm_token');
-
-            if (!user || !user.fcm_token) {
-                console.log(`User ${userId} không có FCM token`);
-                return { success: false, message: 'No FCM token' };
+            const user = await User.findById(userId).select('push_token');
+            if (!user || !isExpoToken(user.push_token)) {
+                return { success: false, message: 'No push token' };
             }
 
             const message = {
-                token: user.fcm_token,
-                notification: {
-                    title: notification.title,
-                    body: notification.body,
-                    ...(notification.imageUrl && { imageUrl: notification.imageUrl })
-                },
+                to: user.push_token,
+                title: notification.title,
+                body: notification.body,
+                sound: 'default',
+                priority: 'high',
                 data: notification.data || {},
-                // Cài đặt cho Android & iOS
-                android: {
-                    priority: 'high',
-                    notification: {
-                        sound: 'default',
-                        clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                    }
-                },
-                apns: {
-                    payload: {
-                        aps: {
-                            sound: 'default',
-                            badge: 1
-                        }
-                    }
-                }
             };
 
-            const response = await admin.messaging().send(message);
-            return { success: true, messageId: response };
+            const { invalidTokens } = await postToExpo([message]);
+            await clearTokens(invalidTokens);
 
+            return { success: invalidTokens.length === 0 };
         } catch (error) {
-            // Token không hợp lệ (user đã xóa app, đổi thiết bị, etc.)
-            if (error.code === 'messaging/invalid-registration-token' ||
-                error.code === 'messaging/registration-token-not-registered') {
-                console.log(`Invalid token for user ${userId}, removing...`);
-                await User.findByIdAndUpdate(userId, { fcm_token: '' });
-            }
-            console.error('Error sending notification:', error);
+            console.error('[push] sendToUser error:', error.message);
             return { success: false, error: error.message };
         }
     }
 
-    /**
-     * Gửi thông báo cho nhiều user cùng lúc
-     * VD: Thông báo cho tất cả user trong bán kính 2km
-     */
+    // Gửi tới nhiều user (chunked 100/lần — giới hạn của Expo).
     static async sendToMultipleUsers(userIds, notification) {
         try {
             const users = await User.find({
                 _id: { $in: userIds },
-                fcm_token: { $ne: '' }
-            }).select('fcm_token');
+                push_token: { $ne: '' },
+            }).select('push_token');
 
-            const tokens = users.map(u => u.fcm_token);
+            const tokens = users.map((u) => u.push_token).filter(isExpoToken);
+            if (!tokens.length) return { success: 0, failed: 0 };
 
-            if (tokens.length === 0) {
-                return { success: 0, failed: 0, message: 'No FCM tokens found' };
-            }
-
-            const message = {
-                tokens: tokens,
-                notification: {
-                    title: notification.title,
-                    body: notification.body,
-                    ...(notification.imageUrl && { imageUrl: notification.imageUrl })
-                },
+            const baseMessage = {
+                title: notification.title,
+                body: notification.body,
+                sound: 'default',
+                priority: 'high',
                 data: notification.data || {},
-                android: {
-                    priority: 'high',
-                    notification: {
-                        sound: 'default',
-                        clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-                    }
-                },
-                apns: {
-                    payload: {
-                        aps: {
-                            sound: 'default'
-                        }
-                    }
-                }
             };
 
-            const response = await admin.messaging().sendMulticast(message);
+            let successCount = 0;
+            const allInvalid = [];
 
-            // Xóa các token không hợp lệ
-            if (response.failureCount > 0) {
-                const failedTokens = [];
-                response.responses.forEach((resp, idx) => {
-                    if (!resp.success) {
-                        failedTokens.push(tokens[idx]);
-                    }
-                });
-                // Xóa các token lỗi khỏi database
-                await User.updateMany(
-                    { fcm_token: { $in: failedTokens } },
-                    { fcm_token: '' }
-                );
+            // Expo cho phép tối đa 100 message / request.
+            for (let i = 0; i < tokens.length; i += 100) {
+                const batch = tokens.slice(i, i + 100).map((to) => ({ ...baseMessage, to }));
+                const { tickets, invalidTokens } = await postToExpo(batch);
+                successCount += tickets.filter((tk) => tk?.status === 'ok').length;
+                allInvalid.push(...invalidTokens);
             }
+
+            await clearTokens(allInvalid);
 
             return {
-                success: response.successCount,
-                failed: response.failureCount,
-                totalSent: tokens.length
+                success: successCount,
+                failed: tokens.length - successCount,
+                totalSent: tokens.length,
             };
-
         } catch (error) {
-            console.error('Error sending multicast notification:', error);
-            throw error;
+            console.error('[push] sendToMultipleUsers error:', error.message);
+            return { success: 0, failed: userIds.length, error: error.message };
         }
     }
 
-    // ============ USE CASES CỤ THỂ CHO FOODRESCUE ============
+    // ============ USE CASES ============
 
-    /**
-     * 🔔 Thông báo khi có đồ ăn mới gần user
-     * Đây là tính năng QUAN TRỌNG NHẤT của app
-     * 
-     * @param {Array} nearbyUserIds - Danh sách ID user trong bán kính 2-5km
-     * @param {Object} foodData - Thông tin đồ ăn (tên, số lượng, địa chỉ, hình ảnh)
-     */
-    static async notifyNewFoodNearby(nearbyUserIds, foodData) {
-        const notification = {
-            title: '🍲 Có đồ ăn miễn phí gần bạn!',
+    static notifyNewFoodNearby(nearbyUserIds, foodData) {
+        return this.sendToMultipleUsers(nearbyUserIds, {
+            title: 'Có đồ ăn miễn phí gần bạn!',
             body: `${foodData.food_name} - ${foodData.quantity} suất, cách bạn ${foodData.distance}m`,
-            imageUrl: foodData.image_url,
             data: {
                 type: 'NEW_FOOD',
-                food_id: foodData.food_id,
-                donor_location: JSON.stringify(foodData.location),
-                click_action: 'FOOD_DETAIL_SCREEN'
-            }
-        };
-
-        return await this.sendToMultipleUsers(nearbyUserIds, notification);
+                food_id: String(foodData.food_id || ''),
+            },
+        });
     }
 
-    /**
-     * 🎉 Thông báo khi đạt huy hiệu mới
-     */
-    static async notifyBadgeEarned(userId, badge) {
-        const notification = {
-            title: '🎉 Chúc mừng! Bạn đạt huy hiệu mới',
+    static notifyBadgeEarned(userId, badge) {
+        return this.sendToUser(userId, {
+            title: 'Chúc mừng! Bạn đạt huy hiệu mới',
             body: `${badge.name} - ${badge.description}`,
-            imageUrl: badge.image_url,
-            data: {
-                type: 'BADGE_EARNED',
-                badge_id: badge._id.toString(),
-                click_action: 'PROFILE_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(userId, notification);
+            data: { type: 'BADGE_EARNED', badge_id: String(badge._id || '') },
+        });
     }
 
-    /**
-     * ✅ Thông báo khi đơn của RECEIVER được xác nhận
-     */
-    static async notifyOrderConfirmed(receiverId, orderData) {
-        const notification = {
-            title: '✅ Đơn của bạn đã được xác nhận',
+    static notifyOrderConfirmed(receiverId, orderData) {
+        return this.sendToUser(receiverId, {
+            title: 'Đơn của bạn đã được xác nhận',
             body: `${orderData.donor_name} đã xác nhận. Hãy đến lấy trước ${orderData.pickup_time}`,
-            data: {
-                type: 'ORDER_CONFIRMED',
-                order_id: orderData.order_id,
-                click_action: 'ORDER_DETAIL_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(receiverId, notification);
+            data: { type: 'ORDER_CONFIRMED', order_id: String(orderData.order_id || '') },
+        });
     }
 
-    /**
-     * ❌ Thông báo khi đơn bị từ chối
-     */
-    static async notifyOrderRejected(receiverId, orderData) {
-        const notification = {
-            title: '❌ Đơn của bạn bị từ chối',
+    static notifyOrderRejected(receiverId, orderData) {
+        return this.sendToUser(receiverId, {
+            title: 'Đơn của bạn bị từ chối',
             body: `Lý do: ${orderData.reason || 'Đồ ăn không còn đủ số lượng'}`,
-            data: {
-                type: 'ORDER_REJECTED',
-                order_id: orderData.order_id,
-                click_action: 'HOME_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(receiverId, notification);
+            data: { type: 'ORDER_REJECTED', order_id: String(orderData.order_id || '') },
+        });
     }
 
-    /**
-     * 📦 Thông báo cho DONOR khi có người đặt đồ ăn của họ
-     */
-    static async notifyDonorNewOrder(donorId, orderData) {
-        const notification = {
-            title: '📦 Có người đặt đồ ăn của bạn',
+    static notifyDonorNewOrder(donorId, orderData) {
+        return this.sendToUser(donorId, {
+            title: 'Có người đặt đồ ăn của bạn',
             body: `${orderData.receiver_name} muốn nhận ${orderData.quantity} suất`,
-            data: {
-                type: 'NEW_ORDER',
-                order_id: orderData.order_id,
-                click_action: 'ORDER_MANAGEMENT_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(donorId, notification);
+            data: { type: 'NEW_ORDER', order_id: String(orderData.order_id || '') },
+        });
     }
 
-    /**
-     * ⏰ Nhắc nhở RECEIVER đến lấy đồ (gửi trước 30 phút)
-     */
-    static async notifyPickupReminder(receiverId, orderData) {
-        const notification = {
-            title: '⏰ Nhắc nhở: Đến giờ lấy đồ ăn rồi!',
+    static notifyPickupReminder(receiverId, orderData) {
+        return this.sendToUser(receiverId, {
+            title: 'Đến giờ lấy đồ ăn rồi!',
             body: `Đơn hàng #${orderData.order_code} cần lấy trước ${orderData.pickup_time}`,
-            data: {
-                type: 'PICKUP_REMINDER',
-                order_id: orderData.order_id,
-                click_action: 'ORDER_DETAIL_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(receiverId, notification);
+            data: { type: 'PICKUP_REMINDER', order_id: String(orderData.order_id || '') },
+        });
     }
 
-    /**
-     * ⏰ Nhắc nhở DONOR đồ ăn sắp hết hạn (chưa có người lấy)
-     */
-    static async notifyDonorExpiringSoon(donorId, foodData) {
-        const notification = {
-            title: '⏰ Đồ ăn của bạn sắp hết hạn',
+    static notifyDonorExpiringSoon(donorId, foodData) {
+        return this.sendToUser(donorId, {
+            title: 'Đồ ăn của bạn sắp hết hạn',
             body: `${foodData.food_name} còn ${foodData.remaining_quantity} suất nhưng chưa có người nhận`,
-            data: {
-                type: 'FOOD_EXPIRING',
-                food_id: foodData.food_id,
-                click_action: 'DONATION_DETAIL_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(donorId, notification);
+            data: { type: 'FOOD_EXPIRING', food_id: String(foodData.food_id || '') },
+        });
     }
 
-    /**
-     * 🌟 Thông báo khi có tin nhắn mới (chat giữa donor-receiver)
-     */
-    static async notifyNewMessage(userId, messageData) {
-        const notification = {
-            title: `💬 ${messageData.sender_name}`,
+    static notifyNewMessage(userId, messageData) {
+        return this.sendToUser(userId, {
+            title: messageData.sender_name,
             body: messageData.message_text,
             data: {
                 type: 'NEW_MESSAGE',
-                chat_id: messageData.chat_id,
-                sender_id: messageData.sender_id,
-                click_action: 'CHAT_SCREEN'
-            }
-        };
-
-        return await this.sendToUser(userId, notification);
+                chat_id: String(messageData.chat_id || ''),
+                sender_id: String(messageData.sender_id || ''),
+            },
+        });
     }
 
-    /**
-     * 📢 Thông báo hệ thống (từ admin)
-     */
     static async notifySystemAnnouncement(announcement) {
-        // Lấy tất cả user có FCM token (active users)
-        const users = await User.find({ fcm_token: { $ne: '' } }).select('_id');
-        const userIds = users.map(u => u._id);
-
-        const notification = {
+        const users = await User.find({ push_token: { $ne: '' } }).select('_id');
+        return this.sendToMultipleUsers(users.map((u) => u._id), {
             title: announcement.title,
             body: announcement.body,
-            imageUrl: announcement.image_url,
-            data: {
-                type: 'SYSTEM_ANNOUNCEMENT',
-                announcement_id: announcement.id,
-                click_action: 'NOTIFICATION_SCREEN'
-            }
-        };
-
-        return await this.sendToMultipleUsers(userIds, notification);
+            data: { type: 'SYSTEM_ANNOUNCEMENT', announcement_id: String(announcement.id || '') },
+        });
     }
 }
 

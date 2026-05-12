@@ -17,6 +17,9 @@ router.get('/me/stats', authMiddleware, UserController.getMyStats);
 // Upload avatar (multipart/form-data, field name: "avatar")
 router.post('/me/avatar', authMiddleware, uploadAvatar.single('avatar'), UserController.uploadAvatar);
 
+// Cập nhật / xoá push token (Expo). Mobile gọi sau khi cấp quyền notification + sau khi logout.
+router.post('/me/push-token', authMiddleware, UserController.updatePushToken);
+
 // Protected routes - cần authentication
 router.patch('/:id/change-password', authMiddleware, UserController.changePassword);
 router.get('/:id', authMiddleware, UserController.getUserById);

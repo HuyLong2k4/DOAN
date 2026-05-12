@@ -5,11 +5,8 @@ const morgan = require('morgan');
 const cors = require('cors');
 const connectDB = require('./config/db/index');
 const path = require('path');
-const { initFirebase } = require('./config/firebase/index');
 const { createChatSocketServer } = require('./socket/chatSocket');
 const FoodDonationService = require('./app/services/foodDonationService');
-
-initFirebase();
 
 connectDB();
 
