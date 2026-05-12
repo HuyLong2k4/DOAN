@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">= 18.11.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://doan-production-de5f.up.railway.app/api",
+        "GOOGLE_MAPS_ANDROID_API_KEY": "AIzaSyBfVqxKYh8pPDGQtKs19kgpvWXWRWsmERM"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://doan-production-de5f.up.railway.app/api",
+        "GOOGLE_MAPS_ANDROID_API_KEY": "AIzaSyBfVqxKYh8pPDGQtKs19kgpvWXWRWsmERM"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

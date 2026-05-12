@@ -1,0 +1,33 @@
+﻿export const roleUi = {
+  colors: {
+    pageBg: '#F5F5F5',
+    surface: '#FFFFFF',
+    surfaceAlt: '#FAFAFA',
+    border: '#E6E6E6',
+    divider: '#E0E0E0',
+    textPrimary: '#111111',
+    textSecondary: '#666666',
+    textMuted: '#8A8A8A',
+    primary: '#008080',
+    primaryStrong: '#006666',
+    primarySoft: '#E0F2F1',
+    successSoft: '#E8F5E9',
+    warningSoft: '#FFF8E1',
+    dangerSoft: '#FFEBEE',
+    dangerText: '#C62828',
+  },
+  radius: {
+    sm: 6,
+    md: 8,
+    lg: 10,
+    full: 999,
+  },
+  spacing: {
+    xxs: 4,
+    xs: 8,
+    sm: 10,
+    md: 12,
+    lg: 18,
+    xl: 24,
+  },
+};

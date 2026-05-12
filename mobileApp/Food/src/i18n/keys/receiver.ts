@@ -1,0 +1,166 @@
+export type ReceiverKey =
+  | 'receiver.greeting'
+  | 'receiver.rolePrefix'
+  | 'receiver.role'
+  | 'receiver.ordersReceived'
+  | 'receiver.pointsEarned'
+  | 'receiver.impact.title'
+  | 'receiver.impact.mealsLabel'
+  | 'receiver.impact.ngosLabel'
+  | 'receiver.impact.message'
+  | 'receiver.myPost'
+  | 'receiver.donorsPosts'
+  | 'receiver.nothingTillNow'
+  | 'receiver.requireFood'
+  | 'receiver.createFoodRequest'
+  | 'receiver.noDonorPosts'
+  | 'receiver.foodDonorsNearYou'
+  | 'receiver.seeMore'
+  | 'receiver.unknownDonor'
+  | 'receiver.connectSuccessTitle'
+  | 'receiver.connectSuccessDefault'
+  | 'receiver.choosePickup'
+  | 'receiver.connectFailedTitle'
+  | 'receiver.connectFailedDefault'
+  | 'receiver.noNearbyDonors'
+  | 'receiver.faqs'
+  | 'receiver.unknownDistance'
+  | 'receiver.viewDetails'
+  | 'receiver.waitingAgent'
+  | 'receiver.selfPickupReady'
+  | 'receiver.connecting'
+  | 'receiver.connect'
+  | 'receiver.portion'
+  | 'receiver.foodTypeNotSpecified'
+  | 'receiver.preferenceNotSpecified'
+  | 'receiver.veg'
+  | 'receiver.nonVeg'
+  | 'receiver.vegAndNonVeg'
+  | 'receiver.pending'
+  | 'receiver.accepted'
+  | 'receiver.fulfilled'
+  | 'receiver.cancelled'
+  | 'receiver.neededBefore'
+  | 'receiver.notSpecified'
+  | 'receiver.foodQuantity'
+  | 'receiver.openTracking'
+  | 'receiver.choosePickupMethod'
+  | 'receiver.deleteRequestTitle'
+  | 'receiver.deleteRequestBody'
+  | 'receiver.deletePermanently'
+  | 'receiver.deleteFailed'
+  | 'receiver.tryAgain'
+  | 'receiver.missingDonationTitle'
+  | 'receiver.missingDonationBody';
+
+export const receiverEn: Record<ReceiverKey, string> = {
+  'receiver.greeting': 'Hi',
+  'receiver.rolePrefix': 'You are a',
+  'receiver.role': 'Receiver',
+  'receiver.ordersReceived': 'No of orders received',
+  'receiver.pointsEarned': 'Points earned',
+  'receiver.impact.title': 'Your journey',
+  'receiver.impact.mealsLabel': 'Meals received',
+  'receiver.impact.ngosLabel': 'Kind donors',
+  'receiver.impact.message': 'We\'re glad to be part of your journey.',
+  'receiver.myPost': 'My Post',
+  'receiver.donorsPosts': 'Donor\'s Posts',
+  'receiver.nothingTillNow': 'Nothing till now',
+  'receiver.requireFood': 'Do you require food?',
+  'receiver.createFoodRequest': 'Create Food Request',
+  'receiver.noDonorPosts': 'No donor posts right now',
+  'receiver.foodDonorsNearYou': 'Food donors Near You',
+  'receiver.seeMore': 'See More',
+  'receiver.unknownDonor': 'Unknown donor',
+  'receiver.connectSuccessTitle': 'Connected',
+  'receiver.connectSuccessDefault': 'Connected successfully. Please choose pickup method.',
+  'receiver.choosePickup': 'Choose Pickup',
+  'receiver.connectFailedTitle': 'Connect failed',
+  'receiver.connectFailedDefault': 'Please try again.',
+  'receiver.noNearbyDonors': 'No nearby donors yet',
+  'receiver.faqs': 'FAQs',
+  'receiver.unknownDistance': 'Unknown distance',
+  'receiver.viewDetails': 'View Details',
+  'receiver.waitingAgent': 'Waiting Agent',
+  'receiver.selfPickupReady': 'Self Pickup Ready',
+  'receiver.connecting': 'Connecting...',
+  'receiver.connect': 'Connect',
+  'receiver.portion': 'portion',
+  'receiver.foodTypeNotSpecified': 'Food type not specified',
+  'receiver.preferenceNotSpecified': 'Preference not specified',
+  'receiver.veg': 'Veg',
+  'receiver.nonVeg': 'Non-Veg',
+  'receiver.vegAndNonVeg': 'Veg & Non-Veg',
+  'receiver.pending': 'Your request is pending',
+  'receiver.accepted': 'Request accepted',
+  'receiver.fulfilled': 'Request fulfilled',
+  'receiver.cancelled': 'Request cancelled',
+  'receiver.neededBefore': 'Needed before',
+  'receiver.notSpecified': 'Not specified',
+  'receiver.foodQuantity': 'Food Quantity',
+  'receiver.openTracking': 'Open tracking',
+  'receiver.choosePickupMethod': 'Choose pickup method',
+  'receiver.deleteRequestTitle': 'Delete request?',
+  'receiver.deleteRequestBody': 'This action will permanently delete this request.',
+  'receiver.deletePermanently': 'Delete permanently',
+  'receiver.deleteFailed': 'Delete failed',
+  'receiver.tryAgain': 'Please try again.',
+  'receiver.missingDonationTitle': 'Missing donation',
+  'receiver.missingDonationBody': 'Donor has accepted but donation link is not ready yet. Please refresh.',
+};
+
+export const receiverVi: Record<ReceiverKey, string> = {
+  'receiver.greeting': 'Xin chào',
+  'receiver.rolePrefix': 'Bạn là',
+  'receiver.role': 'Người nhận',
+  'receiver.ordersReceived': 'Số đơn đã nhận',
+  'receiver.pointsEarned': 'Điểm đã tích lũy',
+  'receiver.impact.title': 'Hành trình của bạn',
+  'receiver.impact.mealsLabel': 'Bữa đã nhận',
+  'receiver.impact.ngosLabel': 'Người tặng tốt bụng',
+  'receiver.impact.message': 'Chúng tôi rất vui được đồng hành cùng bạn.',
+  'receiver.myPost': 'Bài đăng của tôi',
+  'receiver.donorsPosts': 'Bài đăng từ người tặng',
+  'receiver.nothingTillNow': 'Chưa có dữ liệu',
+  'receiver.requireFood': 'Bạn đang cần thực phẩm?',
+  'receiver.createFoodRequest': 'Tạo yêu cầu thực phẩm',
+  'receiver.noDonorPosts': 'Hiện chưa có bài đăng nào',
+  'receiver.foodDonorsNearYou': 'Người tặng gần bạn',
+  'receiver.seeMore': 'Xem thêm',
+  'receiver.unknownDonor': 'Người tặng không rõ',
+  'receiver.connectSuccessTitle': 'Đã kết nối',
+  'receiver.connectSuccessDefault': 'Kết nối thành công. Hãy chọn phương thức nhận.',
+  'receiver.choosePickup': 'Chọn cách nhận',
+  'receiver.connectFailedTitle': 'Kết nối thất bại',
+  'receiver.connectFailedDefault': 'Vui lòng thử lại.',
+  'receiver.noNearbyDonors': 'Chưa có người tặng nào gần bạn',
+  'receiver.faqs': 'Câu hỏi thường gặp',
+  'receiver.unknownDistance': 'Không rõ khoảng cách',
+  'receiver.viewDetails': 'Xem chi tiết',
+  'receiver.waitingAgent': 'Đang chờ tình nguyện viên',
+  'receiver.selfPickupReady': 'Sẵn sàng tự đến nhận',
+  'receiver.connecting': 'Đang kết nối...',
+  'receiver.connect': 'Kết nối',
+  'receiver.portion': 'suất',
+  'receiver.foodTypeNotSpecified': 'Chưa xác định loại thực phẩm',
+  'receiver.preferenceNotSpecified': 'Chưa xác định tùy chọn',
+  'receiver.veg': 'Đồ chay',
+  'receiver.nonVeg': 'Đồ mặn',
+  'receiver.vegAndNonVeg': 'Cả chay & mặn',
+  'receiver.pending': 'Yêu cầu đang chờ xử lý',
+  'receiver.accepted': 'Yêu cầu đã được chấp nhận',
+  'receiver.fulfilled': 'Yêu cầu đã hoàn tất',
+  'receiver.cancelled': 'Yêu cầu đã hủy',
+  'receiver.neededBefore': 'Cần trước',
+  'receiver.notSpecified': 'Chưa xác định',
+  'receiver.foodQuantity': 'Số lượng thực phẩm',
+  'receiver.openTracking': 'Mở theo dõi',
+  'receiver.choosePickupMethod': 'Chọn phương thức nhận',
+  'receiver.deleteRequestTitle': 'Xóa yêu cầu?',
+  'receiver.deleteRequestBody': 'Hành động này sẽ xóa vĩnh viễn yêu cầu này.',
+  'receiver.deletePermanently': 'Xóa vĩnh viễn',
+  'receiver.deleteFailed': 'Xóa thất bại',
+  'receiver.tryAgain': 'Vui lòng thử lại.',
+  'receiver.missingDonationTitle': 'Thiếu liên kết bài tặng',
+  'receiver.missingDonationBody': 'Người tặng đã chấp nhận nhưng liên kết chưa sẵn sàng. Vui lòng tải lại trang.',
+};
