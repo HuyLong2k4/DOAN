@@ -81,18 +81,6 @@ class AuthController {
         }
     }
 
-    static async googleLogin(req, res) {
-        try {
-            const { id_token } = req.body;
-            if (!id_token) return res.status(400).json({ success: false, message: 'Thiếu id_token.' });
-
-            const result = await AuthService.googleLogin(id_token);
-            return res.status(200).json({ success: true, ...result });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
-
     // ── POST /api/auth/forgot-password ────────────────────────────────────
     static async forgotPassword(req, res) {
         try {

@@ -95,60 +95,6 @@ class AuthService {
         return { message: 'OTP đã được gửi.' };
     }
 
-    // Login google
-    static async googleLogin(id_token) {
-        const { OAuth2Client } = require('google-auth-library');
-        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-        const ticket = await client.verifyIdToken({
-            idToken: id_token,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const { sub: google_id, email, name, picture } = payload;
-
-        // 1) Ưu tiên match theo oauth_id (đã liên kết Google trước đó)
-        let user = await User.findOne({ oauth_provider: 'GOOGLE', oauth_id: google_id });
-
-        if (!user) {
-            // 2) Có account local cùng email? Chỉ auto-link nếu account đó CHƯA có password
-            //    (tức là chỉ là shell từ lần signup dở dang). Nếu đã có password → từ chối
-            //    để tránh attacker dùng Google trùng email chiếm tài khoản.
-            const existingByEmail = await User.findOne({ email });
-            if (existingByEmail) {
-                if (existingByEmail.password) {
-                    throw this._error(
-                        'Email này đã được dùng để đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng mật khẩu hoặc dùng tài khoản Google khác.',
-                        409,
-                    );
-                }
-                existingByEmail.oauth_provider = 'GOOGLE';
-                existingByEmail.oauth_id       = google_id;
-                if (!existingByEmail.avatar_url) existingByEmail.avatar_url = picture;
-                if (!existingByEmail.full_name)  existingByEmail.full_name  = name;
-                await existingByEmail.save();
-                user = existingByEmail;
-            } else {
-                // 3) Tạo user mới
-                user = await User.create({
-                    full_name:         name,
-                    email,
-                    avatar_url:        picture,
-                    oauth_provider:    'GOOGLE',
-                    oauth_id:          google_id,
-                    is_phone_verified: false,
-                    is_email_verified: true,
-                    role:              'UNSET',
-                    onboarding_step:   0,
-                    profile_completed: false,
-                });
-            }
-        }
-
-        const accessToken = this._makeJwt(user);
-        return { accessToken, user: this._safeUser(user) };
-    }
-
     // ─────────────────────────────── VERIFY OTP ────────────────────────────
 
     /**

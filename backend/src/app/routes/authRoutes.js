@@ -13,7 +13,6 @@ router.post('/resend-otp',       AuthController.resendOtp);
 
 // UI: Login Screen
 router.post('/login',            AuthController.login);
-router.post('/google',           AuthController.googleLogin);
 
 // UI: Forgot Password → OTP → Reset Password
 router.post('/forgot-password',  AuthController.forgotPassword);
