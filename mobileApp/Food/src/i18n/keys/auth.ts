@@ -17,7 +17,6 @@ export type AuthKey =
   | 'auth.register.passwordPlaceholder'
   | 'auth.register.confirmPlaceholder'
   | 'auth.register.btn'
-  | 'auth.register.signUpWith'
   | 'auth.register.haveAccount'
   | 'auth.register.loginLink'
   | 'auth.register.errorEmpty'
@@ -130,7 +129,6 @@ export const authEn: Record<AuthKey, string> = {
   'auth.register.passwordPlaceholder': 'Password',
   'auth.register.confirmPlaceholder': 'Confirm Password',
   'auth.register.btn': 'Next',
-  'auth.register.signUpWith': 'Sign Up with:',
   'auth.register.haveAccount': 'Already have an account?',
   'auth.register.loginLink': 'Login',
   'auth.register.errorEmpty': 'Please fill in all fields.',
@@ -244,7 +242,6 @@ export const authVi: Record<AuthKey, string> = {
   'auth.register.passwordPlaceholder': 'Mật khẩu',
   'auth.register.confirmPlaceholder': 'Xác nhận mật khẩu',
   'auth.register.btn': 'Tiếp theo',
-  'auth.register.signUpWith': 'Đăng ký với:',
   'auth.register.haveAccount': 'Đã có tài khoản?',
   'auth.register.loginLink': 'Đăng nhập',
   'auth.register.errorEmpty': 'Vui lòng điền đầy đủ thông tin.',

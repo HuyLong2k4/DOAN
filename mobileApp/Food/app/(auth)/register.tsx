@@ -88,12 +88,7 @@ export default function Register() {
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.register.btn')}</Text>}
           </TouchableOpacity>
 
-          <View style={styles.divider}><View style={styles.line} /><Text style={styles.or}>{t('auth.login.or')}</Text><View style={styles.line} /></View>
-          <Text style={styles.socialLabel}>{t('auth.register.signUpWith')}</Text>
-          <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn}><Text style={styles.socialIcon}>G</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn}><Text style={styles.socialIcon}>f</Text></TouchableOpacity>
-          </View>
+          <View style={{ height: 28 }} />
 
           <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
             <Text style={styles.link}>{t('auth.register.haveAccount')} <Text style={styles.linkBold}>{t('auth.register.loginLink')}</Text></Text>

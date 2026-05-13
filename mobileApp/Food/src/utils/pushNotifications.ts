@@ -1,18 +1,29 @@
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { http } from '../api/http';
 
-// Notification hiển thị banner ngay cả khi app đang foreground.
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Expo Go (SDK 53+) đã bỏ hỗ trợ remote push.
+// Phải lazy-require expo-notifications: chỉ import top-level đã trigger side-effect
+// DevicePushTokenAutoRegistration → warning trong Expo Go.
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+let cachedNotifications: typeof import('expo-notifications') | null = null;
+export function loadNotifications(): typeof import('expo-notifications') | null {
+  if (isExpoGo) return null;
+  if (cachedNotifications) return cachedNotifications;
+  const mod = require('expo-notifications') as typeof import('expo-notifications');
+  mod.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+  cachedNotifications = mod;
+  return mod;
+}
 
 /**
  * Lấy Expo Push Token và đăng ký với backend.
@@ -21,27 +32,29 @@ Notifications.setNotificationHandler({
  * Trả về Expo push token (ExponentPushToken[...]) hoặc null nếu thiết bị/quyền không hỗ trợ.
  */
 export async function registerForPushNotifications(): Promise<string | null> {
-  // Push chỉ chạy trên thiết bị thật, không chạy trên simulator.
-  if (!Device.isDevice) {
-    return null;
-  }
+  // Push chỉ chạy trên thiết bị thật + APK/dev-build (Expo Go SDK 53+ không hỗ trợ remote push).
+  if (isExpoGo) return null;
+  if (!Device.isDevice) return null;
+
+  const N = loadNotifications();
+  if (!N) return null;
 
   try {
     // Android cần khai báo channel để hiện notification ở foreground.
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
+      await N.setNotificationChannelAsync('default', {
         name: 'Default',
-        importance: Notifications.AndroidImportance.MAX,
+        importance: N.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#008080',
       });
     }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await N.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await N.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -53,7 +66,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
       Constants?.expoConfig?.extra?.eas?.projectId ??
       (Constants as any)?.easConfig?.projectId;
 
-    const tokenData = await Notifications.getExpoPushTokenAsync(
+    const tokenData = await N.getExpoPushTokenAsync(
       projectId ? { projectId } : undefined,
     );
     const token = tokenData.data;

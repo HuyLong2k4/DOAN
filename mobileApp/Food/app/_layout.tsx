@@ -1,11 +1,10 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { getMyProfile } from '../src/api/profile.api';
 import { useAuthStore } from '../src/store/authStore';
 import { useNotificationStore } from '../src/store/notificationStore';
-import { registerForPushNotifications } from '../src/utils/pushNotifications';
+import { loadNotifications, registerForPushNotifications } from '../src/utils/pushNotifications';
 
 type AuthUser = { role?: string; onboarding_step?: number; profile_completed?: boolean };
 
@@ -76,9 +75,12 @@ export default function RootLayout() {
   }, [isReady, token, user]);
 
   // Mỗi khi có push notification tới (foreground/background), tăng badge.
+  // Expo Go SDK 53+ không hỗ trợ → skip.
   useEffect(() => {
     if (!token) return;
-    const sub = Notifications.addNotificationReceivedListener(() => {
+    const N = loadNotifications();
+    if (!N) return;
+    const sub = N.addNotificationReceivedListener(() => {
       useNotificationStore.getState().increment();
     });
     return () => sub.remove();
@@ -86,7 +88,9 @@ export default function RootLayout() {
 
   // Deep-link khi user tap vào notification (ngoài foreground hoặc trong foreground).
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+    const N = loadNotifications();
+    if (!N) return;
+    const sub = N.addNotificationResponseReceivedListener((response) => {
       const data = response?.notification?.request?.content?.data as Record<string, string> | undefined;
       const type = data?.type;
       const role = useAuthStore.getState().user?.role;
