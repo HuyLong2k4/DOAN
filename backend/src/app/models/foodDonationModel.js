@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const FOOD_TYPE       = ['COOKED', 'RAW', 'FROZEN', 'PACKAGED'];
-const FOOD_PREFERENCE = ['VEG', 'NON_VEG', 'BOTH'];
 const DONATION_STATUS = ['PENDING', 'ACCEPTED', 'PICKED_UP', 'COMPLETED', 'EXPIRED', 'CANCELLED'];
 // PENDING   : Đã đăng, chờ ghép cặp Receiver / Volunteer
 // ACCEPTED  : Receiver hoặc Volunteer đã nhận đơn, sắp đến lấy
@@ -14,6 +13,9 @@ const FoodDonationSchema = new mongoose.Schema({
     donor_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     volunteer_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     selected_receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    // Lúc receiver connect (set selected_receiver_id). Dùng làm mốc 30 phút
+    // để donor được quyền release receiver nếu chưa pickup.
+    selected_at: { type: Date, default: null },
     delivery_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Delivery', default: null },
     delivery_type: { type: String, default: null },
 
@@ -21,7 +23,6 @@ const FoodDonationSchema = new mongoose.Schema({
     description: { type: String, default: null },
 
     food_type:       { type: String, enum: FOOD_TYPE, required: true },
-    food_preference: { type: String, enum: FOOD_PREFERENCE, default: 'BOTH' },
 
     quantity: { type: Number, required: true, min: 1 },
     unit:     { type: String, default: 'portion' },
@@ -29,7 +30,6 @@ const FoodDonationSchema = new mongoose.Schema({
     // Danh sách URL ảnh
     images: [{ type: String }],
 
-    available_from:      { type: Date, default: null },
     expiration_datetime: { type: Date, required: true },
 
     status: { type: String, enum: DONATION_STATUS, default: 'PENDING' },

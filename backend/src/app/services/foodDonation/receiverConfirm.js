@@ -16,6 +16,7 @@ const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
 const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
+const { archiveDonationConversations } = require('./archiveConversations');
 
 const DONOR_COMPLETION_POINTS = 100;
 const VOLUNTEER_DELIVERY_POINTS = 100;
@@ -96,6 +97,8 @@ async function finalizeDelivery(donation, delivery, { auto = false } = {}) {
             auto: auto ? '1' : '0',
         },
     }).catch(() => {});
+
+    await archiveDonationConversations(donation._id);
 
     return {
         already_completed: false,

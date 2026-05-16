@@ -357,7 +357,7 @@ class ChatService {
             _id: conversationId,
             participants: senderUser.id,
             is_active: true,
-        }).select('_id participants donation_id').lean();
+        }).select('_id participants pair_key donation_id').lean();
 
         if (!conversation) {
             throw this._error('Bạn không có quyền gửi tin trong cuộc trò chuyện này.', 403);
@@ -383,9 +383,17 @@ class ChatService {
             .populate('sender_id', 'full_name avatar_url role')
             .lean();
 
-        const recipientIds = (conversation.participants || [])
-            .map((id) => String(id))
-            .filter((id) => id !== String(senderUser.id));
+        // Recipients lấy từ pair_key thay vì participants — pair_key là 2 user
+        // sorted ID, là nguồn truth cho cặp chat 1-1. Phòng trường hợp data
+        // legacy có participants > 2 (vd: donor lọt vào chat receiver-volunteer)
+        // gây thông báo lan sai cho người ngoài cuộc trò chuyện.
+        const senderId = String(senderUser.id);
+        const pairIds = (conversation.pair_key || '').split(':').filter(Boolean);
+        const recipientIds = pairIds.length === 2
+            ? pairIds.filter((id) => id !== senderId)
+            : (conversation.participants || [])
+                .map((id) => String(id))
+                .filter((id) => id !== senderId);
 
         if (recipientIds.length > 0) {
             await Promise.allSettled(recipientIds.map(async (recipientId) => {

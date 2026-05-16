@@ -19,7 +19,6 @@ const DeliverySchema = new mongoose.Schema({
     donor_id:     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     receiver_id:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     volunteer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    preferred_volunteer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 
     delivery_type: { type: String, enum: DELIVERY_TYPE, required: true },
     status:        { type: String, enum: DELIVERY_STATUS, default: 'WAITING_AGENT' },

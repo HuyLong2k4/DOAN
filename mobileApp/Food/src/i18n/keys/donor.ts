@@ -25,10 +25,11 @@ export type DonorKey =
   | 'donor.receiverRequests.title'
   | 'donor.request.label'
   | 'donor.qty.label'
-  | 'donor.preference.label'
   | 'donor.neededBefore.label'
   | 'donor.accepting'
   | 'donor.accept'
+  | 'donor.requestAccepted'
+  | 'donor.viewDonation'
   | 'donor.receiverFallback'
   | 'donor.donationLabel'
   | 'donor.phoneLabel'
@@ -60,9 +61,6 @@ export type DonorKey =
   | 'donor.faq.oneTime'
   | 'donor.notSpecified'
   | 'donor.portion'
-  | 'donor.foodPreference.veg'
-  | 'donor.foodPreference.nonVeg'
-  | 'donor.foodPreference.vegAndNonVeg'
   | 'donor.alert.approveTitle'
   | 'donor.alert.approveBody'
   | 'donor.alert.approveFailedTitle'
@@ -89,8 +87,29 @@ export type DonorKey =
   | 'donor.cancel.successBody'
   | 'donor.cancel.failedTitle'
   | 'donor.cancel.failedBody'
+  | 'donor.releaseReceiver.button'
+  | 'donor.releaseReceiver.releasing'
+  | 'donor.releaseReceiver.confirmTitle'
+  | 'donor.releaseReceiver.confirmMessage'
+  | 'donor.releaseReceiver.confirmYes'
+  | 'donor.releaseReceiver.confirmNo'
+  | 'donor.releaseReceiver.successTitle'
+  | 'donor.releaseReceiver.successBody'
+  | 'donor.releaseReceiver.failedTitle'
+  | 'donor.releaseReceiver.waitingTitle'
+  | 'donor.releaseReceiver.staleTitle'
+  | 'donor.releaseReceiver.staleMessage'
+  | 'donor.releaseReceiver.connectedAtPrefix'
+  | 'donor.releaseReceiver.minutesShort'
+  | 'donor.releaseReceiver.eligibleInPrefix'
+  | 'donor.releaseReceiver.fromRequestButton'
+  | 'donor.releaseReceiver.fromRequestConfirmTitle'
+  | 'donor.releaseReceiver.fromRequestConfirmMessage'
+  | 'donor.releaseReceiver.fromRequestSuccessBody'
+  | 'donor.releaseReceiver.fromRequestStaleMessage'
   | 'donor.pickupCode.title'
   | 'donor.pickupCode.hint'
+  | 'donor.pickupCode.hintSelfPickup'
   | 'donor.donate.header'
   | 'donor.donate.addTitle'
   | 'donor.donate.addTitlePlaceholder'
@@ -102,7 +121,6 @@ export type DonorKey =
   | 'donor.donate.packagedFood'
   | 'donor.donate.frozenFood'
   | 'donor.donate.foodQuantity'
-  | 'donor.donate.selectYourMeal'
   | 'donor.donate.photos'
   | 'donor.donate.addMore'
   | 'donor.donate.expirationDate'
@@ -120,6 +138,7 @@ export type DonorKey =
   | 'donor.donate.dateRequired'
   | 'donor.donate.assuranceRequired'
   | 'donor.donate.permissionRequired'
+  | 'donor.donate.maxPhotosReached'
   | 'donor.donate.createFailed';
 
 export const donorEn: Record<DonorKey, string> = {
@@ -149,10 +168,11 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.receiverRequests.title': 'Receiver Food Requests',
   'donor.request.label': 'Request',
   'donor.qty.label': 'Qty',
-  'donor.preference.label': 'Preference',
   'donor.neededBefore.label': 'Needed before',
   'donor.accepting': 'Accepting...',
   'donor.accept': 'Accept',
+  'donor.requestAccepted': 'Accepted',
+  'donor.viewDonation': 'View donation',
   'donor.receiverFallback': 'Receiver',
   'donor.donationLabel': 'Donation',
   'donor.phoneLabel': 'Phone',
@@ -184,9 +204,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.faq.oneTime': 'Can we perform one-time donations?',
   'donor.notSpecified': 'Not specified',
   'donor.portion': 'portion',
-  'donor.foodPreference.veg': 'Veg',
-  'donor.foodPreference.nonVeg': 'Non-Veg',
-  'donor.foodPreference.vegAndNonVeg': 'Veg & Non-Veg',
   'donor.alert.approveTitle': 'Approved',
   'donor.alert.approveBody': 'Receiver request approved.',
   'donor.alert.approveFailedTitle': 'Approve failed',
@@ -213,8 +230,29 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.cancel.successBody': 'Donation has been cancelled.',
   'donor.cancel.failedTitle': 'Cannot cancel',
   'donor.cancel.failedBody': 'Please try again.',
+  'donor.releaseReceiver.button': 'Release receiver',
+  'donor.releaseReceiver.releasing': 'Releasing...',
+  'donor.releaseReceiver.confirmTitle': 'Release this receiver?',
+  'donor.releaseReceiver.confirmMessage': 'The donation will go back to pending so another receiver can connect. The receiver and assigned volunteer (if any) will be notified.',
+  'donor.releaseReceiver.confirmYes': 'Release',
+  'donor.releaseReceiver.confirmNo': 'Keep waiting',
+  'donor.releaseReceiver.successTitle': 'Receiver released',
+  'donor.releaseReceiver.successBody': 'Donation is available again for other receivers.',
+  'donor.releaseReceiver.failedTitle': 'Cannot release',
+  'donor.releaseReceiver.waitingTitle': 'Waiting for pickup',
+  'donor.releaseReceiver.staleTitle': 'Pickup overdue',
+  'donor.releaseReceiver.staleMessage': 'No one has picked up in 30+ minutes. You can release the receiver or keep waiting.',
+  'donor.releaseReceiver.connectedAtPrefix': 'Connected',
+  'donor.releaseReceiver.minutesShort': 'min',
+  'donor.releaseReceiver.eligibleInPrefix': 'Can release in',
+  'donor.releaseReceiver.fromRequestButton': 'Cancel & reopen request',
+  'donor.releaseReceiver.fromRequestConfirmTitle': 'Cancel donation?',
+  'donor.releaseReceiver.fromRequestConfirmMessage': 'This donation was created for the receiver\'s request. Cancelling will mark the donation as cancelled and reopen the receiver\'s food request so another donor can accept it.',
+  'donor.releaseReceiver.fromRequestSuccessBody': 'Donation cancelled. The receiver\'s food request is open again.',
+  'donor.releaseReceiver.fromRequestStaleMessage': 'No pickup in 30+ minutes. You can cancel this donation and the receiver\'s request will reopen.',
   'donor.pickupCode.title': 'Pickup code',
   'donor.pickupCode.hint': 'Read this code aloud to the volunteer when they arrive.',
+  'donor.pickupCode.hintSelfPickup': 'Read this code aloud to the receiver when they arrive to pick up.',
   'donor.donate.header': 'Listing Type: Donation',
   'donor.donate.addTitle': 'Add Title',
   'donor.donate.addTitlePlaceholder': 'Add food title',
@@ -226,7 +264,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.donate.packagedFood': 'Packaged Food',
   'donor.donate.frozenFood': 'Frozen Food',
   'donor.donate.foodQuantity': 'Food Quantity',
-  'donor.donate.selectYourMeal': 'Select your meal',
   'donor.donate.photos': 'Photos:',
   'donor.donate.addMore': '+Add more',
   'donor.donate.expirationDate': 'Expiration Date',
@@ -244,6 +281,7 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.donate.dateRequired': 'Please select an expiration date.',
   'donor.donate.assuranceRequired': 'Please assure food quality before submitting.',
   'donor.donate.permissionRequired': 'Permission to access photo library is required.',
+  'donor.donate.maxPhotosReached': 'You can attach up to 6 photos only.',
   'donor.donate.createFailed': 'Failed to create donation.',
 };
 
@@ -274,10 +312,11 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.receiverRequests.title': 'Yêu cầu thực phẩm từ người nhận',
   'donor.request.label': 'Yêu cầu',
   'donor.qty.label': 'Số lượng',
-  'donor.preference.label': 'Tùy chọn',
   'donor.neededBefore.label': 'Cần trước',
   'donor.accepting': 'Đang tiếp nhận...',
   'donor.accept': 'Tiếp nhận',
+  'donor.requestAccepted': 'Đã tiếp nhận',
+  'donor.viewDonation': 'Xem đơn',
   'donor.receiverFallback': 'Người nhận',
   'donor.donationLabel': 'Ủng hộ',
   'donor.phoneLabel': 'Điện thoại',
@@ -309,9 +348,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.faq.oneTime': 'Có thể ủng hộ một lần không?',
   'donor.notSpecified': 'Chưa xác định',
   'donor.portion': 'suất',
-  'donor.foodPreference.veg': 'Đồ chay',
-  'donor.foodPreference.nonVeg': 'Đồ mặn',
-  'donor.foodPreference.vegAndNonVeg': 'Cả chay & mặn',
   'donor.alert.approveTitle': 'Đã duyệt',
   'donor.alert.approveBody': 'Đã duyệt yêu cầu từ người nhận.',
   'donor.alert.approveFailedTitle': 'Duyệt thất bại',
@@ -338,8 +374,29 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.cancel.successBody': 'Đơn đã được huỷ.',
   'donor.cancel.failedTitle': 'Không huỷ được',
   'donor.cancel.failedBody': 'Vui lòng thử lại.',
+  'donor.releaseReceiver.button': 'Giải phóng receiver',
+  'donor.releaseReceiver.releasing': 'Đang giải phóng...',
+  'donor.releaseReceiver.confirmTitle': 'Giải phóng receiver này?',
+  'donor.releaseReceiver.confirmMessage': 'Đơn sẽ trở lại trạng thái chờ để receiver khác kết nối. Receiver và volunteer (nếu có) sẽ được thông báo.',
+  'donor.releaseReceiver.confirmYes': 'Giải phóng',
+  'donor.releaseReceiver.confirmNo': 'Tiếp tục giữ',
+  'donor.releaseReceiver.successTitle': 'Đã giải phóng receiver',
+  'donor.releaseReceiver.successBody': 'Đơn sẵn sàng cho receiver khác kết nối.',
+  'donor.releaseReceiver.failedTitle': 'Không giải phóng được',
+  'donor.releaseReceiver.waitingTitle': 'Đang chờ lấy hàng',
+  'donor.releaseReceiver.staleTitle': 'Quá thời gian lấy hàng',
+  'donor.releaseReceiver.staleMessage': 'Đã quá 30 phút mà chưa ai đến lấy. Bạn có thể giải phóng receiver hoặc tiếp tục giữ.',
+  'donor.releaseReceiver.connectedAtPrefix': 'Đã kết nối',
+  'donor.releaseReceiver.minutesShort': 'phút',
+  'donor.releaseReceiver.eligibleInPrefix': 'Có thể giải phóng sau',
+  'donor.releaseReceiver.fromRequestButton': 'Huỷ đơn & mở lại request',
+  'donor.releaseReceiver.fromRequestConfirmTitle': 'Huỷ đơn này?',
+  'donor.releaseReceiver.fromRequestConfirmMessage': 'Đơn này được tạo từ food request của receiver. Huỷ đơn sẽ đánh dấu đơn là đã huỷ và mở lại food request của receiver để donor khác có thể accept.',
+  'donor.releaseReceiver.fromRequestSuccessBody': 'Đã huỷ đơn. Food request của receiver đã được mở lại.',
+  'donor.releaseReceiver.fromRequestStaleMessage': 'Đã quá 30 phút mà chưa ai đến lấy. Bạn có thể huỷ đơn và food request của receiver sẽ được mở lại.',
   'donor.pickupCode.title': 'Mã pickup',
   'donor.pickupCode.hint': 'Đọc mã này cho volunteer khi gặp để xác minh.',
+  'donor.pickupCode.hintSelfPickup': 'Đọc mã này cho receiver khi họ đến lấy hàng.',
   'donor.donate.header': 'Loại bài đăng: Ủng hộ',
   'donor.donate.addTitle': 'Thêm tiêu đề',
   'donor.donate.addTitlePlaceholder': 'Thêm tiêu đề thực phẩm',
@@ -351,7 +408,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.donate.packagedFood': 'Thực phẩm đóng gói',
   'donor.donate.frozenFood': 'Thực phẩm đông lạnh',
   'donor.donate.foodQuantity': 'Số lượng thực phẩm',
-  'donor.donate.selectYourMeal': 'Chọn bữa ăn của bạn',
   'donor.donate.photos': 'Hình ảnh:',
   'donor.donate.addMore': '+Thêm nhiều hơn',
   'donor.donate.expirationDate': 'Ngày hết hạn',
@@ -369,5 +425,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.donate.dateRequired': 'Vui lòng chọn ngày hết hạn.',
   'donor.donate.assuranceRequired': 'Vui lòng đảm bảo chất lượng thực phẩm trước khi gửi.',
   'donor.donate.permissionRequired': 'Cần cấp quyền truy cập thư viện ảnh.',
+  'donor.donate.maxPhotosReached': 'Chỉ được đính kèm tối đa 6 ảnh.',
   'donor.donate.createFailed': 'Không thể tạo bài ủng hộ.',
 };

@@ -10,7 +10,6 @@ import { Modal } from '../components/Modal';
 import { RequestStatusPill } from '../components/StatusPill';
 import {
   REQUEST_STATUSES,
-  foodPreferenceLabel,
   foodTypeLabel,
   formatDateTime,
   formatNumber,
@@ -118,7 +117,6 @@ export function RequestsPage() {
                   <th>Tiêu đề</th>
                   <th>Receiver</th>
                   <th>Số lượng</th>
-                  <th>Ưu tiên</th>
                   <th>Trạng thái</th>
                   <th>Cần trước</th>
                   <th>Tạo lúc</th>
@@ -136,7 +134,6 @@ export function RequestsPage() {
                     <td>
                       {formatNumber(request.requested_quantity)} {request.unit || 'phần'}
                     </td>
-                    <td>{foodPreferenceLabel(request.food_preference)}</td>
                     <td>
                       <RequestStatusPill status={request.status} />
                     </td>
@@ -177,7 +174,6 @@ export function RequestsPage() {
               {formatNumber(detail.requested_quantity)} {detail.unit || 'phần'}
             </DetailRow>
             <DetailRow label="Loại thực phẩm">{foodTypeLabel(detail.food_type)}</DetailRow>
-            <DetailRow label="Ưu tiên">{foodPreferenceLabel(detail.food_preference)}</DetailRow>
             <DetailRow label="Cần trước">{formatDateTime(detail.needed_before)}</DetailRow>
             <DetailRow label="Tạo lúc">{formatDateTime(detail.createdAt)}</DetailRow>
             <DetailRow label="Cập nhật">{formatDateTime(detail.updatedAt)}</DetailRow>

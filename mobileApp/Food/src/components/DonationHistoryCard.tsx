@@ -21,13 +21,6 @@ export default function DonationHistoryCard({ d }: { d: Donation }) {
   const statusConfig = useStatusConfig();
   const cfg = statusConfig[d.status as keyof typeof statusConfig] ?? statusConfig.PENDING;
 
-  const preferenceLabel =
-    d.food_preference === 'BOTH'
-      ? t('donor.foodPreference.vegAndNonVeg')
-      : d.food_preference === 'VEG'
-        ? t('donor.foodPreference.veg')
-        : t('donor.foodPreference.nonVeg');
-
   return (
     <View style={styles.historyCard}>
       <View style={styles.historyInfo}>
@@ -38,7 +31,6 @@ export default function DonationHistoryCard({ d }: { d: Donation }) {
         <Text style={styles.historyTitle}>{d.title}</Text>
         <View style={styles.historyTags}>
           <Text style={styles.historyTag}>{d.quantity} {d.unit}</Text>
-          <Text style={styles.historyTag}>{preferenceLabel}</Text>
         </View>
         <View style={styles.historyBottom}>
           <View style={[styles.completedBadge, { backgroundColor: cfg.bg }]}>

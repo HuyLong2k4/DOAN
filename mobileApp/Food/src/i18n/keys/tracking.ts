@@ -48,7 +48,25 @@ export type TrackingKey =
   | 'tracking.donorLocationNA'
   | 'tracking.yourLocation'
   | 'tracking.currentLocation'
-  | 'tracking.donorLocation';
+  | 'tracking.donorLocation'
+  | 'tracking.disconnectBtn'
+  | 'tracking.disconnecting'
+  | 'tracking.disconnectConfirmTitle'
+  | 'tracking.disconnectConfirmBody'
+  | 'tracking.disconnectFromRequestBody'
+  | 'tracking.disconnectConfirmYes'
+  | 'tracking.disconnectConfirmNo'
+  | 'tracking.disconnectSuccessTitle'
+  | 'tracking.disconnectFailedTitle'
+  | 'tracking.staleWarningTitle'
+  | 'tracking.staleWarningBody'
+  | 'tracking.reportNoShowBtn'
+  | 'tracking.reportingNoShow'
+  | 'tracking.reportNoShowConfirmTitle'
+  | 'tracking.reportNoShowConfirmBody'
+  | 'tracking.reportNoShowConfirmYes'
+  | 'tracking.reportNoShowSuccessTitle'
+  | 'tracking.reportNoShowFailedTitle';
 
 export const trackingEn: Record<TrackingKey, string> = {
   'tracking.title': 'Live tracking',
@@ -101,6 +119,24 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.yourLocation': 'Your location',
   'tracking.currentLocation': 'Current device location',
   'tracking.donorLocation': 'Donor location',
+  'tracking.disconnectBtn': 'Withdraw from order',
+  'tracking.disconnecting': 'Withdrawing...',
+  'tracking.disconnectConfirmTitle': 'Withdraw from this order?',
+  'tracking.disconnectConfirmBody': 'You will be disconnected and the donation will be open for other receivers.',
+  'tracking.disconnectFromRequestBody': 'This donation was created for your request. Withdrawing will cancel the donation and reopen your food request.',
+  'tracking.disconnectConfirmYes': 'Withdraw',
+  'tracking.disconnectConfirmNo': 'Stay',
+  'tracking.disconnectSuccessTitle': 'Withdrawn',
+  'tracking.disconnectFailedTitle': 'Cannot withdraw',
+  'tracking.staleWarningTitle': 'Delivery is taking longer than expected',
+  'tracking.staleWarningBody': 'Volunteer picked up over 2 hours ago. If they never arrive, you can report no-show below.',
+  'tracking.reportNoShowBtn': 'Report volunteer no-show',
+  'tracking.reportingNoShow': 'Reporting...',
+  'tracking.reportNoShowConfirmTitle': 'Report volunteer no-show?',
+  'tracking.reportNoShowConfirmBody': 'The donation will be cancelled and the volunteer will be notified. Use this only if the volunteer truly did not deliver.',
+  'tracking.reportNoShowConfirmYes': 'Report',
+  'tracking.reportNoShowSuccessTitle': 'Reported',
+  'tracking.reportNoShowFailedTitle': 'Cannot report',
 };
 
 export const trackingVi: Record<TrackingKey, string> = {
@@ -154,4 +190,22 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.yourLocation': 'Vị trí của bạn',
   'tracking.currentLocation': 'Vị trí thiết bị hiện tại',
   'tracking.donorLocation': 'Vị trí người tặng',
+  'tracking.disconnectBtn': 'Rút khỏi đơn',
+  'tracking.disconnecting': 'Đang rút...',
+  'tracking.disconnectConfirmTitle': 'Rút khỏi đơn này?',
+  'tracking.disconnectConfirmBody': 'Bạn sẽ ngắt kết nối và đơn sẽ mở lại cho receiver khác kết nối.',
+  'tracking.disconnectFromRequestBody': 'Đơn này được tạo từ food request của bạn. Rút khỏi sẽ huỷ đơn và mở lại food request.',
+  'tracking.disconnectConfirmYes': 'Rút khỏi',
+  'tracking.disconnectConfirmNo': 'Ở lại',
+  'tracking.disconnectSuccessTitle': 'Đã rút',
+  'tracking.disconnectFailedTitle': 'Không rút được',
+  'tracking.staleWarningTitle': 'Đơn giao đang chậm hơn dự kiến',
+  'tracking.staleWarningBody': 'Volunteer đã lấy hàng hơn 2 giờ. Nếu volunteer không đến, bạn có thể báo no-show dưới đây.',
+  'tracking.reportNoShowBtn': 'Báo volunteer không đến',
+  'tracking.reportingNoShow': 'Đang báo cáo...',
+  'tracking.reportNoShowConfirmTitle': 'Báo volunteer không đến?',
+  'tracking.reportNoShowConfirmBody': 'Đơn sẽ bị huỷ và volunteer sẽ được thông báo. Chỉ dùng khi volunteer thực sự không giao.',
+  'tracking.reportNoShowConfirmYes': 'Báo cáo',
+  'tracking.reportNoShowSuccessTitle': 'Đã báo cáo',
+  'tracking.reportNoShowFailedTitle': 'Không báo được',
 };

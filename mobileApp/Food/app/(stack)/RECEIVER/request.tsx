@@ -37,7 +37,6 @@ export default function ReceiverRequestScreen() {
   const [description, setDescription] = useState('');
   const [foodType, setFoodType] = useState<FoodType>('COOKED');
   const [showFoodTypePopup, setShowFoodTypePopup] = useState(false);
-  const [mealType, setMealType] = useState<'VEG' | 'NON_VEG' | 'BOTH'>('BOTH');
   const [qtyInput, setQtyInput] = useState('5');
   const [needDate, setNeedDate] = useState<Date | null>(null);
   const [needTime, setNeedTime] = useState<Date | null>(null);
@@ -94,20 +93,13 @@ export default function ReceiverRequestScreen() {
           ).toISOString()
         : null;
 
-      const mergedDescription = [
-        `${t('request.typeOfFood')}: ${selectedFoodTypeLabel}`,
-        description.trim(),
-      ]
-        .filter(Boolean)
-        .join('\n');
-
+      // food_type là field riêng, không cần encode vào description.
       await http.post('/food-requests', {
         title: title.trim(),
-        description: mergedDescription || undefined,
+        description: description.trim() || undefined,
         requested_quantity: requestedQuantity,
         unit: 'portion',
         food_type: foodType,
-        food_preference: mealType,
         needed_before: neededBefore,
       });
 
@@ -142,7 +134,6 @@ export default function ReceiverRequestScreen() {
               setTitle('');
               setDescription('');
               setFoodType('COOKED');
-              setMealType('BOTH');
               setQtyInput('5');
               setNeedDate(null);
               setNeedTime(null);
@@ -214,14 +205,6 @@ export default function ReceiverRequestScreen() {
           />
 
           <Text style={styles.sectionTitle}>{t('request.mealReq')}</Text>
-
-          <Text style={styles.label}>{t('request.foodPref')}</Text>
-          <Text style={styles.subLabel}>{t('request.foodPrefSub')}</Text>
-          <View style={styles.prefWrap}>
-            <PrefChip label={t('request.veg')} active={mealType === 'VEG'} onPress={() => setMealType('VEG')} />
-            <PrefChip label={t('request.nonVeg')} active={mealType === 'NON_VEG'} onPress={() => setMealType('NON_VEG')} />
-            <PrefChip label={t('request.both')} active={mealType === 'BOTH'} onPress={() => setMealType('BOTH')} />
-          </View>
 
           <Text style={styles.label}>{t('request.foodQty')}</Text>
           <Text style={styles.subLabel}>{t('request.foodQtySub')}</Text>

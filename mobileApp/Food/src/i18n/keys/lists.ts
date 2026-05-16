@@ -4,8 +4,6 @@ export type ListsKey =
   | 'donorList.filter'
   | 'donorList.foodCategories'
   | 'donorList.all'
-  | 'donorList.veg'
-  | 'donorList.nonVeg'
   | 'donorList.nearMe'
   | 'donorList.noDonors'
   | 'donorList.addressNotAvailable'
@@ -32,6 +30,17 @@ export type ListsKey =
   | 'donationDetail.noAddressMsg'
   | 'donationDetail.cannotOpenMap'
   | 'donationDetail.cannotDetermineMsg'
+  | 'donationDetail.description'
+  | 'donationDetail.photos'
+  | 'donationDetail.loadFailed'
+  | 'donationDetail.donorInfo'
+  | 'donationDetail.callDonor'
+  | 'donationDetail.chatDonor'
+  | 'donationDetail.openingChat'
+  | 'donationDetail.cannotOpenChat'
+  | 'donationDetail.expiresIn'
+  | 'donationDetail.expired'
+  | 'donationDetail.aboutToExpire'
   | 'addPickup.title'
   | 'addPickup.selectDeliveryType'
   | 'addPickup.estimateAgent'
@@ -50,7 +59,9 @@ export type ListsKey =
   | 'addPickup.cannotContinue'
   | 'addPickup.completed'
   | 'addPickup.pickup'
-  | 'addPickup.pickups';
+  | 'addPickup.pickups'
+  | 'addPickup.autoMatchTitle'
+  | 'addPickup.autoMatchHint';
 
 export const listsEn: Record<ListsKey, string> = {
   'donorList.title': 'List of food donors',
@@ -58,8 +69,6 @@ export const listsEn: Record<ListsKey, string> = {
   'donorList.filter': 'Filter',
   'donorList.foodCategories': 'Food Categories',
   'donorList.all': 'All',
-  'donorList.veg': 'Veg',
-  'donorList.nonVeg': 'Non-Veg',
   'donorList.nearMe': 'Near Me',
   'donorList.noDonors': 'No donors found',
   'donorList.addressNotAvailable': 'Address not available',
@@ -86,6 +95,17 @@ export const listsEn: Record<ListsKey, string> = {
   'donationDetail.noAddressMsg': 'Address is not available for this donation.',
   'donationDetail.cannotOpenMap': 'Cannot open map',
   'donationDetail.cannotDetermineMsg': 'Cannot determine donation to continue.',
+  'donationDetail.description': 'Description',
+  'donationDetail.photos': 'Photos',
+  'donationDetail.loadFailed': 'Failed to load donation details.',
+  'donationDetail.donorInfo': 'Donor info',
+  'donationDetail.callDonor': 'Call',
+  'donationDetail.chatDonor': 'Chat',
+  'donationDetail.openingChat': 'Opening chat...',
+  'donationDetail.cannotOpenChat': 'Cannot open chat',
+  'donationDetail.expiresIn': 'Expires in',
+  'donationDetail.expired': 'Expired',
+  'donationDetail.aboutToExpire': 'Expiring soon',
   'addPickup.title': 'Add pickup',
   'addPickup.selectDeliveryType': 'Select Type of delivery',
   'addPickup.estimateAgent': 'Estimated Delivery time - 30mins',
@@ -105,6 +125,8 @@ export const listsEn: Record<ListsKey, string> = {
   'addPickup.completed': 'Completed',
   'addPickup.pickup': 'pickup',
   'addPickup.pickups': 'pickups',
+  'addPickup.autoMatchTitle': 'Auto-match volunteer',
+  'addPickup.autoMatchHint': 'The system will broadcast this delivery to nearby volunteers. Whoever accepts first will pick up your food.',
 };
 
 export const listsVi: Record<ListsKey, string> = {
@@ -113,8 +135,6 @@ export const listsVi: Record<ListsKey, string> = {
   'donorList.filter': 'Lọc',
   'donorList.foodCategories': 'Danh mục thực phẩm',
   'donorList.all': 'Tất cả',
-  'donorList.veg': 'Đồ chay',
-  'donorList.nonVeg': 'Đồ mặn',
   'donorList.nearMe': 'Gần tôi',
   'donorList.noDonors': 'Không tìm thấy người tặng',
   'donorList.addressNotAvailable': 'Không có địa chỉ',
@@ -141,6 +161,17 @@ export const listsVi: Record<ListsKey, string> = {
   'donationDetail.noAddressMsg': 'Không có địa chỉ cho bài ủng hộ này.',
   'donationDetail.cannotOpenMap': 'Không thể mở bản đồ',
   'donationDetail.cannotDetermineMsg': 'Không thể xác định bài ủng hộ để tiếp tục.',
+  'donationDetail.description': 'Mô tả',
+  'donationDetail.photos': 'Ảnh',
+  'donationDetail.loadFailed': 'Không tải được chi tiết bài ủng hộ.',
+  'donationDetail.donorInfo': 'Thông tin người tặng',
+  'donationDetail.callDonor': 'Gọi',
+  'donationDetail.chatDonor': 'Nhắn tin',
+  'donationDetail.openingChat': 'Đang mở chat...',
+  'donationDetail.cannotOpenChat': 'Không thể mở chat',
+  'donationDetail.expiresIn': 'Hết hạn sau',
+  'donationDetail.expired': 'Đã hết hạn',
+  'donationDetail.aboutToExpire': 'Sắp hết hạn',
   'addPickup.title': 'Thêm cách nhận',
   'addPickup.selectDeliveryType': 'Chọn phương thức giao',
   'addPickup.estimateAgent': 'Thời gian giao ước tính - 30 phút',
@@ -160,4 +191,6 @@ export const listsVi: Record<ListsKey, string> = {
   'addPickup.completed': 'Đã hoàn thành',
   'addPickup.pickup': 'chuyến',
   'addPickup.pickups': 'chuyến',
+  'addPickup.autoMatchTitle': 'Tự động ghép volunteer',
+  'addPickup.autoMatchHint': 'Hệ thống sẽ gửi đơn này đến các volunteer gần bạn. Volunteer nào nhận đầu tiên sẽ đến lấy hàng.',
 };

@@ -1,4 +1,4 @@
-import type { DonationStatus, FoodPreference, FoodType, RequestStatus, UserRole } from '../types';
+import type { DonationStatus, FoodType, RequestStatus, UserRole } from '../types';
 
 export function formatDateTime(value?: string | null): string {
   if (!value) return '—';
@@ -77,17 +77,6 @@ const FOOD_TYPE_LABEL: Record<FoodType, string> = {
 export function foodTypeLabel(value?: FoodType | null): string {
   if (!value) return '—';
   return FOOD_TYPE_LABEL[value] || value;
-}
-
-const FOOD_PREFERENCE_LABEL: Record<FoodPreference, string> = {
-  VEG: 'Chay',
-  NON_VEG: 'Mặn',
-  BOTH: 'Cả chay và mặn',
-};
-
-export function foodPreferenceLabel(value?: FoodPreference | null): string {
-  if (!value) return '—';
-  return FOOD_PREFERENCE_LABEL[value] || value;
 }
 
 export const DONATION_STATUSES: DonationStatus[] = [

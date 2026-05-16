@@ -19,16 +19,20 @@ type PickupCodeModalProps = {
   visible: boolean;
   busy?: boolean;
   donationTitle?: string;
+  error?: string | null;
   onClose: () => void;
   onSubmit: (code: string) => void;
+  onClearError?: () => void;
 };
 
 export default function PickupCodeModal({
   visible,
   busy = false,
   donationTitle,
+  error,
   onClose,
   onSubmit,
+  onClearError,
 }: PickupCodeModalProps) {
   const { t } = useI18n();
   const [code, setCode] = useState('');
@@ -36,6 +40,15 @@ export default function PickupCodeModal({
   useEffect(() => {
     if (!visible) setCode('');
   }, [visible]);
+
+  useEffect(() => {
+    if (error) setCode('');
+  }, [error]);
+
+  const handleChange = (value: string) => {
+    setCode(value.replace(/\D/g, ''));
+    if (error && onClearError) onClearError();
+  };
 
   const handleConfirm = () => {
     const trimmed = code.trim();
@@ -66,15 +79,22 @@ export default function PickupCodeModal({
           <Text style={styles.hint}>{t('volunteer.pickupCode.hint')}</Text>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, error && styles.inputError]}
             placeholder="0000"
             placeholderTextColor="#B0BEC5"
             keyboardType="number-pad"
             maxLength={CODE_LENGTH}
             value={code}
-            onChangeText={(value) => setCode(value.replace(/\D/g, ''))}
+            onChangeText={handleChange}
             autoFocus
           />
+
+          {error ? (
+            <View style={styles.errorRow}>
+              <Ionicons name="alert-circle" size={14} color="#C62828" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
           <View style={styles.actions}>
             <TouchableOpacity style={[styles.btn, styles.btnGhost]} onPress={onClose} disabled={busy}>
@@ -118,6 +138,18 @@ const styles = StyleSheet.create({
     letterSpacing: 14,
     backgroundColor: '#F5FAFF',
   },
+  inputError: {
+    borderColor: '#C62828',
+    color: '#C62828',
+    backgroundColor: '#FFF5F5',
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  errorText: { fontSize: 12, color: '#C62828', flex: 1, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: 10, marginTop: 16 },
   btn: { flex: 1, paddingVertical: 11, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   btnPrimary: { backgroundColor: '#006666' },

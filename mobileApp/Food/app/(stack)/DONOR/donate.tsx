@@ -27,7 +27,6 @@ export default function DonateScreen() {
   const [description, setDesc]          = useState('');
   const [foodType, setFoodType]         = useState(FOOD_TYPES[0]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [mealType, setMealType]         = useState<'VEG' | 'NON_VEG'>('VEG');
   const [qty, setQty]                   = useState(5);
   const [expiryDate, setExpiryDate]     = useState<Date | null>(null);
   const [expiryTime, setExpiryTime]     = useState<Date | null>(null);
@@ -45,6 +44,10 @@ export default function DonateScreen() {
   const [success, setSuccess]           = useState(false);
 
   const pickImage = async () => {
+    if (photos.length >= 6) {
+      setErr(t('donor.donate.maxPhotosReached'));
+      return;
+    }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       setErr(t('donor.donate.permissionRequired'));
@@ -55,7 +58,7 @@ export default function DonateScreen() {
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
-      setPhotos(prev => [...prev, result.assets[0].uri]);
+      setPhotos(prev => [...prev, result.assets[0].uri].slice(0, 6));
     }
   };
 
@@ -77,14 +80,35 @@ export default function DonateScreen() {
         expiryTime ? expiryTime.getMinutes() : 59,
       );
 
+      let imageUrls: string[] = [];
+      if (photos.length > 0) {
+        const formData = new FormData();
+        photos.forEach((uri, index) => {
+          const filename = uri.split('/').pop() || `photo-${index}.jpg`;
+          const extMatch = /\.(\w+)$/.exec(filename);
+          const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+          const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+          formData.append('files', {
+            uri,
+            name: filename,
+            type: mime,
+          } as any);
+        });
+
+        const uploadRes = await http.post('/food-donations/uploads', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        imageUrls = (uploadRes.data?.data?.images || []).map((it: any) => it.url).filter(Boolean);
+      }
+
       await http.post('/food-donations', {
         title:                title.trim(),
         description:          description.trim() || undefined,
         food_type:            foodType.value,
-        food_preference:      mealType,
         quantity:             qty,
-        unit:                 mealType === 'VEG' ? 'Veg' : 'Non-Veg',
+        unit:                 'portion',
         expiration_datetime:  expDatetime.toISOString(),
+        images:               imageUrls,
       });
       setSuccess(true);
     } catch (e: any) {
@@ -104,7 +128,7 @@ export default function DonateScreen() {
             {t('donor.donate.donationPostedMessage')}
           </Text>
           <TouchableOpacity style={styles.submitBtn} onPress={() => {
-            setTitle(''); setDesc(''); setMealType('VEG'); setQty(5);
+            setTitle(''); setDesc(''); setQty(5);
             setExpiryDate(null); setExpiryTime(null);
             setPhotos([]); setAssured(false); setSuccess(false);
           }}>
@@ -181,49 +205,18 @@ export default function DonateScreen() {
 
           {/* ── Food Quantity ── */}
           <Text style={styles.label}>{t('donor.donate.foodQuantity')}</Text>
-          <Text style={styles.subLabel}>{t('donor.donate.selectYourMeal')}</Text>
-
-          {/* Veg row */}
-          <TouchableOpacity style={styles.mealRow} onPress={() => setMealType('VEG')} activeOpacity={0.8}>
-            <View style={styles.checkRow}>
-              <View style={[styles.radioOuter, mealType === 'VEG' && styles.radioOuterActive]}>
-                {mealType === 'VEG' && <View style={styles.radioInner} />}
-              </View>
-              <Text style={styles.mealLabel}>{t('donor.foodPreference.veg')}</Text>
+          <View style={styles.mealRow}>
+            <Text style={styles.mealLabel}>{t('donor.portion')}</Text>
+            <View style={styles.counter}>
+              <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(Math.max(1, qty - 1))}>
+                <Text style={styles.counterBtnText}>−</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterValue}>{qty}</Text>
+              <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(qty + 1)}>
+                <Text style={styles.counterBtnText}>+</Text>
+              </TouchableOpacity>
             </View>
-            {mealType === 'VEG' && (
-              <View style={styles.counter}>
-                <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(Math.max(1, qty - 1))}>
-                  <Text style={styles.counterBtnText}>−</Text>
-                </TouchableOpacity>
-                <Text style={styles.counterValue}>{qty}</Text>
-                <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(qty + 1)}>
-                  <Text style={styles.counterBtnText}>+</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {/* Non-Veg row */}
-          <TouchableOpacity style={styles.mealRow} onPress={() => setMealType('NON_VEG')} activeOpacity={0.8}>
-            <View style={styles.checkRow}>
-              <View style={[styles.radioOuter, mealType === 'NON_VEG' && styles.radioOuterActive]}>
-                {mealType === 'NON_VEG' && <View style={styles.radioInner} />}
-              </View>
-              <Text style={styles.mealLabel}>{t('donor.foodPreference.nonVeg')}</Text>
-            </View>
-            {mealType === 'NON_VEG' && (
-              <View style={styles.counter}>
-                <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(Math.max(1, qty - 1))}>
-                  <Text style={styles.counterBtnText}>−</Text>
-                </TouchableOpacity>
-                <Text style={styles.counterValue}>{qty}</Text>
-                <TouchableOpacity style={styles.counterBtn} onPress={() => setQty(qty + 1)}>
-                  <Text style={styles.counterBtnText}>+</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </TouchableOpacity>
+          </View>
 
           {/* ── Photos ── */}
           <Text style={styles.label}>{t('donor.donate.photos')}</Text>

@@ -14,7 +14,7 @@ COPY . .
 
 # Tạo sẵn thư mục uploads. Khi Railway mount volume vào /app/uploads,
 # volume sẽ chiếm chỗ này và container (chạy root) có quyền tạo subfolder.
-RUN mkdir -p /app/uploads/avatars /app/uploads/chat
+RUN mkdir -p /app/uploads/avatars /app/uploads/chat /app/uploads/donations
 
 EXPOSE 5000
 

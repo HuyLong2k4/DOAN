@@ -29,12 +29,6 @@ Enum FoodType {
   PACKAGED
 }
 
-Enum FoodPreference {
-  VEG
-  NON_VEG
-  BOTH
-}
-
 Enum DonationStatus {
   AVAILABLE
   BOOKED
@@ -217,14 +211,12 @@ Table Food_Donations {
   description      text
 
   food_type        FoodType       [not null]
-  food_preference  FoodPreference [default: 'BOTH']
 
   quantity         integer        [not null]
   unit             varchar        [default: 'portion']
 
   images           json           [note: 'Danh sách URL ảnh']
 
-  available_from       timestamp
   expiration_datetime  timestamp  [not null]
 
   pickup_address_line  text
@@ -249,7 +241,6 @@ Table Food_Requests {
 
   requested_quantity integer        [not null]
   unit               varchar        [default: 'portion']
-  food_preference    FoodPreference [default: 'BOTH']
 
   needed_before      timestamp
   status             RequestStatus  [default: 'PENDING']

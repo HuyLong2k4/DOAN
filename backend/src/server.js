@@ -63,6 +63,8 @@ server.listen(PORT, '0.0.0.0', () =>
 const EXPIRE_INTERVAL_MS = 15 * 60 * 1000;        // 15 phút
 const AUTO_CONFIRM_INTERVAL_MS = 60 * 60 * 1000;  // 1 giờ
 const AUTO_CONFIRM_TIMEOUT_HOURS = 24;            // auto-confirm sau 24h không phản hồi
+const NO_SHOW_INTERVAL_MS = 30 * 60 * 1000;       // 30 phút
+const NO_SHOW_TIMEOUT_HOURS = 6;                  // auto-cancel ON_THE_WAY sau 6h
 
 const runExpireSweep = () => {
   FoodDonationService.expireOverdueDonations()
@@ -84,9 +86,21 @@ const runAutoConfirmSweep = () => {
     .catch((err) => console.error('[auto-confirm-cron] error:', err?.message || err));
 };
 
+const runNoShowSweep = () => {
+  FoodDonationService.cancelStaleOnTheWayDeliveries(NO_SHOW_TIMEOUT_HOURS)
+    .then((res) => {
+      if (res?.cancelled_count > 0) {
+        console.log(`[no-show-cron] cancelled ${res.cancelled_count} stale ON_THE_WAY deliveries`);
+      }
+    })
+    .catch((err) => console.error('[no-show-cron] error:', err?.message || err));
+};
+
 // Chạy lần đầu sau 60s (đợi DB connect ổn định).
 setTimeout(runExpireSweep, 60 * 1000);
 setTimeout(runAutoConfirmSweep, 90 * 1000);
+setTimeout(runNoShowSweep, 120 * 1000);
 
 setInterval(runExpireSweep, EXPIRE_INTERVAL_MS);
 setInterval(runAutoConfirmSweep, AUTO_CONFIRM_INTERVAL_MS);
+setInterval(runNoShowSweep, NO_SHOW_INTERVAL_MS);

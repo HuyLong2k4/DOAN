@@ -11,7 +11,6 @@ export type DonationStatus =
 export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'FULFILLED' | 'CANCELLED';
 
 export type FoodType = 'COOKED' | 'RAW' | 'FROZEN' | 'PACKAGED';
-export type FoodPreference = 'VEG' | 'NON_VEG' | 'BOTH';
 
 export interface AuthUser {
   id?: string;
@@ -46,13 +45,11 @@ export interface DonationRecord {
   volunteer_id?: { _id?: string; full_name?: string } | null;
   selected_receiver_id?: string | null;
   food_type?: FoodType;
-  food_preference?: FoodPreference;
   quantity?: number;
   unit?: string;
   images?: string[];
   status?: DonationStatus;
   delivery_type?: string | null;
-  available_from?: string | null;
   expiration_datetime?: string;
   pickup_address_line?: string | null;
   pickup_city?: string | null;
@@ -66,7 +63,6 @@ export interface RequestRecord {
   description?: string;
   receiver_id?: { _id?: string; full_name?: string; avatar_url?: string };
   food_type?: FoodType;
-  food_preference?: FoodPreference;
   requested_quantity?: number;
   unit?: string;
   needed_before?: string | null;

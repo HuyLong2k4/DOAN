@@ -8,6 +8,7 @@ import { http } from '../../../src/api/http';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import * as Location from 'expo-location';
 import { useI18n } from '../../../src/i18n/useI18n';
+import PickupCodeModal from '../../../src/components/PickupCodeModal';
 import { TimelineRow } from './_components/TimelineRow';
 import { TrackingMap } from './_components/TrackingMap';
 
@@ -28,11 +29,13 @@ type TrackingData = {
     title: string;
     status: string;
     delivery_type: 'VIA_AGENT' | 'SELF_PICKUP';
+    from_food_request?: boolean;
   };
   delivery: {
     id: string;
     status: 'WAITING_AGENT' | 'SELF_PICKUP_READY' | 'AGENT_ASSIGNED' | 'ON_THE_WAY' | 'AWAITING_CONFIRMATION' | 'DELIVERED' | 'CANCELLED';
     delivery_type: 'VIA_AGENT' | 'SELF_PICKUP';
+    picked_up_at?: string | null;
   };
   donor: {
     full_name: string;
@@ -60,6 +63,10 @@ export default function ReceiverTrackingScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
+  const [pickupCodeModalOpen, setPickupCodeModalOpen] = useState(false);
+  const [pickupCodeError, setPickupCodeError] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [reportingNoShow, setReportingNoShow] = useState(false);
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [error, setError] = useState('');
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
@@ -157,18 +164,110 @@ export default function ReceiverTrackingScreen() {
     }
   };
 
-  const onCompleteSelfPickup = async () => {
+  const onDisconnect = () => {
+    if (!donationId || disconnecting) return;
+
+    const fromRequest = Boolean(tracking?.donation?.from_food_request);
+    const confirmBody = fromRequest
+      ? t('tracking.disconnectFromRequestBody')
+      : t('tracking.disconnectConfirmBody');
+
+    Alert.alert(
+      t('tracking.disconnectConfirmTitle'),
+      confirmBody,
+      [
+        { text: t('tracking.disconnectConfirmNo'), style: 'cancel' },
+        {
+          text: t('tracking.disconnectConfirmYes'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDisconnecting(true);
+              const res = await http.patch(`/food-donations/${donationId}/receiver-disconnect`);
+              Alert.alert(
+                t('tracking.disconnectSuccessTitle'),
+                res.data?.message || '',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => router.replace('/(tabs)/RECEIVER/home' as any),
+                  },
+                ],
+              );
+            } catch (err: any) {
+              Alert.alert(
+                t('tracking.disconnectFailedTitle'),
+                err?.response?.data?.message || t('receiver.tryAgain'),
+              );
+            } finally {
+              setDisconnecting(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const onReportNoShow = () => {
+    if (!donationId || reportingNoShow) return;
+
+    Alert.alert(
+      t('tracking.reportNoShowConfirmTitle'),
+      t('tracking.reportNoShowConfirmBody'),
+      [
+        { text: t('tracking.disconnectConfirmNo'), style: 'cancel' },
+        {
+          text: t('tracking.reportNoShowConfirmYes'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setReportingNoShow(true);
+              const res = await http.patch(`/food-donations/${donationId}/report-no-show`);
+              Alert.alert(
+                t('tracking.reportNoShowSuccessTitle'),
+                res.data?.message || '',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => router.replace('/(tabs)/RECEIVER/home' as any),
+                  },
+                ],
+              );
+            } catch (err: any) {
+              Alert.alert(
+                t('tracking.reportNoShowFailedTitle'),
+                err?.response?.data?.message || t('receiver.tryAgain'),
+              );
+            } finally {
+              setReportingNoShow(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const openSelfPickupCodeModal = () => {
+    setPickupCodeError(null);
+    setPickupCodeModalOpen(true);
+  };
+
+  const submitSelfPickupCode = async (code: string) => {
     if (!donationId) return;
 
     try {
       setActionLoading(true);
-      const res = await http.patch(`/food-donations/${donationId}/self-pickup-complete`);
+      setPickupCodeError(null);
+      const res = await http.patch(`/food-donations/${donationId}/self-pickup-complete`, {
+        pickup_code: code,
+      });
       const pointsAwarded = Number(res.data?.points_awarded_to_donor || 0);
       const completeMessage = res.data?.message || '';
       const donorPointsMessage = pointsAwarded > 0
         ? `${t('tracking.donorEarnedPrefix')}${pointsAwarded}${t('tracking.donorEarnedSuffix')}`
         : '';
 
+      setPickupCodeModalOpen(false);
       Alert.alert(t('tracking.completedTitle'), `${completeMessage}${donorPointsMessage}`, [
         {
           text: 'OK',
@@ -181,7 +280,12 @@ export default function ReceiverTrackingScreen() {
         },
       ]);
     } catch (err: any) {
-      Alert.alert(t('tracking.cannotComplete'), err?.response?.data?.message || t('receiver.tryAgain'));
+      const status = err?.response?.status;
+      const serverMsg = err?.response?.data?.message as string | undefined;
+      const fallback = status === 400
+        ? t('volunteer.pickupCode.wrongCode')
+        : t('volunteer.pickupCode.genericError');
+      setPickupCodeError(serverMsg || fallback);
     } finally {
       setActionLoading(false);
     }
@@ -222,7 +326,11 @@ export default function ReceiverTrackingScreen() {
 
     try {
       setChatLoading(true);
-      const res = await getOrCreateDonationConversation(donationId);
+      // Chat đối tác đúng với context: VIA_AGENT → volunteer (người đang giao),
+      // SELF_PICKUP → donor. Truyền target_role tường minh để khỏi phụ thuộc
+      // vào fallback ở backend (an toàn hơn khi delivery_type thay đổi).
+      const targetRole = tracking?.delivery?.delivery_type === 'VIA_AGENT' ? 'VOLUNTEER' : 'DONOR';
+      const res = await getOrCreateDonationConversation(donationId, targetRole);
       const conversation = res.data?.data;
 
       if (!conversation?.id) {
@@ -305,6 +413,13 @@ export default function ReceiverTrackingScreen() {
   const isSelfPickupReady = tracking.delivery.status === 'SELF_PICKUP_READY';
   const isAwaitingConfirmation = tracking.delivery.status === 'AWAITING_CONFIRMATION';
   const isCompleted = tracking.delivery.status === 'DELIVERED';
+  const canDisconnect = ['WAITING_AGENT', 'SELF_PICKUP_READY', 'AGENT_ASSIGNED'].includes(tracking.delivery.status);
+  const STALE_ON_THE_WAY_MS = 2 * 60 * 60 * 1000;
+  const pickedUpAtMs = tracking.delivery.picked_up_at ? new Date(tracking.delivery.picked_up_at).getTime() : null;
+  const isStaleOnTheWay =
+    tracking.delivery.status === 'ON_THE_WAY' &&
+    pickedUpAtMs != null &&
+    Date.now() - pickedUpAtMs >= STALE_ON_THE_WAY_MS;
   const title = tracking.donation?.title || fallbackTitle;
   const deliveryId = tracking.delivery?.id || '';
   const lastUpdatedText = lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
@@ -433,7 +548,7 @@ export default function ReceiverTrackingScreen() {
             <Text style={styles.msgText}>{chatLoading ? t('volunteer.openingChat') : t('tracking.sendMessage')}</Text>
           </TouchableOpacity>
           {(!isViaAgent && !isCompleted) ? (
-            <TouchableOpacity style={[styles.tipBtn, actionLoading && { opacity: 0.7 }]} onPress={() => void onCompleteSelfPickup()} disabled={actionLoading}>
+            <TouchableOpacity style={[styles.tipBtn, actionLoading && { opacity: 0.7 }]} onPress={openSelfPickupCodeModal} disabled={actionLoading}>
               <Text style={styles.tipText}>{actionLoading ? t('tracking.saving') : t('volunteer.confirm')}</Text>
             </TouchableOpacity>
           ) : isAwaitingConfirmation ? (
@@ -450,7 +565,64 @@ export default function ReceiverTrackingScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {isStaleOnTheWay ? (
+          <View style={styles.staleWarningBox}>
+            <Ionicons name="warning-outline" size={18} color="#E65100" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.staleWarningTitle}>{t('tracking.staleWarningTitle')}</Text>
+              <Text style={styles.staleWarningBody}>{t('tracking.staleWarningBody')}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {isStaleOnTheWay ? (
+          <TouchableOpacity
+            style={[styles.reportNoShowBtn, reportingNoShow && styles.disconnectBtnDisabled]}
+            onPress={onReportNoShow}
+            disabled={reportingNoShow}
+          >
+            {reportingNoShow ? (
+              <ActivityIndicator size="small" color="#C62828" />
+            ) : (
+              <Ionicons name="alert-circle-outline" size={16} color="#C62828" style={{ marginRight: 6 }} />
+            )}
+            <Text style={styles.disconnectBtnText}>
+              {reportingNoShow ? t('tracking.reportingNoShow') : t('tracking.reportNoShowBtn')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {canDisconnect ? (
+          <TouchableOpacity
+            style={[styles.disconnectBtn, disconnecting && styles.disconnectBtnDisabled]}
+            onPress={onDisconnect}
+            disabled={disconnecting}
+          >
+            {disconnecting ? (
+              <ActivityIndicator size="small" color="#C62828" />
+            ) : (
+              <Ionicons name="exit-outline" size={16} color="#C62828" style={{ marginRight: 6 }} />
+            )}
+            <Text style={styles.disconnectBtnText}>
+              {disconnecting ? t('tracking.disconnecting') : t('tracking.disconnectBtn')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
+
+      <PickupCodeModal
+        visible={pickupCodeModalOpen}
+        busy={actionLoading}
+        donationTitle={title}
+        error={pickupCodeError}
+        onClose={() => {
+          setPickupCodeModalOpen(false);
+          setPickupCodeError(null);
+        }}
+        onClearError={() => setPickupCodeError(null)}
+        onSubmit={(code) => void submitSelfPickupCode(code)}
+      />
     </SafeAreaView>
   );
 }
@@ -497,4 +669,41 @@ const styles = StyleSheet.create({
   msgText: { fontSize: 12, color: '#333', fontWeight: '500' },
   tipBtn: { width: 70, height: 34, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
   tipText: { fontSize: 12, color: '#333', fontWeight: '500' },
+  disconnectBtn: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    backgroundColor: '#FFF5F5',
+  },
+  disconnectBtnDisabled: { opacity: 0.55 },
+  disconnectBtnText: { color: '#C62828', fontSize: 13, fontWeight: '600' },
+  staleWarningBox: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+    backgroundColor: '#FFF8E1',
+  },
+  staleWarningTitle: { fontSize: 13, fontWeight: '700', color: '#E65100' },
+  staleWarningBody: { fontSize: 12, color: '#7C5300', marginTop: 4, lineHeight: 17 },
+  reportNoShowBtn: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    backgroundColor: '#FFF5F5',
+  },
 });

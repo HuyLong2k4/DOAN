@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useI18n } from '../i18n/useI18n';
 
@@ -6,7 +7,6 @@ export type Donation = {
   _id: string;
   title: string;
   food_type: string;
-  food_preference: string;
   quantity: number;
   unit: string;
   status: string;
@@ -16,6 +16,15 @@ export type Donation = {
   // VIA_AGENT only — donor đọc code cho volunteer khi gặp mặt
   pickup_code?: string | null;
   delivery_status?: string | null;
+  // Release-receiver eligibility (computed server-side). selected_at = thời điểm
+  // receiver connect; sau 30 phút mà chưa pickup, donor có thể release.
+  selected_at?: string | null;
+  release_eligible_at?: string | null;
+  can_release_receiver?: boolean;
+  release_state?: 'waiting' | 'stale' | 'in_progress' | 'finalized' | 'no_receiver' | null;
+  // True nếu donation được tạo từ FoodRequest (donor accept) — UI hiển thị
+  // text "Huỷ đơn & mở lại request" thay vì "Giải phóng receiver".
+  from_food_request?: boolean;
 };
 
 export function useStatusConfig() {
@@ -50,20 +59,15 @@ function getFoodTypeLabel(t: any, foodType: string): string {
   return labels[foodType] ?? foodType;
 }
 
-function getPreferenceLabel(t: any, pref: string): string {
-  if (pref === 'VEG') return t('donor.foodPreference.veg');
-  if (pref === 'NON_VEG') return t('donor.foodPreference.nonVeg');
-  if (pref === 'BOTH') return t('donor.foodPreference.vegAndNonVeg');
-  return pref;
-}
-
 type DonationPostCardProps = {
   d: Donation;
   onCancel?: (donationId: string) => void;
   cancelling?: boolean;
+  onReleaseReceiver?: (donationId: string) => void;
+  releasing?: boolean;
 };
 
-export default function DonationPostCard({ d, onCancel, cancelling }: DonationPostCardProps) {
+export default function DonationPostCard({ d, onCancel, cancelling, onReleaseReceiver, releasing }: DonationPostCardProps) {
   const { t } = useI18n();
   const statusConfig = useStatusConfig();
   const cfg = statusConfig[d.status as keyof typeof statusConfig] ?? statusConfig.PENDING;
@@ -71,9 +75,27 @@ export default function DonationPostCard({ d, onCancel, cancelling }: DonationPo
     ? new Date(d.expiration_datetime).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     : '—';
   const foodTypeLabel = getFoodTypeLabel(t, d.food_type);
-  const preferenceLabel = getPreferenceLabel(t, d.food_preference);
-  // Donor chỉ huỷ được khi đơn còn PENDING (chưa có ai pickup).
-  const canCancel = Boolean(onCancel) && d.status === 'PENDING';
+
+  // Tick mỗi 30s để remaining-time tự update khi đang đếm ngược.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    if (d.release_state !== 'waiting') return;
+    const id = setInterval(() => forceTick((n) => n + 1), 30 * 1000);
+    return () => clearInterval(id);
+  }, [d.release_state]);
+
+  // Donor huỷ cả đơn: chỉ khi PENDING + chưa có receiver connect.
+  const canCancel = Boolean(onCancel) && d.status === 'PENDING' && !d.selected_at;
+  const showWaitingHint = d.release_state === 'waiting' && d.release_eligible_at;
+  const showStaleHint = d.release_state === 'stale' && d.can_release_receiver;
+  const canRelease = Boolean(onReleaseReceiver) && Boolean(d.can_release_receiver);
+
+  const minutesSinceSelected = d.selected_at
+    ? Math.max(0, Math.floor((Date.now() - new Date(d.selected_at).getTime()) / 60000))
+    : null;
+  const minutesUntilEligible = d.release_eligible_at
+    ? Math.max(0, Math.ceil((new Date(d.release_eligible_at).getTime() - Date.now()) / 60000))
+    : null;
 
   return (
     <View style={styles.postCard}>
@@ -91,7 +113,7 @@ export default function DonationPostCard({ d, onCancel, cancelling }: DonationPo
           <Text style={styles.postCardFoodType}>{foodTypeLabel}</Text>
         </View>
         <View style={styles.postCardQtyBox}>
-          <Text style={styles.postCardQty}>{preferenceLabel}: <Text style={styles.qtyNumber}>{d.quantity}</Text></Text>
+          <Text style={styles.postCardQty}>{t('donor.qty.label')}: <Text style={styles.qtyNumber}>{d.quantity} {d.unit || t('donor.portion')}</Text></Text>
         </View>
       </View>
       <Text style={styles.postCardExpiry}>{t('receiver.neededBefore')}: {expDate} </Text>
@@ -100,14 +122,75 @@ export default function DonationPostCard({ d, onCancel, cancelling }: DonationPo
         <Text style={[styles.statusText, { color: cfg.color }]}>{cfg.label}</Text>
       </View>
 
-      {d.pickup_code && d.delivery_status === 'AGENT_ASSIGNED' ? (
+      {d.pickup_code && (d.delivery_status === 'AGENT_ASSIGNED' || d.delivery_status === 'SELF_PICKUP_READY') ? (
         <View style={styles.pickupCodeBox}>
           <View style={{ flex: 1 }}>
             <Text style={styles.pickupCodeLabel}>{t('donor.pickupCode.title')}</Text>
-            <Text style={styles.pickupCodeHint}>{t('donor.pickupCode.hint')}</Text>
+            <Text style={styles.pickupCodeHint}>
+              {d.delivery_status === 'SELF_PICKUP_READY'
+                ? t('donor.pickupCode.hintSelfPickup')
+                : t('donor.pickupCode.hint')}
+            </Text>
           </View>
           <Text style={styles.pickupCodeValue}>{d.pickup_code}</Text>
         </View>
+      ) : null}
+
+      {showWaitingHint ? (
+        <View style={styles.waitingHintBox}>
+          <Ionicons name="hourglass-outline" size={16} color="#7C5300" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.waitingHintTitle}>{t('donor.releaseReceiver.waitingTitle')}</Text>
+            <Text style={styles.waitingHintBody}>
+              {minutesSinceSelected != null
+                ? `${t('donor.releaseReceiver.connectedAtPrefix')} ${minutesSinceSelected} ${t('donor.releaseReceiver.minutesShort')} • `
+                : ''}
+              {minutesUntilEligible != null
+                ? `${t('donor.releaseReceiver.eligibleInPrefix')} ${minutesUntilEligible} ${t('donor.releaseReceiver.minutesShort')}`
+                : ''}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {showStaleHint ? (
+        <View style={styles.staleHintBox}>
+          <Ionicons name="alert-circle" size={16} color="#C62828" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.staleHintTitle}>{t('donor.releaseReceiver.staleTitle')}</Text>
+            <Text style={styles.staleHintBody}>
+              {d.from_food_request
+                ? t('donor.releaseReceiver.fromRequestStaleMessage')
+                : t('donor.releaseReceiver.staleMessage')}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {canRelease ? (
+        <TouchableOpacity
+          style={[styles.releaseBtn, releasing && styles.cancelBtnDisabled]}
+          onPress={() => onReleaseReceiver?.(d._id)}
+          disabled={releasing}
+        >
+          {releasing ? (
+            <ActivityIndicator color="#E65100" size="small" />
+          ) : (
+            <Ionicons
+              name={d.from_food_request ? 'close-circle-outline' : 'person-remove-outline'}
+              size={16}
+              color="#E65100"
+              style={{ marginRight: 6 }}
+            />
+          )}
+          <Text style={styles.releaseBtnText}>
+            {releasing
+              ? t('donor.releaseReceiver.releasing')
+              : d.from_food_request
+                ? t('donor.releaseReceiver.fromRequestButton')
+                : t('donor.releaseReceiver.button')}
+          </Text>
+        </TouchableOpacity>
       ) : null}
 
       {canCancel ? (
@@ -157,6 +240,18 @@ const styles = StyleSheet.create({
   },
   cancelBtnDisabled: { opacity: 0.55 },
   cancelBtnText:    { color: '#C62828', fontSize: 13, fontWeight: '600' },
+  releaseBtn:       {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+    backgroundColor: '#FFF8E1',
+  },
+  releaseBtnText:   { color: '#E65100', fontSize: 13, fontWeight: '700' },
   pickupCodeBox: {
     marginTop: 10,
     padding: 12,
@@ -170,4 +265,32 @@ const styles = StyleSheet.create({
   pickupCodeLabel: { fontSize: 12, fontWeight: '700', color: '#E65100', textTransform: 'uppercase', letterSpacing: 0.4 },
   pickupCodeHint:  { fontSize: 11, color: '#7C5300', marginTop: 2 },
   pickupCodeValue: { fontSize: 26, fontWeight: '800', color: '#E65100', letterSpacing: 4, fontVariant: ['tabular-nums'] },
+
+  waitingHintBox: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+    backgroundColor: '#FFF8E1',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  waitingHintTitle: { fontSize: 12, fontWeight: '700', color: '#7C5300' },
+  waitingHintBody:  { fontSize: 11, color: '#7C5300', marginTop: 2, lineHeight: 15 },
+
+  staleHintBox: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFCDD2',
+    backgroundColor: '#FFF5F5',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  staleHintTitle: { fontSize: 12, fontWeight: '700', color: '#C62828' },
+  staleHintBody:  { fontSize: 11, color: '#C62828', marginTop: 2, lineHeight: 15 },
 });

@@ -17,6 +17,8 @@ function _error(message, statusCode = 400) {
 }
 
 // ── PATCH /api/food-donations/:id/accept ────────────────────────────────────
+// Auto-match: bất kỳ volunteer nào cũng có thể accept. Ai accept trước (atomic
+// findOneAndUpdate guard bằng status: PENDING) thắng.
 async function acceptDonationByVolunteer(donationId, volunteerId) {
     const donation = await FoodDonation.findOne({ _id: donationId, status: 'PENDING' }).lean();
     if (!donation) {
@@ -28,19 +30,11 @@ async function acceptDonationByVolunteer(donationId, volunteerId) {
     }
 
     const delivery = await Delivery.findById(donation.delivery_id)
-        .select('preferred_volunteer_id status')
+        .select('status')
         .lean();
 
     if (!delivery) {
         throw _error('Không tìm thấy delivery của đơn này.', 404);
-    }
-
-    if (
-        delivery.status === 'WAITING_AGENT' &&
-        delivery.preferred_volunteer_id &&
-        delivery.preferred_volunteer_id.toString() !== volunteerId.toString()
-    ) {
-        throw _error('Receiver đã chọn volunteer khác cho đơn này.', 403);
     }
 
     const updated = await FoodDonation.findOneAndUpdate(
@@ -79,23 +73,7 @@ async function rejectDonationByVolunteer(donationId, volunteerId) {
         throw _error('Đơn không tồn tại hoặc không còn khả dụng.', 404);
     }
 
-    if (updated.delivery_id) {
-        const delivery = await Delivery.findById(updated.delivery_id)
-            .select('preferred_volunteer_id status')
-            .lean();
-
-        if (
-            delivery?.status === 'WAITING_AGENT' &&
-            delivery.preferred_volunteer_id &&
-            delivery.preferred_volunteer_id.toString() === volunteerId.toString()
-        ) {
-            await Delivery.updateOne(
-                { _id: updated.delivery_id },
-                { $set: { preferred_volunteer_id: null } },
-            );
-        }
-    }
-
+    // rejected_by giúp `getDonations` ẩn đơn này khỏi list của volunteer hiện tại.
     return updated;
 }
 
@@ -142,7 +120,6 @@ async function releaseDonationByVolunteer(donationId, volunteerId) {
                 volunteer_id: null,
                 status: 'WAITING_AGENT',
                 assigned_at: null,
-                preferred_volunteer_id: null,
             },
         },
     );

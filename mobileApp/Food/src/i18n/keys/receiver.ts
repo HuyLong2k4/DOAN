@@ -32,14 +32,11 @@ export type ReceiverKey =
   | 'receiver.connect'
   | 'receiver.portion'
   | 'receiver.foodTypeNotSpecified'
-  | 'receiver.preferenceNotSpecified'
-  | 'receiver.veg'
-  | 'receiver.nonVeg'
-  | 'receiver.vegAndNonVeg'
   | 'receiver.pending'
   | 'receiver.accepted'
   | 'receiver.fulfilled'
   | 'receiver.cancelled'
+  | 'receiver.requestExpired'
   | 'receiver.neededBefore'
   | 'receiver.notSpecified'
   | 'receiver.foodQuantity'
@@ -87,14 +84,11 @@ export const receiverEn: Record<ReceiverKey, string> = {
   'receiver.connect': 'Connect',
   'receiver.portion': 'portion',
   'receiver.foodTypeNotSpecified': 'Food type not specified',
-  'receiver.preferenceNotSpecified': 'Preference not specified',
-  'receiver.veg': 'Veg',
-  'receiver.nonVeg': 'Non-Veg',
-  'receiver.vegAndNonVeg': 'Veg & Non-Veg',
   'receiver.pending': 'Your request is pending',
   'receiver.accepted': 'Request accepted',
   'receiver.fulfilled': 'Request fulfilled',
   'receiver.cancelled': 'Request cancelled',
+  'receiver.requestExpired': 'Past deadline — donors no longer see this',
   'receiver.neededBefore': 'Needed before',
   'receiver.notSpecified': 'Not specified',
   'receiver.foodQuantity': 'Food Quantity',
@@ -143,14 +137,11 @@ export const receiverVi: Record<ReceiverKey, string> = {
   'receiver.connect': 'Kết nối',
   'receiver.portion': 'suất',
   'receiver.foodTypeNotSpecified': 'Chưa xác định loại thực phẩm',
-  'receiver.preferenceNotSpecified': 'Chưa xác định tùy chọn',
-  'receiver.veg': 'Đồ chay',
-  'receiver.nonVeg': 'Đồ mặn',
-  'receiver.vegAndNonVeg': 'Cả chay & mặn',
   'receiver.pending': 'Yêu cầu đang chờ xử lý',
   'receiver.accepted': 'Yêu cầu đã được chấp nhận',
   'receiver.fulfilled': 'Yêu cầu đã hoàn tất',
   'receiver.cancelled': 'Yêu cầu đã hủy',
+  'receiver.requestExpired': 'Đã quá hạn — donor không còn thấy',
   'receiver.neededBefore': 'Cần trước',
   'receiver.notSpecified': 'Chưa xác định',
   'receiver.foodQuantity': 'Số lượng thực phẩm',

@@ -86,17 +86,21 @@ function createChatSocketServer(httpServer) {
 
                 const result = await ChatService.sendMessage(conversationId, socket.user, text, attachments);
 
-                const eventPayload = {
+                const senderPayload = {
                     conversation_id: result.conversation_id,
                     message: result.message,
                 };
+                const recipientPayload = {
+                    conversation_id: result.conversation_id,
+                    message: { ...result.message, is_me: false },
+                };
 
-                io.to(conversationRoomName(result.conversation_id)).emit('chat:new_message', eventPayload);
+                socket.to(conversationRoomName(result.conversation_id)).emit('chat:new_message', recipientPayload);
                 result.recipient_ids.forEach((recipientId) => {
-                    io.to(userRoomName(recipientId)).emit('chat:new_message', eventPayload);
+                    io.to(userRoomName(recipientId)).emit('chat:new_message', recipientPayload);
                 });
 
-                if (typeof ack === 'function') ack({ success: true, data: eventPayload });
+                if (typeof ack === 'function') ack({ success: true, data: senderPayload });
             } catch (err) {
                 if (typeof ack === 'function') ack({ success: false, message: err.message });
             }

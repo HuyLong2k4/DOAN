@@ -5,7 +5,6 @@ export type Donation = {
   _id: string;
   title: string;
   food_type: string;
-  food_preference: string;
   quantity: number;
   unit: string;
   status: string;
@@ -53,12 +52,7 @@ export default function DonationPostCard({ d }: { d: Donation }) {
           <Text style={styles.postCardFoodType}>{foodTypeLabel}</Text>
         </View>
         <View style={styles.postCardQtyBox}>
-          {(d.food_preference === 'VEG') && (
-            <Text style={styles.postCardQty}>Veg: <Text style={styles.qtyNumber}>{d.quantity}</Text></Text>
-          )}
-          {(d.food_preference === 'NON_VEG') && (
-            <Text style={styles.postCardQty}>Non-Veg: <Text style={styles.qtyNumber}>{d.quantity}</Text></Text>
-          )}
+          <Text style={styles.postCardQty}>Qty: <Text style={styles.qtyNumber}>{d.quantity} {d.unit}</Text></Text>
         </View>
       </View>
       <Text style={styles.postCardExpiry}>Expiration Date: {expDate} </Text>

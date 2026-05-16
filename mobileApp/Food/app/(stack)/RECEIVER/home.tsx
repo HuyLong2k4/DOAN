@@ -20,7 +20,6 @@ type DonationItem = {
   quantity?: number;
   unit?: string;
   food_type?: string;
-  food_preference?: 'VEG' | 'NON_VEG' | 'BOTH';
   expiration_datetime?: string;
   pickup_distance_km?: number | null;
   pickup_address_line?: string | null;
@@ -45,9 +44,9 @@ type RequestItem = {
   _id: string;
   title: string;
   description?: string | null;
+  food_type?: 'COOKED' | 'RAW' | 'FROZEN' | 'PACKAGED';
   requested_quantity?: number;
   unit?: string;
-  food_preference?: 'VEG' | 'NON_VEG' | 'BOTH';
   needed_before?: string | null;
   createdAt?: string;
   status?: 'PENDING' | 'ACCEPTED' | 'FULFILLED' | 'CANCELLED';
@@ -98,30 +97,17 @@ function getRequestStatusMeta(t: (key: any) => string): Record<
   };
 }
 
-function getFoodTypeFromRequestDescription(t: (key: any) => string, description?: string | null) {
-  const desc = String(description || '').trim();
-  if (!desc) return { foodTypeLabel: t('receiver.foodTypeNotSpecified'), cleanDescription: '' };
+const REQUEST_FOOD_TYPE_LABEL_KEY: Record<NonNullable<RequestItem['food_type']>, any> = {
+  COOKED:   'request.cookedFood',
+  RAW:      'request.rawVeggies',
+  FROZEN:   'request.frozenFood',
+  PACKAGED: 'request.packagedFood',
+};
 
-  const lines = desc.split('\n').map((line) => line.trim()).filter(Boolean);
-  const firstLine = lines[0] || '';
-  const match = firstLine.match(/^Food type:\s*(.+)$/i);
-
-  if (!match) {
-    return { foodTypeLabel: t('receiver.foodTypeNotSpecified'), cleanDescription: desc };
-  }
-
-  const cleanDescription = lines.slice(1).join('\n').trim();
-  return {
-    foodTypeLabel: match[1] || t('receiver.foodTypeNotSpecified'),
-    cleanDescription,
-  };
-}
-
-function getFoodPreferenceLabel(t: (key: any) => string, pref?: RequestItem['food_preference']) {
-  if (pref === 'VEG') return t('receiver.veg');
-  if (pref === 'NON_VEG') return t('receiver.nonVeg');
-  if (pref === 'BOTH') return t('receiver.vegAndNonVeg');
-  return t('receiver.preferenceNotSpecified');
+function getFoodTypeLabelFromRequest(t: (key: any) => string, foodType?: RequestItem['food_type']) {
+  if (!foodType) return t('receiver.foodTypeNotSpecified');
+  const key = REQUEST_FOOD_TYPE_LABEL_KEY[foodType];
+  return key ? t(key) : t('receiver.foodTypeNotSpecified');
 }
 
 const FAQS = [
@@ -387,7 +373,6 @@ export default function HomeReceiverScreen() {
                         pickupLatitude: item.pickup_latitude != null ? String(item.pickup_latitude) : '',
                         pickupLongitude: item.pickup_longitude != null ? String(item.pickup_longitude) : '',
                         foodType: item.food_type || '',
-                        foodPreference: item.food_preference || '',
                         quantity: item.quantity != null ? String(item.quantity) : '',
                         unit: item.unit || '',
                         expirationDatetime: item.expiration_datetime || '',
@@ -596,10 +581,12 @@ function MyRequestCard({
   const neededBefore = item.needed_before
     ? new Date(item.needed_before).toLocaleDateString(locale)
     : t('receiver.notSpecified');
-  const { foodTypeLabel } = getFoodTypeFromRequestDescription(t, item.description);
-  const preferenceLabel = getFoodPreferenceLabel(t, item.food_preference);
+  const foodTypeLabel = getFoodTypeLabelFromRequest(t, item.food_type);
   const statusMeta = requestStatusMeta[status] || requestStatusMeta.PENDING;
   const isAccepted = status === 'ACCEPTED';
+  const isExpired = status === 'PENDING'
+    && item.needed_before != null
+    && new Date(item.needed_before).getTime() < Date.now();
 
   return (
     <View style={styles.myRequestCard}>
@@ -624,7 +611,6 @@ function MyRequestCard({
         </View>
         <View style={styles.myRequestCenter}>
           <Text style={styles.myRequestType}>{foodTypeLabel}</Text>
-          <Text style={styles.myRequestType}>{preferenceLabel}</Text>
           <Text style={styles.myRequestDate}>{t('receiver.neededBefore')}: {neededBefore}</Text>
         </View>
       </View>
@@ -639,6 +625,13 @@ function MyRequestCard({
         <Ionicons name={statusMeta.icon} size={isAccepted ? 14 : 18} color={statusMeta.color} />
         <Text style={[styles.pendingText, { color: statusMeta.color }]}>{statusMeta.text}</Text>
       </View>
+
+      {isExpired ? (
+        <View style={styles.expiredBadge}>
+          <Ionicons name="alert-circle-outline" size={14} color="#B71C1C" />
+          <Text style={styles.expiredBadgeText}>{t('receiver.requestExpired')}</Text>
+        </View>
+      ) : null}
 
       {canContinueFlow ? (
         <TouchableOpacity style={styles.continuePickupBtn} onPress={onContinueFlow} activeOpacity={0.85}>
@@ -785,6 +778,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  expiredBadge: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: '#FFEBEE',
+    borderWidth: 1,
+    borderColor: '#EF9A9A',
+  },
+  expiredBadgeText: { fontSize: 11, color: '#B71C1C', fontWeight: '700' },
   pendingBadgeCompact: {
     alignSelf: 'flex-start',
     borderRadius: 999,

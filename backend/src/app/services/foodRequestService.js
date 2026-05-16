@@ -42,7 +42,6 @@ class FoodRequestService {
       requested_quantity,
       unit,
       food_type,
-      food_preference,
       needed_before,
     } = data;
 
@@ -56,11 +55,6 @@ class FoodRequestService {
       throw this._error(`food_type không hợp lệ. Các giá trị hợp lệ: ${VALID_FOOD_TYPE.join(', ')}`);
     }
 
-    const VALID_PREF = ['VEG', 'NON_VEG', 'BOTH'];
-    if (food_preference && !VALID_PREF.includes(food_preference)) {
-      throw this._error(`food_preference không hợp lệ. Các giá trị hợp lệ: ${VALID_PREF.join(', ')}`);
-    }
-
     const request = await FoodRequest.create({
       receiver_id: receiverId,
       title,
@@ -68,7 +62,6 @@ class FoodRequestService {
       requested_quantity,
       unit: unit || 'portion',
       food_type: food_type || 'COOKED',
-      food_preference: food_preference || 'BOTH',
       needed_before: needed_before ? new Date(needed_before) : null,
     });
 
@@ -116,6 +109,20 @@ class FoodRequestService {
     if (viewer?.role === 'ADMIN') {
       // Admin xem tất cả mặc định, có thể truyền status để lọc.
       if (!query.status) delete query.status;
+    } else if (viewer?.role === 'DONOR' && viewer?.id) {
+      // Donor xem PENDING (để pick) + các ACCEPTED do chính họ accept.
+      // Ẩn các request đã quá `needed_before` để donor không phải accept request
+      // "thây ma" — request mà receiver không còn cần nữa.
+      if (!query.status) {
+        query.$or = [
+          { status: 'PENDING' },
+          { status: 'ACCEPTED', accepted_by_donor_id: viewer.id },
+        ];
+      }
+      query.$and = [
+        ...(query.$and || []),
+        { $or: [{ needed_before: null }, { needed_before: { $gte: new Date() } }] },
+      ];
     } else {
       query.status = query.status || 'PENDING';
     }
@@ -123,6 +130,7 @@ class FoodRequestService {
     return FoodRequest.find(query)
       .sort({ createdAt: -1 })
       .populate('receiver_id', 'full_name avatar_url')
+      .populate('linked_donation_id', 'title status delivery_type')
       .lean();
   }
 
@@ -161,10 +169,10 @@ class FoodRequestService {
       createdDonation = await FoodDonation.create({
         donor_id: donorId,
         selected_receiver_id: updated.receiver_id,
+        selected_at: new Date(),
         title: updated.title,
         description: updated.description || null,
         food_type: foodType,
-        food_preference: updated.food_preference || 'BOTH',
         quantity: updated.requested_quantity,
         unit: updated.unit || 'portion',
         expiration_datetime: expirationDatetime,

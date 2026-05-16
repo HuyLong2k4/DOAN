@@ -20,7 +20,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 
 type TFn = (key: TranslationKey) => string;
 
-type CategoryTab = 'all' | 'veg' | 'non-veg' | 'near';
+type CategoryTab = 'all' | 'near';
 
 type FoodType = 'COOKED' | 'RAW' | 'FROZEN' | 'PACKAGED';
 
@@ -31,7 +31,6 @@ type DonationItem = {
   quantity?: number;
   unit?: string;
   food_type?: FoodType;
-  food_preference?: 'VEG' | 'NON_VEG' | 'BOTH';
   expiration_datetime?: string;
   pickup_distance_km?: number | null;
   pickup_address_line?: string | null;
@@ -107,8 +106,6 @@ export default function ReceiverDonorListScreen() {
 
       if (!isSearchMatch) return false;
 
-      if (tab === 'veg' && item.food_preference !== 'VEG' && item.food_preference !== 'BOTH') return false;
-      if (tab === 'non-veg' && item.food_preference !== 'NON_VEG' && item.food_preference !== 'BOTH') return false;
       if (tab === 'near' && item.pickup_distance_km == null) return false;
 
       if (selectedFoodTypes.length > 0 && item.food_type && !selectedFoodTypes.includes(item.food_type)) return false;
@@ -179,8 +176,6 @@ export default function ReceiverDonorListScreen() {
       <Text style={styles.categoryTitle}>{t('donorList.foodCategories')}</Text>
       <View style={styles.tabsRow}>
         <CategoryTabButton label={t('donorList.all')}    active={tab === 'all'}     onPress={() => setTab('all')} />
-        <CategoryTabButton label={t('donorList.veg')}    active={tab === 'veg'}     onPress={() => setTab('veg')} />
-        <CategoryTabButton label={t('donorList.nonVeg')} active={tab === 'non-veg'} onPress={() => setTab('non-veg')} />
         <CategoryTabButton label={t('donorList.nearMe')} active={tab === 'near'}    onPress={() => setTab('near')} />
       </View>
 
@@ -213,22 +208,6 @@ export default function ReceiverDonorListScreen() {
                       params: {
                         donationId: item._id,
                         title: item.title,
-                        donorName: item.donor_id?.full_name || 'Unknown donor',
-                        pickupAddressLine: item.pickup_address_line || '',
-                        pickupCity: item.pickup_city || '',
-                        pickupLatitude: item.pickup_latitude != null ? String(item.pickup_latitude) : '',
-                        pickupLongitude: item.pickup_longitude != null ? String(item.pickup_longitude) : '',
-                        foodType: item.food_type || '',
-                        foodPreference: item.food_preference || '',
-                        quantity: item.quantity != null ? String(item.quantity) : '',
-                        unit: item.unit || '',
-                        expirationDatetime: item.expiration_datetime || '',
-                        distanceKm: item.pickup_distance_km != null ? String(item.pickup_distance_km) : '',
-                        imageUrl: item.images?.[0] || '',
-                        status: item.status || '',
-                        selectedForMe: selectedForMe ? '1' : '0',
-                        pickupChosen: pickupChosen ? '1' : '0',
-                        deliveryType: item.delivery_type || '',
                       },
                     } as any);
                   }}
@@ -317,12 +296,6 @@ const FOOD_TYPE_KEY: Record<FoodType, TranslationKey> = {
   PACKAGED: 'request.packagedFood',
 };
 
-const FOOD_PREF_KEY: Record<'VEG' | 'NON_VEG' | 'BOTH', TranslationKey> = {
-  VEG:     'receiver.veg',
-  NON_VEG: 'receiver.nonVeg',
-  BOTH:    'receiver.vegAndNonVeg',
-};
-
 function DonorListCard({
   item,
   onViewDetails,
@@ -345,7 +318,6 @@ function DonorListCard({
   const donorName = item.donor_id?.full_name || t('receiver.unknownDonor');
   const address = [item.pickup_address_line, item.pickup_city].filter(Boolean).join(', ');
   const foodTypeText = item.food_type ? t(FOOD_TYPE_KEY[item.food_type]) : t('receiver.foodTypeNotSpecified');
-  const foodPreferenceText = item.food_preference ? t(FOOD_PREF_KEY[item.food_preference]) : t('receiver.preferenceNotSpecified');
   const quantityText = `${item.quantity ?? 0} ${item.unit || 'meals'}`;
   const distanceText = item.pickup_distance_km != null
     ? `${item.pickup_distance_km.toFixed(1)} ${t('donorList.kmAway')}`
@@ -381,9 +353,6 @@ function DonorListCard({
           <View style={styles.badgeRow}>
             <View style={styles.infoBadge}>
               <Text style={styles.infoBadgeText}>{foodTypeText}</Text>
-            </View>
-            <View style={[styles.infoBadge, styles.infoBadgeMuted]}>
-              <Text style={styles.infoBadgeText}>{foodPreferenceText}</Text>
             </View>
           </View>
 

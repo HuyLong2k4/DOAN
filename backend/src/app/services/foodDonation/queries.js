@@ -7,18 +7,20 @@
  */
 
 const FoodDonation = require('../../models/foodDonationModel');
+const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
 const Feedback = require('../../models/feedbackModel');
 const { distanceKm, getRoadDistancesFromGoogle, getViewerLocation } = require('./distance');
+const { computeReleaseReceiverEligibility } = require('./donorActions');
 
 function _error(message, statusCode = 400) {
     return Object.assign(new Error(message), { statusCode });
 }
 
 // ── GET /api/food-donations ─────────────────────────────────────────────────
-// Trả về kèm thông tin donor + địa chỉ pickup. Sort theo distance / preferred volunteer.
+// Trả về kèm thông tin donor + địa chỉ pickup. Sort theo distance (gần nhất trước).
 async function getDonations(viewer = null, filter = {}) {
     const query = { ...filter };
 
@@ -94,41 +96,14 @@ async function getDonations(viewer = null, filter = {}) {
     });
 
     if (viewer?.role === 'VOLUNTEER' && viewer?.id) {
-        const donationIds = enriched.map((item) => item._id).filter(Boolean);
-        const deliveries = donationIds.length > 0
-            ? await Delivery.find({ donation_id: { $in: donationIds } })
-                .select('donation_id preferred_volunteer_id')
-                .lean()
-            : [];
-
-        const preferredMap = new Map(
-            deliveries.map((item) => [
-                String(item.donation_id),
-                item.preferred_volunteer_id ? String(item.preferred_volunteer_id) : null,
-            ]),
-        );
-
-        const viewerId = String(viewer.id);
-        enriched = enriched.map((item) => {
-            const preferredVolunteerId = preferredMap.get(String(item._id)) || null;
-            return {
-                ...item,
-                preferred_volunteer_id: preferredVolunteerId,
-                is_preferred_for_you: preferredVolunteerId === viewerId,
-            };
-        });
-
+        // Sắp xếp theo khoảng cách tăng dần (gần nhất trước), tie-break theo
+        // createdAt mới nhất. Ai accept trước thì thắng (atomic guard ở backend).
         enriched.sort((a, b) => {
-            const aPreferred = a.is_preferred_for_you ? 1 : 0;
-            const bPreferred = b.is_preferred_for_you ? 1 : 0;
-            if (aPreferred !== bPreferred) return bPreferred - aPreferred;
-
             if (a.pickup_distance_km == null && b.pickup_distance_km != null) return 1;
             if (a.pickup_distance_km != null && b.pickup_distance_km == null) return -1;
             if (a.pickup_distance_km != null && b.pickup_distance_km != null && a.pickup_distance_km !== b.pickup_distance_km) {
                 return a.pickup_distance_km - b.pickup_distance_km;
             }
-
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
     }
@@ -154,19 +129,34 @@ async function getMyDonations(donorId) {
 
     // Gắn pickup_code + delivery_status cho donor (cần đọc code cho volunteer khi VIA_AGENT).
     const deliveryIds = donations.map((d) => d.delivery_id).filter(Boolean);
-    if (deliveryIds.length === 0) return donations;
-
-    const deliveries = await Delivery.find({ _id: { $in: deliveryIds } })
-        .select('_id pickup_code status')
-        .lean();
+    const deliveries = deliveryIds.length > 0
+        ? await Delivery.find({ _id: { $in: deliveryIds } })
+            .select('_id pickup_code status createdAt')
+            .lean()
+        : [];
     const deliveryMap = Object.fromEntries(deliveries.map((d) => [String(d._id), d]));
+
+    // Mark đơn nào tạo từ FoodRequest — UI hiển thị wording khác lúc release.
+    const donationIds = donations.map((d) => d._id);
+    const linkedRequests = donationIds.length > 0
+        ? await FoodRequest.find({ linked_donation_id: { $in: donationIds } })
+            .select('linked_donation_id')
+            .lean()
+        : [];
+    const fromRequestSet = new Set(linkedRequests.map((r) => String(r.linked_donation_id)));
 
     return donations.map((d) => {
         const delivery = d.delivery_id ? deliveryMap[String(d.delivery_id)] : null;
+        const eligibility = computeReleaseReceiverEligibility(d, delivery);
         return {
             ...d,
             pickup_code: delivery?.pickup_code ?? null,
             delivery_status: delivery?.status ?? null,
+            selected_at: eligibility.selectedAt,
+            release_eligible_at: eligibility.releaseEligibleAt,
+            can_release_receiver: eligibility.canRelease,
+            release_state: eligibility.reason,
+            from_food_request: fromRequestSet.has(String(d._id)),
         };
     });
 }
@@ -246,120 +236,6 @@ async function getMyVolunteerDeliveries(volunteerId) {
     });
 }
 
-// ── GET /api/food-donations/:id/available-volunteers ────────────────────────
-// Receiver xem danh sách volunteer khả dụng để chọn preferred trước khi chooseDelivery.
-async function getAvailableVolunteersForDonation(donationId, receiverId, limit = 20) {
-    const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 50));
-
-    const donation = await FoodDonation.findById(donationId).lean();
-    if (!donation) throw _error('Không tìm thấy đơn quyên góp.', 404);
-
-    if (!donation.selected_receiver_id || donation.selected_receiver_id.toString() !== receiverId.toString()) {
-        throw _error('Bạn chưa được donor chốt cho đơn này.', 403);
-    }
-
-    const donorProfile = await DonorProfile.findOne({ user_id: donation.donor_id })
-        .select('latitude longitude')
-        .lean();
-
-    const volunteerProfiles = await VolunteerProfile.find()
-        .select('user_id city latitude longitude verification_status')
-        .populate({
-            path: 'user_id',
-            select: 'full_name avatar_url role profile_completed',
-            match: { role: 'VOLUNTEER', profile_completed: true },
-        })
-        .lean();
-
-    const volunteers = volunteerProfiles.filter((v) => v.user_id);
-    if (volunteers.length === 0) {
-        return { donation_id: donation._id, volunteers: [] };
-    }
-
-    const volunteerIds = volunteers.map((v) => v.user_id._id);
-
-    const [deliveredAgg, ratingAgg] = await Promise.all([
-        Delivery.aggregate([
-            { $match: { volunteer_id: { $in: volunteerIds }, status: 'DELIVERED' } },
-            { $group: { _id: '$volunteer_id', completed_pickup: { $sum: 1 } } },
-        ]),
-        Feedback.aggregate([
-            { $match: { to_user_id: { $in: volunteerIds } } },
-            { $group: { _id: '$to_user_id', stars: { $avg: '$rating' }, rating_count: { $sum: 1 } } },
-        ]),
-    ]);
-
-    const completedMap = new Map(
-        deliveredAgg.map((item) => [String(item._id), item.completed_pickup || 0]),
-    );
-    const ratingMap = new Map(
-        ratingAgg.map((item) => [
-            String(item._id),
-            {
-                stars: item.stars != null ? Number(item.stars.toFixed(1)) : 0,
-                rating_count: item.rating_count || 0,
-            },
-        ]),
-    );
-
-    const donorLocation =
-        donorProfile?.latitude != null && donorProfile?.longitude != null
-            ? { latitude: donorProfile.latitude, longitude: donorProfile.longitude }
-            : null;
-
-    const distanceCandidates = donorLocation
-        ? volunteers
-            .filter((v) => v.latitude != null && v.longitude != null)
-            .map((v) => ({
-                id: String(v.user_id._id),
-                latitude: v.latitude,
-                longitude: v.longitude,
-            }))
-        : [];
-
-    const googleDistanceMap = await getRoadDistancesFromGoogle(donorLocation, distanceCandidates);
-
-    const volunteerItems = volunteers.map((v) => {
-        const id = String(v.user_id._id);
-        const ratingInfo = ratingMap.get(id) || { stars: 0, rating_count: 0 };
-
-        let distance_km = null;
-        if (donorLocation && v.latitude != null && v.longitude != null) {
-            distance_km =
-                googleDistanceMap?.get(id) ??
-                distanceKm(donorLocation.latitude, donorLocation.longitude, v.latitude, v.longitude);
-        }
-
-        return {
-            id,
-            full_name: v.user_id.full_name || 'Volunteer',
-            avatar_url: v.user_id.avatar_url || null,
-            city: v.city || null,
-            distance_km: distance_km != null ? Number(distance_km.toFixed(2)) : null,
-            completed_pickup: completedMap.get(id) || 0,
-            stars: ratingInfo.stars,
-            rating_count: ratingInfo.rating_count,
-            verification_status: v.verification_status || 'PENDING',
-        };
-    });
-
-    volunteerItems.sort((a, b) => {
-        if (a.distance_km == null && b.distance_km == null) {
-            if (b.completed_pickup !== a.completed_pickup) return b.completed_pickup - a.completed_pickup;
-            return b.stars - a.stars;
-        }
-        if (a.distance_km == null) return 1;
-        if (b.distance_km == null) return -1;
-        if (a.distance_km !== b.distance_km) return a.distance_km - b.distance_km;
-        if (b.completed_pickup !== a.completed_pickup) return b.completed_pickup - a.completed_pickup;
-        return b.stars - a.stars;
-    });
-
-    return {
-        donation_id: donation._id,
-        volunteers: volunteerItems.slice(0, safeLimit),
-    };
-}
 
 // ── GET /api/food-donations/:id/tracking ────────────────────────────────────
 async function getReceiverTracking(donationId, receiverId) {
@@ -391,6 +267,10 @@ async function getReceiverTracking(donationId, receiverId) {
         .select('address_line city latitude longitude')
         .lean();
 
+    const linkedRequest = await FoodRequest.findOne({ linked_donation_id: donation._id })
+        .select('_id')
+        .lean();
+
     return {
         donation: {
             id: donation._id,
@@ -399,6 +279,7 @@ async function getReceiverTracking(donationId, receiverId) {
             quantity: donation.quantity,
             unit: donation.unit,
             delivery_type: donation.delivery_type,
+            from_food_request: Boolean(linkedRequest),
         },
         delivery: {
             id: delivery._id,
@@ -429,11 +310,53 @@ async function getReceiverTracking(donationId, receiverId) {
     };
 }
 
+// ── GET /api/food-donations/:id ─────────────────────────────────────────────
+// Lấy chi tiết 1 đơn (full images + description + donor info + pickup address).
+async function getDonationById(donationId, viewer = null) {
+    const donation = await FoodDonation.findById(donationId)
+        .populate('donor_id', 'full_name avatar_url phone_number')
+        .lean();
+
+    if (!donation) {
+        throw _error('Không tìm thấy đơn quyên góp.', 404);
+    }
+
+    const donorObjectId = donation.donor_id?._id || donation.donor_id;
+    const donorProfile = donorObjectId
+        ? await DonorProfile.findOne({ user_id: donorObjectId })
+            .select('address_line city latitude longitude')
+            .lean()
+        : null;
+
+    let pickup_distance_km = null;
+    const viewerLocation = await getViewerLocation(viewer);
+    if (viewerLocation && donorProfile?.latitude != null && donorProfile?.longitude != null) {
+        const candidates = [{
+            id: String(donation._id),
+            latitude: donorProfile.latitude,
+            longitude: donorProfile.longitude,
+        }];
+        const googleMap = await getRoadDistancesFromGoogle(viewerLocation, candidates);
+        pickup_distance_km =
+            googleMap?.get(String(donation._id)) ??
+            distanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
+    }
+
+    return {
+        ...donation,
+        pickup_address_line: donorProfile?.address_line ?? null,
+        pickup_city:         donorProfile?.city         ?? null,
+        pickup_latitude:     donorProfile?.latitude     ?? null,
+        pickup_longitude:    donorProfile?.longitude    ?? null,
+        pickup_distance_km,
+    };
+}
+
 module.exports = {
     getDonations,
+    getDonationById,
     getMyDonations,
     getVolunteerSummary,
     getMyVolunteerDeliveries,
-    getAvailableVolunteersForDonation,
     getReceiverTracking,
 };

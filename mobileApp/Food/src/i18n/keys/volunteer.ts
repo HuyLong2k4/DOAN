@@ -46,6 +46,8 @@ export type VolunteerKey =
   | 'volunteer.pickupCode.confirm'
   | 'volunteer.pickupCode.cancel'
   | 'volunteer.pickupCode.invalidLength'
+  | 'volunteer.pickupCode.wrongCode'
+  | 'volunteer.pickupCode.genericError'
   | 'volunteer.pickUp'
   | 'volunteer.deliverDone'
   | 'volunteer.confirmDeliveryTitle'
@@ -127,6 +129,8 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.pickupCode.confirm': 'Confirm pickup',
   'volunteer.pickupCode.cancel': 'Cancel',
   'volunteer.pickupCode.invalidLength': 'Code must be 4 digits.',
+  'volunteer.pickupCode.wrongCode': 'Wrong code. Please ask the donor again.',
+  'volunteer.pickupCode.genericError': 'Could not confirm pickup. Please try again.',
   'volunteer.pickUp': 'Picked Up',
   'volunteer.deliverDone': 'Delivered',
   'volunteer.confirmDeliveryTitle': 'Confirm delivery',
@@ -209,6 +213,8 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.pickupCode.confirm': 'Xác nhận lấy hàng',
   'volunteer.pickupCode.cancel': 'Huỷ',
   'volunteer.pickupCode.invalidLength': 'Mã phải gồm 4 chữ số.',
+  'volunteer.pickupCode.wrongCode': 'Mã không khớp. Vui lòng nhờ donor đọc lại.',
+  'volunteer.pickupCode.genericError': 'Không xác nhận được. Vui lòng thử lại.',
   'volunteer.pickUp': 'Đã lấy hàng',
   'volunteer.deliverDone': 'Đã giao xong',
   'volunteer.confirmDeliveryTitle': 'Xác nhận giao hàng',

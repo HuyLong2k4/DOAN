@@ -1,6 +1,42 @@
+const path = require('path');
 const FoodDonationService = require('../services/foodDonationService');
 
 class FoodDonationController {
+
+    // ── POST /api/food-donations/uploads ────────────────────────────────────
+    static async uploadDonationImages(req, res) {
+        try {
+            if (req.user.role !== 'DONOR') {
+                return res.status(403).json({ success: false, message: 'Chỉ Donor mới có thể upload ảnh đơn quyên góp.' });
+            }
+
+            const files = req.files || [];
+            if (!files.length) {
+                return res.status(400).json({ success: false, message: 'Không có tệp nào được tải lên.' });
+            }
+
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const images = files.map((file) => ({
+                url: `${baseUrl}/uploads/donations/${encodeURIComponent(path.basename(file.filename))}`,
+                name: file.originalname || file.filename,
+                size_bytes: file.size || 0,
+            }));
+
+            return res.status(201).json({ success: true, data: { images } });
+        } catch (err) {
+            return res.status(500).json({ success: false, message: err.message || 'Upload ảnh thất bại.' });
+        }
+    }
+
+    // ── GET /api/food-donations/:id ─────────────────────────────────────────
+    static async getDonationById(req, res) {
+        try {
+            const data = await FoodDonationService.getDonationById(req.params.id, req.user);
+            return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
 
     // ── POST /api/food-donations ────────────────────────────────────────────
     static async createDonation(req, res) {
@@ -63,21 +99,6 @@ class FoodDonationController {
             }
 
             const data = await FoodDonationService.getMyVolunteerDeliveries(req.user.id);
-            return res.status(200).json({ success: true, data });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
-
-    // ── GET /api/food-donations/:id/available-volunteers ─────────────────
-    static async getAvailableVolunteers(req, res) {
-        try {
-            if (req.user.role !== 'RECEIVER') {
-                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể xem danh sách volunteer.' });
-            }
-
-            const limit = parseInt(req.query.limit, 10) || 20;
-            const data = await FoodDonationService.getAvailableVolunteersForDonation(req.params.id, req.user.id, limit);
             return res.status(200).json({ success: true, data });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -184,8 +205,35 @@ class FoodDonationController {
                 req.params.id,
                 req.user.id,
                 req.body?.delivery_type,
-                req.body?.preferred_agent_id,
             );
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── PATCH /api/food-donations/:id/report-no-show ──────────────────────
+    static async reportVolunteerNoShow(req, res) {
+        try {
+            if (req.user.role !== 'RECEIVER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể báo no-show.' });
+            }
+
+            const result = await FoodDonationService.reportVolunteerNoShow(req.params.id, req.user.id);
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── PATCH /api/food-donations/:id/receiver-disconnect ─────────────────
+    static async disconnectByReceiver(req, res) {
+        try {
+            if (req.user.role !== 'RECEIVER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể rút khỏi đơn.' });
+            }
+
+            const result = await FoodDonationService.disconnectDonationByReceiver(req.params.id, req.user.id);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -199,7 +247,8 @@ class FoodDonationController {
                 return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể xác nhận tự lấy hàng.' });
             }
 
-            const result = await FoodDonationService.completeSelfPickupByReceiver(req.params.id, req.user.id);
+            const pickupCode = req.body?.pickup_code ?? null;
+            const result = await FoodDonationService.completeSelfPickupByReceiver(req.params.id, req.user.id, pickupCode);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
@@ -228,6 +277,20 @@ class FoodDonationController {
             }
 
             const result = await FoodDonationService.cancelDonationByDonor(req.params.id, req.user.id);
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── PATCH /api/food-donations/:id/release-receiver ────────────────────
+    static async releaseReceiver(req, res) {
+        try {
+            if (req.user.role !== 'DONOR') {
+                return res.status(403).json({ success: false, message: 'Chỉ Donor mới có thể giải phóng receiver.' });
+            }
+
+            const result = await FoodDonationService.releaseReceiverByDonor(req.params.id, req.user.id);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

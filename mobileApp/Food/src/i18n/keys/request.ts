@@ -19,8 +19,6 @@ export type RequestKey =
   | 'request.requestDesc'
   | 'request.descPlaceholder'
   | 'request.mealReq'
-  | 'request.foodPref'
-  | 'request.foodPrefSub'
   | 'request.foodQty'
   | 'request.foodQtySub'
   | 'request.qtyPlaceholder'
@@ -31,10 +29,7 @@ export type RequestKey =
   | 'request.assurance'
   | 'request.requestNow'
   | 'request.selectFoodType'
-  | 'request.popupTitle'
-  | 'request.veg'
-  | 'request.nonVeg'
-  | 'request.both';
+  | 'request.popupTitle';
 
 export const requestEn: Record<RequestKey, string> = {
   'request.listingType': 'Listing Type: Request',
@@ -57,8 +52,6 @@ export const requestEn: Record<RequestKey, string> = {
   'request.requestDesc': 'Request Description',
   'request.descPlaceholder': 'Eg: Need cooked meals for evening.\nAdd details to help donors understand\nyour requirement quickly.',
   'request.mealReq': 'Meal Requirement',
-  'request.foodPref': 'Food Preference',
-  'request.foodPrefSub': 'Choose veg, non-veg, or both',
   'request.foodQty': 'Food Quantity',
   'request.foodQtySub': 'Food quantity (in person)',
   'request.qtyPlaceholder': '50 people',
@@ -70,9 +63,6 @@ export const requestEn: Record<RequestKey, string> = {
   'request.requestNow': 'Request Now',
   'request.selectFoodType': 'Select food type',
   'request.popupTitle': 'Select Type of Food',
-  'request.veg': 'Veg',
-  'request.nonVeg': 'Non-Veg',
-  'request.both': 'Both',
 };
 
 export const requestVi: Record<RequestKey, string> = {
@@ -96,8 +86,6 @@ export const requestVi: Record<RequestKey, string> = {
   'request.requestDesc': 'Mô tả yêu cầu',
   'request.descPlaceholder': 'VD: Cần bữa ăn chín vào buổi tối.\nThêm chi tiết giúp người tặng hiểu\nyêu cầu của bạn nhanh hơn.',
   'request.mealReq': 'Yêu cầu bữa ăn',
-  'request.foodPref': 'Sở thích ăn',
-  'request.foodPrefSub': 'Chọn chay, mặn, hoặc cả hai',
   'request.foodQty': 'Số lượng thực phẩm',
   'request.foodQtySub': 'Số lượng thực phẩm (theo người)',
   'request.qtyPlaceholder': '50 người',
@@ -109,7 +97,4 @@ export const requestVi: Record<RequestKey, string> = {
   'request.requestNow': 'Gửi yêu cầu',
   'request.selectFoodType': 'Chọn loại thực phẩm',
   'request.popupTitle': 'Chọn loại thực phẩm',
-  'request.veg': 'Chay',
-  'request.nonVeg': 'Mặn',
-  'request.both': 'Cả hai',
 };

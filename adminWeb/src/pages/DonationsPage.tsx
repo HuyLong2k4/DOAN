@@ -11,7 +11,6 @@ import { DonationStatusPill } from '../components/StatusPill';
 import {
   DONATION_STATUSES,
   donationStatusLabel,
-  foodPreferenceLabel,
   foodTypeLabel,
   formatDateTime,
   formatNumber,
@@ -181,7 +180,6 @@ export function DonationsPage() {
               {formatNumber(detail.quantity)} {detail.unit || 'phần'}
             </DetailRow>
             <DetailRow label="Loại thực phẩm">{foodTypeLabel(detail.food_type)}</DetailRow>
-            <DetailRow label="Ưu tiên">{foodPreferenceLabel(detail.food_preference)}</DetailRow>
             <DetailRow label="Địa chỉ pickup">
               {detail.pickup_address_line || '—'}
               {detail.pickup_city ? `, ${detail.pickup_city}` : ''}

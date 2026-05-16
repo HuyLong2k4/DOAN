@@ -27,8 +27,13 @@ export type ReceiverFoodRequest = {
   title: string;
   requested_quantity?: number;
   unit?: string;
-  food_preference?: 'VEG' | 'NON_VEG' | 'BOTH';
   needed_before?: string | null;
+  status?: 'PENDING' | 'ACCEPTED' | 'FULFILLED' | 'CANCELLED';
+  accepted_by_donor_id?: string | null;
+  linked_donation_id?:
+    | { _id?: string; title?: string; status?: string; delivery_type?: string }
+    | string
+    | null;
   receiver_id?:
     | { _id?: string; full_name?: string; avatar_url?: string }
     | string

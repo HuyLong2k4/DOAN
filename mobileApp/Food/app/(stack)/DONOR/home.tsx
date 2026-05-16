@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const [receiverFoodRequests, setReceiverFoodRequests] = useState<ReceiverFoodRequest[]>([]);
   const [acceptingFoodRequestId, setAcceptingFoodRequestId] = useState<string | null>(null);
   const [cancellingDonationId, setCancellingDonationId] = useState<string | null>(null);
+  const [releasingDonationId, setReleasingDonationId] = useState<string | null>(null);
   const [stats, setStats] = useState<DonorStats | null>(null);
 
   const isDonationOpen = (donation: DonorDonation) => {
@@ -72,13 +73,6 @@ export default function HomeScreen() {
   const hasReceiverRequestsContent =
     receiverFoodRequests.length > 0 ||
     approvedReceiverRequests.length > 0;
-
-  const formatFoodPreference = (value?: ReceiverFoodRequest['food_preference']) => {
-    if (value === 'VEG') return t('donor.foodPreference.veg');
-    if (value === 'NON_VEG') return t('donor.foodPreference.nonVeg');
-    if (value === 'BOTH') return t('donor.foodPreference.vegAndNonVeg');
-    return t('donor.notSpecified');
-  };
 
   const handleCancelDonation = (donationId: string) => {
     Alert.alert(
@@ -114,11 +108,98 @@ export default function HomeScreen() {
     );
   };
 
+  const handleReleaseReceiver = (donationId: string) => {
+    const donation = donations.find((it) => it._id === donationId);
+    const isFromRequest = Boolean(donation?.from_food_request);
+
+    const confirmTitle = isFromRequest
+      ? t('donor.releaseReceiver.fromRequestConfirmTitle')
+      : t('donor.releaseReceiver.confirmTitle');
+    const confirmMessage = isFromRequest
+      ? t('donor.releaseReceiver.fromRequestConfirmMessage')
+      : t('donor.releaseReceiver.confirmMessage');
+    const defaultSuccessBody = isFromRequest
+      ? t('donor.releaseReceiver.fromRequestSuccessBody')
+      : t('donor.releaseReceiver.successBody');
+
+    Alert.alert(
+      confirmTitle,
+      confirmMessage,
+      [
+        { text: t('donor.releaseReceiver.confirmNo'), style: 'cancel' },
+        {
+          text: t('donor.releaseReceiver.confirmYes'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setReleasingDonationId(donationId);
+              const res = await http.patch(`/food-donations/${donationId}/release-receiver`);
+              const cameFromRequest = res.data?.from_food_request ?? isFromRequest;
+
+              setDonations((prev) =>
+                prev.map((d) => {
+                  if (d._id !== donationId) return d;
+                  if (cameFromRequest) {
+                    // Donation huỷ hoàn toàn.
+                    return {
+                      ...d,
+                      status: 'CANCELLED',
+                      can_release_receiver: false,
+                      release_state: 'finalized',
+                    };
+                  }
+                  // Release receiver — donation về PENDING.
+                  return {
+                    ...d,
+                    status: 'PENDING',
+                    selected_receiver_id: null,
+                    volunteer_id: null,
+                    delivery_id: null,
+                    delivery_type: null,
+                    selected_at: null,
+                    release_eligible_at: null,
+                    can_release_receiver: false,
+                    release_state: null,
+                    pickup_code: null,
+                    delivery_status: null,
+                  };
+                }),
+              );
+              Alert.alert(
+                t('donor.releaseReceiver.successTitle'),
+                res.data?.message || defaultSuccessBody,
+              );
+            } catch (err: any) {
+              Alert.alert(
+                t('donor.releaseReceiver.failedTitle'),
+                err?.response?.data?.message || t('donor.cancel.failedBody'),
+              );
+            } finally {
+              setReleasingDonationId(null);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handleAcceptFoodRequest = async (requestId: string) => {
     try {
       setAcceptingFoodRequestId(requestId);
       const res = await http.patch(`/food-requests/${requestId}/accept`);
-      setReceiverFoodRequests((prev) => prev.filter((item) => item._id !== requestId));
+      const updatedRequest = res.data?.data || null;
+      setReceiverFoodRequests((prev) =>
+        prev.map((item) =>
+          item._id === requestId
+            ? {
+                ...item,
+                status: 'ACCEPTED',
+                accepted_by_donor_id: (user as any)?.id || (user as any)?._id || null,
+                linked_donation_id: updatedRequest?.linked_donation_id ?? item.linked_donation_id ?? null,
+              }
+            : item,
+        ),
+      );
       Alert.alert(t('donor.alert.acceptSuccessTitle'), res.data?.message || t('donor.alert.acceptSuccessBody'));
     } catch (err: any) {
       Alert.alert(t('donor.alert.acceptFailedTitle'), err?.response?.data?.message || t('donor.alert.acceptFailedBody'));
@@ -266,6 +347,8 @@ export default function HomeScreen() {
                   d={d}
                   onCancel={handleCancelDonation}
                   cancelling={cancellingDonationId === d._id}
+                  onReleaseReceiver={handleReleaseReceiver}
+                  releasing={releasingDonationId === d._id}
                 />
               ))}
               <View style={styles.emptyCard}>
@@ -300,30 +383,52 @@ export default function HomeScreen() {
                       ? new Date(req.needed_before).toLocaleDateString('vi-VN')
                       : t('donor.notSpecified');
                     const accepting = acceptingFoodRequestId === req._id;
+                    const isAccepted = req.status === 'ACCEPTED';
+                    const linkedDonation = typeof req.linked_donation_id === 'object' ? req.linked_donation_id : null;
 
                     return (
                       <View key={`receiver-food-request:${req._id}`} style={styles.receiverReqCard}>
                         <View style={styles.receiverReqHead}>
-                          <Ionicons name="document-text-outline" size={22} color="#006666" />
+                          <Ionicons
+                            name={isAccepted ? 'checkmark-circle' : 'document-text-outline'}
+                            size={22}
+                            color={isAccepted ? '#2E7D32' : '#006666'}
+                          />
                           <View style={{ flex: 1 }}>
                             <Text style={styles.receiverReqName}>{receiverName}</Text>
                             <Text style={styles.receiverReqSub} numberOfLines={1}>{t('donor.request.label')}: {req.title}</Text>
                             <Text style={styles.receiverReqSub}>{t('donor.qty.label')}: {qty}</Text>
-                            <Text style={styles.receiverReqSub}>{t('donor.preference.label')}: {formatFoodPreference(req.food_preference)}</Text>
                             <Text style={styles.receiverReqSub}>{t('donor.neededBefore.label')}: {neededBefore}</Text>
                           </View>
+                          {isAccepted ? (
+                            <View style={styles.acceptedBadge}>
+                              <Text style={styles.acceptedBadgeText}>{t('donor.requestAccepted')}</Text>
+                            </View>
+                          ) : null}
                         </View>
 
-                        <TouchableOpacity
-                          style={[styles.receiverAcceptFoodReqBtn, accepting && styles.actionBtnDisabled]}
-                          disabled={accepting}
-                          onPress={() => handleAcceptFoodRequest(req._id)}
-                        >
-                          <Ionicons name="checkmark-circle-outline" size={16} color="#006666" />
-                          <Text style={styles.receiverAcceptFoodReqBtnText}>
-                            {accepting ? t('donor.accepting') : t('donor.accept')}
-                          </Text>
-                        </TouchableOpacity>
+                        {isAccepted ? (
+                          linkedDonation?._id ? (
+                            <TouchableOpacity
+                              style={styles.viewDonationBtn}
+                              onPress={() => setActiveTab('my')}
+                            >
+                              <Ionicons name="open-outline" size={16} color="#006666" />
+                              <Text style={styles.viewDonationBtnText}>{t('donor.viewDonation')}</Text>
+                            </TouchableOpacity>
+                          ) : null
+                        ) : (
+                          <TouchableOpacity
+                            style={[styles.receiverAcceptFoodReqBtn, accepting && styles.actionBtnDisabled]}
+                            disabled={accepting}
+                            onPress={() => handleAcceptFoodRequest(req._id)}
+                          >
+                            <Ionicons name="checkmark-circle-outline" size={16} color="#006666" />
+                            <Text style={styles.receiverAcceptFoodReqBtnText}>
+                              {accepting ? t('donor.accepting') : t('donor.accept')}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     );
                   })}
@@ -584,6 +689,26 @@ const styles = StyleSheet.create({
   },
   receiverAcceptFoodReqBtnText: { color: c.primaryStrong, fontWeight: '700', fontSize: 13 },
   actionBtnDisabled: { opacity: 0.6 },
+  acceptedBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: '#E8F5E9',
+  },
+  acceptedBadgeText: { color: '#2E7D32', fontWeight: '700', fontSize: 10, letterSpacing: 0.3 },
+  viewDonationBtn: {
+    marginTop: 10,
+    borderRadius: r.md,
+    borderWidth: 1,
+    borderColor: '#BBDEFB',
+    backgroundColor: '#E0F2F1',
+    paddingVertical: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  viewDonationBtnText: { color: '#006666', fontWeight: '700', fontSize: 13 },
   approvedSection: {
     marginTop: 4,
     paddingTop: 6,

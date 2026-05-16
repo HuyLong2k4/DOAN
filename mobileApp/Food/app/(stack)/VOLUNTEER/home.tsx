@@ -73,6 +73,7 @@ export default function VolunteerHomeScreen() {
   const [openingChatDonationId, setOpeningChatDonationId] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<DeliveryRequest | null>(null);
   const [pickupCodeTarget, setPickupCodeTarget] = useState<VolunteerDeliveryItem | null>(null);
+  const [pickupCodeError, setPickupCodeError] = useState<string | null>(null);
 
   const refreshMyDeliveries = useCallback(async () => {
     const myDeliveryRes = await http.get('/food-donations/volunteer/my-deliveries');
@@ -101,12 +102,18 @@ export default function VolunteerHomeScreen() {
   const handleStartPickup = useCallback(async (item: VolunteerDeliveryItem, pickupCode: string) => {
     try {
       setActingDeliveryId(item.id);
+      setPickupCodeError(null);
       const res = await http.patch(`/food-donations/${item.id}/pickup-start`, { pickup_code: pickupCode });
       setMyDeliveries((prev) => prev.map((d) => (d.id === item.id ? { ...d, deliveryStatus: 'ON_THE_WAY' } : d)));
       setPickupCodeTarget(null);
       Alert.alert(t('volunteer.startPickupTitle'), res.data?.message || t('volunteer.startPickupMsg'));
     } catch (err: any) {
-      Alert.alert(t('volunteer.cannotUpdate'), err?.response?.data?.message || t('volunteer.cannotOpenChatMsg'));
+      const status = err?.response?.status;
+      const serverMsg = err?.response?.data?.message as string | undefined;
+      const fallback = status === 400
+        ? t('volunteer.pickupCode.wrongCode')
+        : t('volunteer.pickupCode.genericError');
+      setPickupCodeError(serverMsg || fallback);
     } finally {
       setActingDeliveryId(null);
     }
@@ -536,7 +543,12 @@ export default function VolunteerHomeScreen() {
         visible={Boolean(pickupCodeTarget)}
         busy={pickupCodeTarget ? actingDeliveryId === pickupCodeTarget.id : false}
         donationTitle={pickupCodeTarget?.title}
-        onClose={() => setPickupCodeTarget(null)}
+        error={pickupCodeError}
+        onClose={() => {
+          setPickupCodeTarget(null);
+          setPickupCodeError(null);
+        }}
+        onClearError={() => setPickupCodeError(null)}
         onSubmit={(code) => {
           if (!pickupCodeTarget) return;
           void handleStartPickup(pickupCodeTarget, code);
