@@ -12,7 +12,7 @@ const Delivery = require('../../models/deliveryModel');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
 const Feedback = require('../../models/feedbackModel');
-const { distanceKm, getRoadDistancesFromGoogle, getViewerLocation } = require('./distance');
+const { distanceKm, getRoadDistancesFromGoogle, getViewerLocation, isValidCoord } = require('./distance');
 const { computeReleaseReceiverEligibility } = require('./donorActions');
 
 function _error(message, statusCode = 400) {
@@ -21,7 +21,9 @@ function _error(message, statusCode = 400) {
 
 // ── GET /api/food-donations ─────────────────────────────────────────────────
 // Trả về kèm thông tin donor + địa chỉ pickup. Sort theo distance (gần nhất trước).
-async function getDonations(viewer = null, filter = {}) {
+// `viewerLocationOverride` cho phép truyền GPS real-time từ mobile thay vì
+// dùng toạ độ tĩnh ở profile.
+async function getDonations(viewer = null, filter = {}, viewerLocationOverride = null) {
     const query = { ...filter };
 
     if (viewer?.role === 'RECEIVER' && viewer?.id) {
@@ -53,13 +55,16 @@ async function getDonations(viewer = null, filter = {}) {
         .lean();
     const profileMap = Object.fromEntries(profiles.map(p => [p.user_id.toString(), p]));
 
-    const viewerLocation = await getViewerLocation(viewer);
+    const viewerLocation =
+        (viewerLocationOverride && isValidCoord(viewerLocationOverride.latitude, viewerLocationOverride.longitude))
+            ? viewerLocationOverride
+            : await getViewerLocation(viewer);
 
     const distanceCandidates = [];
     if (viewerLocation) {
         donations.forEach((d) => {
             const profile = profileMap[d.donor_id?._id?.toString()];
-            if (profile?.latitude == null || profile?.longitude == null) return;
+            if (!isValidCoord(profile?.latitude, profile?.longitude)) return;
             distanceCandidates.push({
                 id: d._id.toString(),
                 latitude: profile.latitude,
@@ -74,7 +79,7 @@ async function getDonations(viewer = null, filter = {}) {
         const profile = profileMap[d.donor_id?._id?.toString()];
 
         let pickup_distance_km = null;
-        if (viewerLocation && profile?.latitude != null && profile?.longitude != null) {
+        if (viewerLocation && isValidCoord(profile?.latitude, profile?.longitude)) {
             pickup_distance_km =
                 googleDistanceMap?.get(d._id.toString()) ??
                 distanceKm(
@@ -89,8 +94,8 @@ async function getDonations(viewer = null, filter = {}) {
             ...d,
             pickup_address_line: profile?.address_line ?? null,
             pickup_city:         profile?.city         ?? null,
-            pickup_latitude:     profile?.latitude     ?? null,
-            pickup_longitude:    profile?.longitude    ?? null,
+            pickup_latitude:     isValidCoord(profile?.latitude, profile?.longitude) ? profile.latitude  : null,
+            pickup_longitude:    isValidCoord(profile?.latitude, profile?.longitude) ? profile.longitude : null,
             pickup_distance_km,
         };
     });
@@ -330,7 +335,7 @@ async function getDonationById(donationId, viewer = null) {
 
     let pickup_distance_km = null;
     const viewerLocation = await getViewerLocation(viewer);
-    if (viewerLocation && donorProfile?.latitude != null && donorProfile?.longitude != null) {
+    if (viewerLocation && isValidCoord(donorProfile?.latitude, donorProfile?.longitude)) {
         const candidates = [{
             id: String(donation._id),
             latitude: donorProfile.latitude,
@@ -342,12 +347,13 @@ async function getDonationById(donationId, viewer = null) {
             distanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
     }
 
+    const donorHasValidCoord = isValidCoord(donorProfile?.latitude, donorProfile?.longitude);
     return {
         ...donation,
         pickup_address_line: donorProfile?.address_line ?? null,
         pickup_city:         donorProfile?.city         ?? null,
-        pickup_latitude:     donorProfile?.latitude     ?? null,
-        pickup_longitude:    donorProfile?.longitude    ?? null,
+        pickup_latitude:     donorHasValidCoord ? donorProfile.latitude  : null,
+        pickup_longitude:    donorHasValidCoord ? donorProfile.longitude : null,
         pickup_distance_km,
     };
 }

@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { getMyStats, type ReceiverStats } from '../../../src/api/user.api';
@@ -32,6 +33,7 @@ type DonationItem = {
   selected_receiver_id?: string | { _id?: string } | null;
   delivery_type?: 'VIA_AGENT' | 'SELF_PICKUP' | null;
   images?: string[];
+  createdAt?: string;
 };
 
 function normalizeObjectId(value?: string | { _id?: string } | null): string {
@@ -132,6 +134,31 @@ export default function HomeReceiverScreen() {
   const [connectingDonationId, setConnectingDonationId] = useState<string | null>(null);
   const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
   const [stats, setStats] = useState<ReceiverStats | null>(null);
+  // Cache GPS trong session để khỏi xin quyền/đọc GPS mỗi lần focus lại home.
+  const lastGpsRef = useRef<{ latitude: number; longitude: number; at: number } | null>(null);
+
+  const getCurrentGps = useCallback(async (): Promise<{ latitude: number; longitude: number } | null> => {
+    try {
+      const cached = lastGpsRef.current;
+      if (cached && Date.now() - cached.at < 60_000) {
+        return { latitude: cached.latitude, longitude: cached.longitude };
+      }
+
+      const current = await Location.getForegroundPermissionsAsync();
+      let status = current.status;
+      if (status === 'undetermined') {
+        const req = await Location.requestForegroundPermissionsAsync();
+        status = req.status;
+      }
+      if (status !== 'granted') return null;
+
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      lastGpsRef.current = { latitude: loc.coords.latitude, longitude: loc.coords.longitude, at: Date.now() };
+      return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+    } catch {
+      return null;
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -140,9 +167,12 @@ export default function HomeReceiverScreen() {
       (async () => {
         try {
           setLoading(true);
+          const gps = await getCurrentGps();
+          const donationsParams = gps ? { params: { lat: gps.latitude, lon: gps.longitude } } : undefined;
+
           const [mineRes, donorsRes, statsRes] = await Promise.all([
             http.get('/food-requests/my'),
-            http.get('/food-donations'),
+            http.get('/food-donations', donationsParams),
             getMyStats().catch(() => null),
           ]);
 
@@ -162,12 +192,99 @@ export default function HomeReceiverScreen() {
       return () => {
         active = false;
       };
-    }, [])
+    }, [getCurrentGps])
   );
 
   const nearDonors = donorPosts.slice(0, 2);
-  const donorFeedPosts = donorPosts;
+  const donorFeedPosts = donorPosts
+    .slice()
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 3);
   const donorTabCount = donorPosts.length;
+
+  const renderDonorCard = (item: DonationItem) => {
+    const selectedForMe =
+      normalizeObjectId(item.selected_receiver_id) !== '' &&
+      normalizeObjectId(item.selected_receiver_id) === currentUserId;
+    const pickupChosen = selectedForMe && Boolean(item.delivery_type);
+
+    return (
+      <DonorCard
+        key={item._id}
+        title={item.title}
+        imageUri={item.images?.[0]}
+        distanceKm={item.pickup_distance_km}
+        onViewDetails={() => {
+          router.push({
+            pathname: '/(stack)/RECEIVER/donationDetail',
+            params: {
+              donationId: item._id,
+              title: item.title,
+              donorName: item.donor_id?.full_name || t('receiver.unknownDonor'),
+              pickupAddressLine: item.pickup_address_line || '',
+              pickupCity: item.pickup_city || '',
+              pickupLatitude: item.pickup_latitude != null ? String(item.pickup_latitude) : '',
+              pickupLongitude: item.pickup_longitude != null ? String(item.pickup_longitude) : '',
+              foodType: item.food_type || '',
+              quantity: item.quantity != null ? String(item.quantity) : '',
+              unit: item.unit || '',
+              expirationDatetime: item.expiration_datetime || '',
+              distanceKm: item.pickup_distance_km != null ? String(item.pickup_distance_km) : '',
+              imageUrl: item.images?.[0] || '',
+              status: item.status || '',
+              selectedForMe: selectedForMe ? '1' : '0',
+              pickupChosen: pickupChosen ? '1' : '0',
+              deliveryType: item.delivery_type || '',
+            },
+          } as any);
+        }}
+        selectedForMe={selectedForMe}
+        pickupChosen={pickupChosen}
+        deliveryType={item.delivery_type || null}
+        t={t}
+        onConnect={() => {
+          if (pickupChosen) {
+            router.push({
+              pathname: '/(stack)/RECEIVER/tracking',
+              params: { donationId: item._id, title: item.title },
+            } as any);
+            return;
+          }
+
+          if (selectedForMe) {
+            router.push({
+              pathname: '/(stack)/RECEIVER/addPickup',
+              params: { donationId: item._id, title: item.title },
+            } as any);
+            return;
+          }
+          void (async () => {
+            try {
+              setConnectingDonationId(item._id);
+              const res = await http.patch(`/food-donations/${item._id}/connect`);
+              const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
+              Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
+                {
+                  text: t('receiver.choosePickup'),
+                  onPress: () => {
+                    router.push({
+                      pathname: '/(stack)/RECEIVER/addPickup',
+                      params: { donationId: item._id, title: item.title },
+                    } as any);
+                  },
+                },
+              ]);
+            } catch (err: any) {
+              Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
+            } finally {
+              setConnectingDonationId(null);
+            }
+          })();
+        }}
+        connecting={connectingDonationId === item._id}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -331,9 +448,7 @@ export default function HomeReceiverScreen() {
               </View>
             ) : donorFeedPosts.length > 0 ? (
               <View style={styles.donorPostList}>
-                {donorFeedPosts.slice(0, 3).map((item) => (
-                  <DonorPostItem key={item._id} item={item} t={t} />
-                ))}
+                {donorFeedPosts.map(renderDonorCard)}
               </View>
             ) : (
               <Text style={styles.placeholderTitle}>{t('receiver.noDonorPosts')}</Text>
@@ -349,98 +464,7 @@ export default function HomeReceiverScreen() {
 
           <View style={styles.donorList}>
             {nearDonors.length > 0 ? (
-              nearDonors.map((item) => {
-                const selectedForMe =
-                  normalizeObjectId(item.selected_receiver_id) !== '' &&
-                  normalizeObjectId(item.selected_receiver_id) === currentUserId;
-                const pickupChosen = selectedForMe && Boolean(item.delivery_type);
-
-                return (
-                <DonorCard
-                  key={item._id}
-                  title={item.title}
-                  imageUri={item.images?.[0]}
-                  distanceKm={item.pickup_distance_km}
-                  onViewDetails={() => {
-                    router.push({
-                      pathname: '/(stack)/RECEIVER/donationDetail',
-                      params: {
-                        donationId: item._id,
-                        title: item.title,
-                        donorName: item.donor_id?.full_name || t('receiver.unknownDonor'),
-                        pickupAddressLine: item.pickup_address_line || '',
-                        pickupCity: item.pickup_city || '',
-                        pickupLatitude: item.pickup_latitude != null ? String(item.pickup_latitude) : '',
-                        pickupLongitude: item.pickup_longitude != null ? String(item.pickup_longitude) : '',
-                        foodType: item.food_type || '',
-                        quantity: item.quantity != null ? String(item.quantity) : '',
-                        unit: item.unit || '',
-                        expirationDatetime: item.expiration_datetime || '',
-                        distanceKm: item.pickup_distance_km != null ? String(item.pickup_distance_km) : '',
-                        imageUrl: item.images?.[0] || '',
-                        status: item.status || '',
-                        selectedForMe: selectedForMe ? '1' : '0',
-                        pickupChosen: pickupChosen ? '1' : '0',
-                        deliveryType: item.delivery_type || '',
-                      },
-                    } as any);
-                  }}
-                  selectedForMe={selectedForMe}
-                  pickupChosen={pickupChosen}
-                  deliveryType={item.delivery_type || null}
-                  t={t}
-                  onConnect={() => {
-                    if (pickupChosen) {
-                      router.push({
-                        pathname: '/(stack)/RECEIVER/tracking',
-                        params: {
-                          donationId: item._id,
-                          title: item.title,
-                        },
-                      } as any);
-                      return;
-                    }
-
-                    if (selectedForMe) {
-                      router.push({
-                        pathname: '/(stack)/RECEIVER/addPickup',
-                        params: {
-                          donationId: item._id,
-                          title: item.title,
-                        },
-                      } as any);
-                      return;
-                    }
-                    void (async () => {
-                      try {
-                        setConnectingDonationId(item._id);
-                        const res = await http.patch(`/food-donations/${item._id}/connect`);
-                        const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
-                        Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
-                          {
-                            text: t('receiver.choosePickup'),
-                            onPress: () => {
-                              router.push({
-                                pathname: '/(stack)/RECEIVER/addPickup',
-                                params: {
-                                  donationId: item._id,
-                                  title: item.title,
-                                },
-                              } as any);
-                            },
-                          },
-                        ]);
-                      } catch (err: any) {
-                        Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
-                      } finally {
-                        setConnectingDonationId(null);
-                      }
-                    })();
-                  }}
-                  connecting={connectingDonationId === item._id}
-                />
-                );
-              })
+              nearDonors.map(renderDonorCard)
             ) : (
               <Text style={styles.noDonorText}>{t('receiver.noNearbyDonors')}</Text>
             )}
@@ -531,22 +555,6 @@ function DonorCard({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
-  );
-}
-
-function DonorPostItem({ item, t }: { item: DonationItem; t: (key: any) => string }) {
-  return (
-    <View style={styles.donorPostCard}>
-      <Text style={styles.donorPostTitle} numberOfLines={1}>{item.title}</Text>
-      <Text style={styles.donorPostMeta} numberOfLines={1}>
-        {item.donor_id?.full_name ?? t('receiver.unknownDonor')}
-        {item.pickup_city ? ` • ${item.pickup_city}` : ''}
-      </Text>
-      <Text style={styles.donorPostSub}>
-        {item.quantity ?? '-'} {item.unit ?? t('receiver.portion')}
-        {item.food_type ? ` • ${item.food_type}` : ''}
-      </Text>
     </View>
   );
 }
@@ -820,18 +828,6 @@ const styles = StyleSheet.create({
   donorPostList: {
     width: '100%',
   },
-  donorPostCard: {
-    backgroundColor: c.surface,
-    borderWidth: 1,
-    borderColor: c.border,
-    borderRadius: r.md,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 8,
-  },
-  donorPostTitle: { fontSize: 14, color: c.textPrimary, fontWeight: '600' },
-  donorPostMeta: { fontSize: 12, color: c.textSecondary, marginTop: 4 },
-  donorPostSub: { fontSize: 11, color: c.textMuted, marginTop: 4 },
   placeholderLine: { width: '70%', height: 1, backgroundColor: '#D8D8D8', marginBottom: 8 },
   placeholderTitle: { fontSize: 14, color: '#B5B5B5', marginBottom: 10 },
   requestQuestion: { fontSize: 14, color: c.textPrimary, marginBottom: 14 },

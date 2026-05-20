@@ -67,7 +67,14 @@ export default function HomeScreen() {
   }, [donations]);
 
   const myPostDonations = useMemo(() => {
-    return donations.filter(isDonationOpen);
+    return donations
+      .filter((d) => {
+        const status = String(d.status || '').toUpperCase();
+        return status !== 'COMPLETED' && status !== 'DELIVERED' && status !== 'CANCELLED';
+      })
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
   }, [donations]);
 
   const hasReceiverRequestsContent =

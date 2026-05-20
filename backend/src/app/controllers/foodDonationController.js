@@ -60,7 +60,21 @@ class FoodDonationController {
                 if (statuses.length === 1) filter.status = statuses[0];
                 else if (statuses.length > 1) filter.status = { $in: statuses };
             }
-            const donations = await FoodDonationService.getDonations(req.user, filter);
+
+            // Receiver có thể truyền GPS real-time qua query để tính khoảng cách
+            // chính xác hơn so với toạ độ tĩnh ở profile.
+            let viewerLocationOverride = null;
+            const latRaw = req.query.lat ?? req.query.latitude;
+            const lonRaw = req.query.lon ?? req.query.lng ?? req.query.longitude;
+            if (latRaw != null && lonRaw != null) {
+                const lat = Number(latRaw);
+                const lon = Number(lonRaw);
+                if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                    viewerLocationOverride = { latitude: lat, longitude: lon };
+                }
+            }
+
+            const donations = await FoodDonationService.getDonations(req.user, filter, viewerLocationOverride);
             return res.status(200).json({ success: true, data: donations });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

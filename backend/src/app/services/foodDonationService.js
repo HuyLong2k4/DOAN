@@ -55,8 +55,8 @@ class FoodDonationService {
     }
 
     // ── Queries ───────────────────────────────────────────────────────────
-    static getDonations(viewer, filter) {
-        return queries.getDonations(viewer, filter);
+    static getDonations(viewer, filter, viewerLocationOverride) {
+        return queries.getDonations(viewer, filter, viewerLocationOverride);
     }
     static getDonationById(donationId, viewer) {
         return queries.getDonationById(donationId, viewer);
