@@ -215,7 +215,7 @@ async function broadcastDonationToNearbyVolunteers(donation, deliveryId) {
         return; // Không có vị trí donor → bỏ qua broadcast (volunteer vẫn thấy trong list).
     }
 
-    const volunteerProfiles = await VolunteerProfile.find()
+    const volunteerProfiles = await VolunteerProfile.find({ is_active: true })
         .select('user_id latitude longitude')
         .populate({
             path: 'user_id',

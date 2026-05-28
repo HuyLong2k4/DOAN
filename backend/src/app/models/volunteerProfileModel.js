@@ -30,6 +30,9 @@ const VolunteerProfileSchema = new mongoose.Schema({
 
     // Mục tiêu số đơn volunteer tự đặt — hiển thị trên Home
     delivery_goal: { type: Number, default: null },
+
+    // Volunteer chủ động bật/tắt nhận đơn — broadcast chỉ gửi khi is_active = true.
+    is_active: { type: Boolean, default: false },
 }, {
     timestamps: true,
 });

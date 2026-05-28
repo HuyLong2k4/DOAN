@@ -1,4 +1,4 @@
-import type { AdminUser, ApiEnvelope, AuthUser, DonationRecord, RequestRecord } from '../types';
+import type { AdminUser, ApiEnvelope, AuthUser, DonationRecord, FeedbackRecord, RequestRecord, VerificationStatus, VolunteerRecord } from '../types';
 import { buildClient, getActiveClient, type ApiClient } from './client';
 
 export interface LoginPayload {
@@ -66,5 +66,19 @@ export async function listDonations(status?: string): Promise<DonationRecord[]> 
 export async function listRequests(status?: string): Promise<RequestRecord[]> {
   const params = status ? { status } : undefined;
   const res = await getActiveClient().get<ApiEnvelope<RequestRecord[]>>('/food-requests', { params });
+  return res.data.data || [];
+}
+
+export async function listVolunteers(): Promise<VolunteerRecord[]> {
+  const res = await getActiveClient().get<ApiEnvelope<VolunteerRecord[]>>('/profile/volunteers');
+  return res.data.data || [];
+}
+
+export async function updateVerificationStatus(userId: string, status: VerificationStatus): Promise<void> {
+  await getActiveClient().patch<ApiEnvelope<unknown>>(`/profile/volunteers/${userId}/verification`, { status });
+}
+
+export async function listFeedback(): Promise<FeedbackRecord[]> {
+  const res = await getActiveClient().get<ApiEnvelope<FeedbackRecord[]>>('/feedback');
   return res.data.data || [];
 }

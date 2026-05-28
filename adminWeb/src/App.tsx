@@ -9,6 +9,8 @@ import { UsersPage } from './pages/UsersPage';
 import { DonationsPage } from './pages/DonationsPage';
 import { RequestsPage } from './pages/RequestsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { VolunteersPage } from './pages/VolunteersPage';
+import { FeedbackPage } from './pages/FeedbackPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -31,6 +33,8 @@ export default function App() {
               <Route path="users" element={<UsersPage />} />
               <Route path="donations" element={<DonationsPage />} />
               <Route path="requests" element={<RequestsPage />} />
+              <Route path="volunteers" element={<VolunteersPage />} />
+              <Route path="feedback" element={<FeedbackPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />

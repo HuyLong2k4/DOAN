@@ -1,4 +1,5 @@
 const FeedbackService = require('../services/feedbackService');
+const Feedback = require('../models/feedbackModel');
 
 class FeedbackController {
     // GET /api/feedback/donation/:donationId
@@ -10,6 +11,20 @@ class FeedbackController {
 
             const data = await FeedbackService.getReceiverFeedbackContext(req.params.donationId, req.user.id);
             return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // GET /api/feedback (ADMIN)
+    static async listAllFeedback(req, res) {
+        try {
+            const feedback = await Feedback.find()
+                .sort({ createdAt: -1 })
+                .populate('from_user_id', 'full_name avatar_url role')
+                .populate('to_user_id', 'full_name avatar_url role')
+                .lean();
+            return res.status(200).json({ success: true, data: feedback });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }

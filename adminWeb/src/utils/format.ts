@@ -91,3 +91,14 @@ export const DONATION_STATUSES: DonationStatus[] = [
 export const REQUEST_STATUSES: RequestStatus[] = ['PENDING', 'ACCEPTED', 'FULFILLED', 'CANCELLED'];
 
 export const USER_ROLES: UserRole[] = ['ADMIN', 'DONOR', 'RECEIVER', 'VOLUNTEER', 'UNSET'];
+
+const VERIFICATION_LABEL: Record<string, string> = {
+  PENDING: 'Chờ duyệt',
+  APPROVED: 'Đã duyệt',
+  REJECTED: 'Từ chối',
+};
+
+export function verificationLabel(status?: string | null): string {
+  if (!status) return '—';
+  return VERIFICATION_LABEL[status] || status;
+}

@@ -7,6 +7,7 @@ import {
   Linking,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -74,6 +75,20 @@ export default function VolunteerHomeScreen() {
   const [confirmTarget, setConfirmTarget] = useState<DeliveryRequest | null>(null);
   const [pickupCodeTarget, setPickupCodeTarget] = useState<VolunteerDeliveryItem | null>(null);
   const [pickupCodeError, setPickupCodeError] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(false);
+  const [togglingActive, setTogglingActive] = useState(false);
+
+  const handleToggleActive = useCallback(async () => {
+    try {
+      setTogglingActive(true);
+      const res = await http.patch('/profile/volunteer/active-status');
+      setIsActive(Boolean(res.data?.is_active));
+    } catch {
+      Alert.alert(t('volunteer.cannotUpdate'), t('volunteer.somethingWrong'));
+    } finally {
+      setTogglingActive(false);
+    }
+  }, [t]);
 
   const refreshMyDeliveries = useCallback(async () => {
     const myDeliveryRes = await http.get('/food-donations/volunteer/my-deliveries');
@@ -254,12 +269,13 @@ export default function VolunteerHomeScreen() {
           setLoadingMyDeliveries(true);
           setLoadingNgos(true);
 
-          const [requestRes, myDeliveryRes, summaryRes, ngoRes, statsRes] = await Promise.all([
+          const [requestRes, myDeliveryRes, summaryRes, ngoRes, statsRes, profileRes] = await Promise.all([
             http.get('/food-donations'),
             http.get('/food-donations/volunteer/my-deliveries'),
             http.get('/food-donations/volunteer/summary'),
             getNearbyNgos(12),
             getMyStats().catch(() => null),
+            http.get('/profile/me').catch(() => null),
           ]);
 
           const requestData = (requestRes.data?.data ?? []) as FoodDonationApiItem[];
@@ -305,6 +321,7 @@ export default function VolunteerHomeScreen() {
             });
             setNearbyNgos(mappedNgos);
             if (statsRes) setStats(statsRes.data.data as VolunteerStats);
+            if (profileRes) setIsActive(Boolean(profileRes.data?.data?.profile?.is_active));
           }
         } catch {
           // Giữ data cũ khi fetch fail (mạng yếu, Railway cold start...)
@@ -353,10 +370,24 @@ export default function VolunteerHomeScreen() {
             </View>
           </View>
           <View style={styles.headerActions}>
-            <TouchableOpacity 
-            onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
-            style={styles.langPill}
-            activeOpacity={0.85}>
+            <View style={styles.activeToggleWrap}>
+              <View style={[styles.activeStatusDot, { backgroundColor: isActive ? '#2E7D32' : '#9E9E9E' }]} />
+              <Text style={[styles.activeStatusLabel, { color: isActive ? '#2E7D32' : '#9E9E9E' }]}>
+                {isActive ? t('volunteer.online') : t('volunteer.offline')}
+              </Text>
+              <Switch
+                value={isActive}
+                onValueChange={handleToggleActive}
+                disabled={togglingActive}
+                trackColor={{ false: '#CFD8DC', true: '#A5D6A7' }}
+                thumbColor={isActive ? '#2E7D32' : '#90A4AE'}
+              />
+            </View>
+            <TouchableOpacity
+              onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+              style={styles.langPill}
+              activeOpacity={0.85}
+            >
               <Text style={styles.langPillText}>{language === 'vi' ? 'VI' : 'EN'}</Text>
             </TouchableOpacity>
             <NotificationBell size={26} />
@@ -574,6 +605,26 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  activeToggleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  activeStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  activeStatusLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
   langPill: {
     borderWidth: 1,
     borderColor: c.border,

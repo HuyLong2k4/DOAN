@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const ProfileController = require('../controllers/profileController');
 const authMiddleware    = require('../middlewares/authMiddleware');
+const adminMiddleware   = require('../middlewares/adminMiddleware');
 
 // Tất cả routes đều cần đăng nhập
 router.use(authMiddleware);
@@ -21,7 +22,14 @@ router.post('/receiver',         ProfileController.completeReceiverProfile);
 // POST /api/profile/volunteer   → Hoàn thành Volunteer profile (Volunteer Details form)
 router.post('/volunteer',        ProfileController.completeVolunteerProfile);
 
+// PATCH /api/profile/volunteer/active-status → Volunteer bật/tắt nhận đơn
+router.patch('/volunteer/active-status', ProfileController.toggleActiveStatus);
+
 // PATCH /api/profile/location   → Cập nhật tọa độ GPS (Pin on map / Set Location)
 router.patch('/location',        ProfileController.updateLocation);
+
+// Admin only
+router.get('/volunteers',                              adminMiddleware, ProfileController.listVolunteers);
+router.patch('/volunteers/:userId/verification',       adminMiddleware, ProfileController.updateVerificationStatus);
 
 module.exports = router;

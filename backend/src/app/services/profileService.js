@@ -224,6 +224,36 @@ class ProfileService {
     // ──────────────────────────────────────────────────────────────────────
     // PATCH /api/profile/location  — cập nhật tọa độ GPS (pin on map)
     // ──────────────────────────────────────────────────────────────────────
+    static async listVolunteers() {
+        const profiles = await VolunteerProfile.find()
+            .populate('user_id', 'full_name email phone_number avatar_url createdAt')
+            .sort({ createdAt: -1 })
+            .lean();
+        return profiles;
+    }
+
+    static async updateVerificationStatus(userId, status) {
+        const VALID = ['PENDING', 'APPROVED', 'REJECTED'];
+        if (!VALID.includes(status)) throw this._error('Trạng thái không hợp lệ.', 400);
+
+        const profile = await VolunteerProfile.findOneAndUpdate(
+            { user_id: userId },
+            { verification_status: status, ...(status === 'APPROVED' ? { verified_at: new Date() } : {}) },
+            { new: true },
+        );
+        if (!profile) throw this._error('Không tìm thấy hồ sơ volunteer.', 404);
+        return { verification_status: profile.verification_status };
+    }
+
+    static async toggleActiveStatus(userId) {
+        const profile = await VolunteerProfile.findOne({ user_id: userId });
+        if (!profile) throw this._error('Không tìm thấy hồ sơ volunteer.', 404);
+
+        profile.is_active = !profile.is_active;
+        await profile.save();
+        return { is_active: profile.is_active };
+    }
+
     static async updateLocation(userId, role, latitude, longitude) {
         if (latitude == null || longitude == null) {
             throw this._error('Thiếu latitude hoặc longitude.');

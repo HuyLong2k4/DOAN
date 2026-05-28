@@ -79,7 +79,9 @@ export type VolunteerKey =
   | 'volunteer.confirmAcceptPrefix'
   | 'volunteer.confirmAcceptMiddle'
   | 'volunteer.youEarned'
-  | 'volunteer.donorEarned';
+  | 'volunteer.donorEarned'
+  | 'volunteer.online'
+  | 'volunteer.offline';
 
 export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.greeting': 'Hi',
@@ -163,6 +165,8 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.confirmAcceptMiddle': 'to',
   'volunteer.youEarned': 'You earned +',
   'volunteer.donorEarned': 'Donor earned +',
+  'volunteer.online': 'Online',
+  'volunteer.offline': 'Offline',
 };
 
 export const volunteerVi: Record<VolunteerKey, string> = {
@@ -247,4 +251,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.confirmAcceptMiddle': 'đến',
   'volunteer.youEarned': 'Bạn được +',
   'volunteer.donorEarned': 'Người tặng được +',
+  'volunteer.online': 'Trực tuyến',
+  'volunteer.offline': 'Ngoại tuyến',
 };
