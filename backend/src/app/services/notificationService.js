@@ -121,62 +121,11 @@ class NotificationService {
 
     // ============ USE CASES ============
 
-    static notifyNewFoodNearby(nearbyUserIds, foodData) {
-        return this.sendToMultipleUsers(nearbyUserIds, {
-            title: 'Có đồ ăn miễn phí gần bạn!',
-            body: `${foodData.food_name} - ${foodData.quantity} suất, cách bạn ${foodData.distance}m`,
-            data: {
-                type: 'NEW_FOOD',
-                food_id: String(foodData.food_id || ''),
-            },
-        });
-    }
-
-    static notifyBadgeEarned(userId, badge) {
-        return this.sendToUser(userId, {
-            title: 'Chúc mừng! Bạn đạt huy hiệu mới',
-            body: `${badge.name} - ${badge.description}`,
-            data: { type: 'BADGE_EARNED', badge_id: String(badge._id || '') },
-        });
-    }
-
-    static notifyOrderConfirmed(receiverId, orderData) {
-        return this.sendToUser(receiverId, {
-            title: 'Đơn của bạn đã được xác nhận',
-            body: `${orderData.donor_name} đã xác nhận. Hãy đến lấy trước ${orderData.pickup_time}`,
-            data: { type: 'ORDER_CONFIRMED', order_id: String(orderData.order_id || '') },
-        });
-    }
-
-    static notifyOrderRejected(receiverId, orderData) {
-        return this.sendToUser(receiverId, {
-            title: 'Đơn của bạn bị từ chối',
-            body: `Lý do: ${orderData.reason || 'Đồ ăn không còn đủ số lượng'}`,
-            data: { type: 'ORDER_REJECTED', order_id: String(orderData.order_id || '') },
-        });
-    }
-
     static notifyDonorNewOrder(donorId, orderData) {
         return this.sendToUser(donorId, {
             title: 'Có người đặt đồ ăn của bạn',
             body: `${orderData.receiver_name} muốn nhận ${orderData.quantity} suất`,
             data: { type: 'NEW_ORDER', order_id: String(orderData.order_id || '') },
-        });
-    }
-
-    static notifyPickupReminder(receiverId, orderData) {
-        return this.sendToUser(receiverId, {
-            title: 'Đến giờ lấy đồ ăn rồi!',
-            body: `Đơn hàng #${orderData.order_code} cần lấy trước ${orderData.pickup_time}`,
-            data: { type: 'PICKUP_REMINDER', order_id: String(orderData.order_id || '') },
-        });
-    }
-
-    static notifyDonorExpiringSoon(donorId, foodData) {
-        return this.sendToUser(donorId, {
-            title: 'Đồ ăn của bạn sắp hết hạn',
-            body: `${foodData.food_name} còn ${foodData.remaining_quantity} suất nhưng chưa có người nhận`,
-            data: { type: 'FOOD_EXPIRING', food_id: String(foodData.food_id || '') },
         });
     }
 
@@ -192,14 +141,6 @@ class NotificationService {
         });
     }
 
-    static async notifySystemAnnouncement(announcement) {
-        const users = await User.find({ push_token: { $ne: '' } }).select('_id');
-        return this.sendToMultipleUsers(users.map((u) => u._id), {
-            title: announcement.title,
-            body: announcement.body,
-            data: { type: 'SYSTEM_ANNOUNCEMENT', announcement_id: String(announcement.id || '') },
-        });
-    }
 }
 
 module.exports = NotificationService;

@@ -5,9 +5,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const { uploadAvatar } = require('../middlewares/avatarUploadMiddleware');
 
-// Public routes
-router.post('/', UserController.createUser);
-
 // Leaderboard — authenticated, any role
 router.get('/leaderboard', authMiddleware, UserController.getLeaderboard);
 

@@ -29,7 +29,16 @@
       "Bash(echo \"=== real-code errors: $\\(npx tsc --noEmit -p tsconfig.json 2>&1)",
       "Bash(node -e \"require\\('./src/app/services/userService'\\);require\\('./src/app/controllers/userController'\\);console.log\\('backend modules OK'\\)\")",
       "PowerShell(Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { $p = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; [PSCustomObject]@{ Port=$_.LocalPort; PID=$_.OwningProcess; Name=$p.ProcessName; Path=$p.Path } } | Format-List)",
-      "Bash(node --check src/app/services/foodDonation/queries.js)"
+      "Bash(node --check src/app/services/foodDonation/queries.js)",
+      "Bash(grep -rnoE \"\\(http|api|client\\)\\\\.\\(get|post|patch|delete|put\\)\\\\\\(\\\\s*[\\\\`'\\\\\"][^\\\\`'\\\\\"]+\" mobileApp/Food/src mobileApp/Food/app --include='*.ts' --include='*.tsx')",
+      "Bash(sed -E \"s/.*\\\\.\\(get|post|patch|delete|put\\)\\\\\\(\\\\s*[\\\\`'\\\\\"]/\\\\1 /\")",
+      "Bash(grep -rnoE \"[\\\\`'\\\\\"]/\\(chat|conversations\\)[^\\\\`'\\\\\"]*\" mobileApp/Food/src mobileApp/Food/app --include='*.ts' --include='*.tsx')",
+      "Bash(grep -rnE \"post.*['\\\\\"\\\\`]/users['\\\\\"\\\\`]|/users'\\\\\\)|createUser\" mobileApp/Food/src mobileApp/Food/app adminWeb/src --include='*.ts' --include='*.tsx')",
+      "Bash(grep -rnE \"food-requests/.*cancel|cancelMyRequest|/cancel\" mobileApp/Food/src mobileApp/Food/app adminWeb/src --include='*.ts' --include='*.tsx')",
+      "Bash(sed -E 's/.*static \\(async \\)?//')",
+      "Bash(sed 's/.*\\\\.//')",
+      "Bash(sed 's/static //')",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }

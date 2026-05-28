@@ -236,25 +236,6 @@ class FoodRequestService {
     return finalRequest || updated;
   }
 
-  static async cancelMyRequest(requestId, receiverId) {
-    const updated = await FoodRequest.findOneAndUpdate(
-      {
-        _id: requestId,
-        receiver_id: receiverId,
-        status: { $in: ['PENDING', 'ACCEPTED'] },
-        linked_donation_id: null,
-      },
-      { status: 'CANCELLED' },
-      { new: true }
-    );
-
-    if (!updated) {
-      throw this._error('Yêu cầu không tồn tại, đã được ghép đơn, hoặc không thể hủy.', 404);
-    }
-
-    return updated;
-  }
-
   static async deleteMyRequest(requestId, receiverId) {
     const deleted = await FoodRequest.findOneAndDelete({
       _id: requestId,

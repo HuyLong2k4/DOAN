@@ -2,10 +2,10 @@
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getMyProfile } from "../../src/api/profile.api";
-import { uploadAvatar } from "../../src/api/user.api";
+import { updateUser, uploadAvatar } from "../../src/api/user.api";
 import { useI18n } from "../../src/i18n/useI18n";
 import { useAuthStore } from "../../src/store/authStore";
 
@@ -37,6 +37,18 @@ function formatCoordinate(value?: number | null) {
   return Number.isFinite(value) ? Number(value).toFixed(6) : null;
 }
 
+function isValidPhone(value: string) {
+  // Cho phép trống (không bắt buộc) hoặc 8-15 ký tự số, có thể kèm +, -, khoảng trắng.
+  if (!value.trim()) return true;
+  return /^[0-9+\-\s]{8,15}$/.test(value.trim());
+}
+
+function isValidEmail(value: string) {
+  // Cho phép trống (không bắt buộc) hoặc định dạng email cơ bản.
+  if (!value.trim()) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 function InfoRow({
   label,
   value,
@@ -62,6 +74,71 @@ export default function PersonalInfoScreen() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [editVisible, setEditVisible] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const openEdit = () => {
+    setEditName(user?.full_name ?? '');
+    setEditPhone(user?.phone_number ?? '');
+    setEditEmail(user?.email ?? '');
+    setEditVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (savingProfile) return;
+
+    const name = editName.trim();
+    const phone = editPhone.trim();
+    const email = editEmail.trim();
+
+    if (!name) {
+      Alert.alert(t('personalInfo.updateFailed'), t('personalInfo.nameRequired'));
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      Alert.alert(t('personalInfo.updateFailed'), t('personalInfo.phoneInvalid'));
+      return;
+    }
+    if (!isValidEmail(email)) {
+      Alert.alert(t('personalInfo.updateFailed'), t('personalInfo.emailInvalid'));
+      return;
+    }
+
+    // user.id ở một số luồng lại nằm dưới _id → fallback để không thoát im lặng.
+    const userId = (user as any)?.id || (user as any)?._id;
+    if (!user || !userId) {
+      Alert.alert(t('personalInfo.updateFailed'), t('personalInfo.updateFailed'));
+      return;
+    }
+
+    // Chỉ gửi các trường có giá trị để tránh ghi rỗng vào unique index (email/phone).
+    const payload: { full_name: string; phone_number?: string; email?: string } = { full_name: name };
+    if (phone) payload.phone_number = phone;
+    if (email) payload.email = email;
+
+    try {
+      setSavingProfile(true);
+      const res = await updateUser(String(userId), payload);
+      const updated = res.data?.data;
+      setUser({
+        ...user,
+        full_name: updated?.full_name ?? name,
+        phone_number: updated?.phone_number ?? user.phone_number,
+        email: updated?.email ?? user.email,
+      });
+      setEditVisible(false);
+      Alert.alert(t('personalInfo.title'), t('personalInfo.updateSuccess'));
+    } catch (err: any) {
+      const message = err?.response?.data?.message || t('personalInfo.updateFailed');
+      Alert.alert(t('personalInfo.updateFailed'), message);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const handlePickAvatar = async () => {
     if (uploadingAvatar) return;
@@ -141,7 +218,9 @@ export default function PersonalInfoScreen() {
           <Ionicons name="arrow-back" size={22} color="#111" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('personalInfo.title')}</Text>
-        <View style={styles.headerSpacer} />
+        <TouchableOpacity onPress={openEdit} style={styles.editBtn} accessibilityLabel={t('personalInfo.editProfile')}>
+          <Ionicons name="create-outline" size={22} color="#008080" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -215,6 +294,72 @@ export default function PersonalInfoScreen() {
           </View>
         ) : null}
       </ScrollView>
+
+      <Modal
+        visible={editVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{t('personalInfo.editTitle')}</Text>
+
+            <Text style={styles.fieldLabel}>{t('personalInfo.fullName')}</Text>
+            <TextInput
+              style={styles.input}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder={t('personalInfo.fullName')}
+              placeholderTextColor="#9CA3AF"
+              autoCapitalize="words"
+            />
+
+            <Text style={styles.fieldLabel}>{t('personalInfo.phone')}</Text>
+            <TextInput
+              style={styles.input}
+              value={editPhone}
+              onChangeText={setEditPhone}
+              placeholder={t('personalInfo.phone')}
+              placeholderTextColor="#9CA3AF"
+              keyboardType="phone-pad"
+            />
+
+            <Text style={styles.fieldLabel}>{t('personalInfo.email')}</Text>
+            <TextInput
+              style={styles.input}
+              value={editEmail}
+              onChangeText={setEditEmail}
+              placeholder={t('personalInfo.email')}
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalCancelBtn]}
+                onPress={() => setEditVisible(false)}
+                disabled={savingProfile}
+              >
+                <Text style={styles.modalCancelText}>{t('personalInfo.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalSaveBtn, savingProfile && { opacity: 0.7 }]}
+                onPress={handleSaveProfile}
+                disabled={savingProfile}
+              >
+                {savingProfile ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.modalSaveText}>{t('personalInfo.save')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -245,8 +390,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111",
   },
-  headerSpacer: {
+  editBtn: {
     width: 40,
+    height: 40,
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
   profileCard: {
     marginHorizontal: 16,
@@ -401,5 +549,71 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 12,
     color: "#6B7280",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 14,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginBottom: 6,
+    marginTop: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: "#111827",
+    backgroundColor: "#F9FAFB",
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  modalBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCancelBtn: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+  },
+  modalCancelText: {
+    color: "#374151",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  modalSaveBtn: {
+    backgroundColor: "#008080",
+  },
+  modalSaveText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

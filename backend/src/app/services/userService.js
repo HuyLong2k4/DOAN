@@ -3,7 +3,6 @@ const FoodDonation = require('../models/foodDonationModel');
 const Feedback = require('../models/feedbackModel');
 const bcrypt = require('bcryptjs');
 
-const USER_ROLE = ['ADMIN', 'DONOR', 'RECEIVER', 'VOLUNTEER'];
 const LEADERBOARD_ROLE = ['DONOR', 'VOLUNTEER'];
 
 class UserService {
@@ -37,76 +36,9 @@ class UserService {
         });
     }
     
-    static async createUser(userData) {
-        const { full_name, phone_number, email, password, avatar_url, role } = userData;
-
-        if (email) {
-            const existedEmail = await User.findOne({ email });
-            if (existedEmail) {
-                const error = new Error('Email đã tồn tại');
-                error.statusCode = 400;
-                throw error;
-            }
-        }
-
-        if (phone_number) {
-            const existedPhone = await User.findOne({ phone_number });
-            if (existedPhone) {
-                const error = new Error('Số điện thoại đã tồn tại');
-                error.statusCode = 400;
-                throw error;
-            }
-        }
-
-        let safeRole = role || 'RECEIVER';
-        if (!USER_ROLE.includes(safeRole)) safeRole = 'RECEIVER';
-
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
-        const seed = (full_name || email || phone_number || 'user').trim();
-        const defaultAvatarUrl =
-            avatar_url?.trim() ||
-            `https://api.dicebear.com/8.x/initials/png?seed=${encodeURIComponent(seed)}`;
-
-        const user = await User.create({
-            full_name,
-            phone_number,
-            email,
-            password: passwordHash,
-            avatar_url: defaultAvatarUrl,
-            role: safeRole,
-            is_phone_verified: safeRole === 'ADMIN',
-        });
-
-        return user;
-    }
-
-    static async addBadge(userId, badgeId) {
-        const user = await User.findById(userId);
-        if (!user) {
-            const error = new Error('Không tìm thấy user');
-            error.statusCode = 404;
-            throw error;
-        }
-        
-        user.earned_badges.push({ badge_id: badgeId, earned_at: new Date() });
-        await user.save();
-        
-        return await User.findById(userId).select('-password');
-    }
-
-    static async getBadges(userId) {
-        const user = await User.findById(userId).populate('earned_badges.badge_id');
-        return user.earned_badges;
-    }
-
     // Cập nhật push token (gọi sau khi login + cấp quyền notification)
     static async updatePushToken(userId, token) {
         await User.findByIdAndUpdate(userId, { push_token: token || '' });
-    }
-
-    static async clearPushToken(userId) {
-        await User.findByIdAndUpdate(userId, { push_token: '' });
     }
 
     static async updateUser(id, updateData) {

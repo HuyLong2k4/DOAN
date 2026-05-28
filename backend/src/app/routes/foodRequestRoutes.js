@@ -9,7 +9,6 @@ router.post('/', FoodRequestController.createRequest);
 router.get('/', FoodRequestController.getRequests);
 router.get('/my', FoodRequestController.getMyRequests);
 router.patch('/:id/accept', FoodRequestController.acceptRequestByDonor);
-router.patch('/:id/cancel', FoodRequestController.cancelMyRequest);
 router.delete('/:id', FoodRequestController.deleteMyRequest);
 
 module.exports = router;

@@ -87,6 +87,16 @@ export type CommonKey =
   | 'personalInfo.fetchingPin'
   | 'personalInfo.notUpdated'
   | 'personalInfo.locationNotPinned'
+  | 'personalInfo.editProfile'
+  | 'personalInfo.editTitle'
+  | 'personalInfo.save'
+  | 'personalInfo.cancel'
+  | 'personalInfo.saving'
+  | 'personalInfo.nameRequired'
+  | 'personalInfo.phoneInvalid'
+  | 'personalInfo.updateSuccess'
+  | 'personalInfo.updateFailed'
+  | 'personalInfo.emailInvalid'
   | 'pantry.qty';
 
 export const commonEn: Record<CommonKey, string> = {
@@ -178,6 +188,16 @@ export const commonEn: Record<CommonKey, string> = {
   'personalInfo.fetchingPin': 'Fetching pin location...',
   'personalInfo.notUpdated': 'Not updated',
   'personalInfo.locationNotPinned': 'User has not pinned location on map yet.',
+  'personalInfo.editProfile': 'Edit info',
+  'personalInfo.editTitle': 'Edit personal info',
+  'personalInfo.save': 'Save',
+  'personalInfo.cancel': 'Cancel',
+  'personalInfo.saving': 'Saving...',
+  'personalInfo.nameRequired': 'Please enter your full name.',
+  'personalInfo.phoneInvalid': 'Please enter a valid phone number.',
+  'personalInfo.updateSuccess': 'Your information has been updated.',
+  'personalInfo.updateFailed': 'Could not update your information.',
+  'personalInfo.emailInvalid': 'Please enter a valid email address.',
   'pantry.qty': 'Qty:',
 };
 
@@ -270,5 +290,15 @@ export const commonVi: Record<CommonKey, string> = {
   'personalInfo.fetchingPin': 'Đang tải vị trí...',
   'personalInfo.notUpdated': 'Chưa cập nhật',
   'personalInfo.locationNotPinned': 'Người dùng chưa ghim vị trí trên bản đồ.',
+  'personalInfo.editProfile': 'Sửa thông tin',
+  'personalInfo.editTitle': 'Sửa thông tin cá nhân',
+  'personalInfo.save': 'Lưu',
+  'personalInfo.cancel': 'Huỷ',
+  'personalInfo.saving': 'Đang lưu...',
+  'personalInfo.nameRequired': 'Vui lòng nhập họ và tên.',
+  'personalInfo.phoneInvalid': 'Số điện thoại không hợp lệ.',
+  'personalInfo.updateSuccess': 'Đã cập nhật thông tin của bạn.',
+  'personalInfo.updateFailed': 'Không thể cập nhật thông tin.',
+  'personalInfo.emailInvalid': 'Email không hợp lệ.',
   'pantry.qty': 'SL:',
 };

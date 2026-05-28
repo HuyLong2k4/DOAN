@@ -57,15 +57,6 @@ class FoodRequestController {
     }
   }
 
-  static async cancelMyRequest(req, res) {
-    try {
-      const request = await FoodRequestService.cancelMyRequest(req.params.id, req.user.id);
-      return res.status(200).json({ success: true, message: 'Đã hủy yêu cầu.', data: request });
-    } catch (err) {
-      return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-    }
-  }
-
   static async deleteMyRequest(req, res) {
     try {
       const request = await FoodRequestService.deleteMyRequest(req.params.id, req.user.id);

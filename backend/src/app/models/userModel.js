@@ -18,10 +18,6 @@ const UserSchema = new mongoose.Schema({
     is_email_verified: { type: Boolean, default: false },
 
     points: { type: Number, default: 0 },
-    earned_badges: [{
-        badge_id:  { type: mongoose.Schema.Types.ObjectId, ref: 'Badge' },
-        earned_at: { type: Date, default: Date.now }
-    }],
 
     // Expo Push Token (ExponentPushToken[...]). Để rỗng khi user chưa cấp quyền hoặc đã logout.
     push_token: { type: String, default: '' },
