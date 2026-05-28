@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Eye, HandHeart, RefreshCcw, Search } from 'lucide-react';
 import { listDonations } from '../api/endpoints';
-import { getErrorMessage } from '../api/client';
+import { getErrorMessage, resolveAssetUrl } from '../api/client';
 import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
 import { Spinner } from '../components/Spinner';
@@ -199,7 +199,7 @@ export function DonationsPage() {
               <DetailRow label="Hình ảnh" full>
                 <div className="image-row">
                   {detail.images.map((url) => (
-                    <img key={url} src={url} alt="Donation" className="image-thumb" />
+                    <img key={url} src={resolveAssetUrl(url)} alt="Donation" className="image-thumb" />
                   ))}
                 </div>
               </DetailRow>

@@ -22,6 +22,30 @@ export function resolveDefaultApiBaseUrl(): string {
   return normalizeBaseUrl(`http://${host}:5000`);
 }
 
+// Ảnh upload được lưu kèm host cố định lúc client upload (vd IP LAN của mobile),
+// nên admin ở máy/mạng khác không tải được. Ánh xạ lại path /uploads về đúng
+// origin backend mà admin đang kết nối — backend này chắc chắn reachable vì
+// admin vừa load được dữ liệu từ nó.
+export function resolveAssetUrl(url?: string | null): string {
+  const trimmed = (url || '').trim();
+  if (!trimmed || /^(data|blob):/i.test(trimmed)) return trimmed;
+
+  const apiBase = storage.getApiBaseUrl() || resolveDefaultApiBaseUrl();
+  const origin = apiBase.replace(/\/api\/?$/i, '');
+
+  if (trimmed.startsWith('/')) return `${origin}${trimmed}`;
+
+  try {
+    const parsed = new URL(trimmed);
+    if (/\/uploads\//i.test(parsed.pathname)) {
+      return `${origin}${parsed.pathname}${parsed.search}`;
+    }
+    return trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
 // apiBaseUrl giữ ở localStorage (config, không nhạy cảm).
 // token + user lưu vào sessionStorage → đóng tab là mất phiên, buộc đăng nhập lại.
 export const storage = {

@@ -73,21 +73,6 @@ export interface RequestRecord {
   updatedAt?: string;
 }
 
-export type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-
-export interface VolunteerRecord {
-  _id: string;
-  user_id?: { _id?: string; full_name?: string; email?: string; phone_number?: string; avatar_url?: string; createdAt?: string };
-  verification_status?: VerificationStatus;
-  verification_document_type?: string | null;
-  verification_document_url?: string | null;
-  verified_at?: string | null;
-  availability_days?: string[] | string;
-  availability_time?: string | null;
-  is_active?: boolean;
-  createdAt?: string;
-}
-
 export interface FeedbackRecord {
   _id: string;
   from_user_id?: { _id?: string; full_name?: string; avatar_url?: string; role?: UserRole };

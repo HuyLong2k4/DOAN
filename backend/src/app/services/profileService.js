@@ -169,7 +169,6 @@ class ProfileService {
             contact_name,
             address_line, pin_code, city,
             latitude, longitude,
-            verification_document_type, verification_document_url,
             availability_days, availability_time,
             delivery_goal,
         } = data;
@@ -185,7 +184,6 @@ class ProfileService {
                 user_id: userId,
                 contact_name: normalizedContactName,
                 address_line, pin_code, city, latitude, longitude,
-                verification_document_type, verification_document_url,
                 availability_days, availability_time,
                 delivery_goal,
             },
@@ -219,30 +217,6 @@ class ProfileService {
         if (user.role === 'VOLUNTEER') profile = await VolunteerProfile.findOne({ user_id: userId });
 
         return { user, profile };
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // PATCH /api/profile/location  — cập nhật tọa độ GPS (pin on map)
-    // ──────────────────────────────────────────────────────────────────────
-    static async listVolunteers() {
-        const profiles = await VolunteerProfile.find()
-            .populate('user_id', 'full_name email phone_number avatar_url createdAt')
-            .sort({ createdAt: -1 })
-            .lean();
-        return profiles;
-    }
-
-    static async updateVerificationStatus(userId, status) {
-        const VALID = ['PENDING', 'APPROVED', 'REJECTED'];
-        if (!VALID.includes(status)) throw this._error('Trạng thái không hợp lệ.', 400);
-
-        const profile = await VolunteerProfile.findOneAndUpdate(
-            { user_id: userId },
-            { verification_status: status, ...(status === 'APPROVED' ? { verified_at: new Date() } : {}) },
-            { new: true },
-        );
-        if (!profile) throw this._error('Không tìm thấy hồ sơ volunteer.', 404);
-        return { verification_status: profile.verification_status };
     }
 
     static async toggleActiveStatus(userId) {

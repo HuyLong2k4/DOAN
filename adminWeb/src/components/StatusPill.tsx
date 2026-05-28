@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import type { DonationStatus, RequestStatus, UserRole, VerificationStatus } from '../types';
-import { donationStatusLabel, requestStatusLabel, roleLabel, verificationLabel } from '../utils/format';
+import type { DonationStatus, RequestStatus, UserRole } from '../types';
+import { donationStatusLabel, requestStatusLabel, roleLabel } from '../utils/format';
 
 const ROLE_CLASS: Record<UserRole, string> = {
   ADMIN: 'pill-admin',
@@ -48,15 +48,4 @@ export function DonationStatusPill({ status }: { status?: DonationStatus | null 
 export function RequestStatusPill({ status }: { status?: RequestStatus | null }) {
   if (!status) return <Pill className="pill-muted">—</Pill>;
   return <Pill className={REQUEST_CLASS[status] || 'pill-muted'}>{requestStatusLabel(status)}</Pill>;
-}
-
-const VERIFICATION_CLASS: Record<VerificationStatus, string> = {
-  PENDING: 'pill-warning',
-  APPROVED: 'pill-success',
-  REJECTED: 'pill-danger',
-};
-
-export function VerificationPill({ status }: { status?: VerificationStatus | null }) {
-  if (!status) return <Pill className="pill-muted">—</Pill>;
-  return <Pill className={VERIFICATION_CLASS[status] || 'pill-muted'}>{verificationLabel(status)}</Pill>;
 }

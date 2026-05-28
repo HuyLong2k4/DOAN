@@ -64,12 +64,6 @@ Enum AvailabilityTime {
   OTHER
 }
 
-Enum VerificationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 Enum OtpPurpose {
   SIGNUP
   LOGIN
@@ -168,11 +162,6 @@ Table Volunteer_Profiles {
   pin_code                   varchar             [not null]
   latitude                   decimal
   longitude                  decimal
-
-  verification_document_type varchar
-  verification_document_url  varchar
-  verification_status        VerificationStatus  [default: 'PENDING']
-  verified_at                timestamp
 
   availability_days          json                [note: 'Ví dụ: ["MON","WED","FRI"] | "ALL_WEEKDAYS" | "ALL_WEEKEND"']
   availability_time          AvailabilityTime

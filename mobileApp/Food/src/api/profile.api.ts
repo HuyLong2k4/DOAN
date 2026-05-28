@@ -34,8 +34,6 @@ export interface VolunteerProfileRequest {
   longitude?: number;
   vehicle_type?: string;
   vehicle_license?: string;
-  verification_document_type?: string;
-  verification_document_url?: string;
   availability_days?: string[];
   availability_time?: string;
   delivery_goal?: number;

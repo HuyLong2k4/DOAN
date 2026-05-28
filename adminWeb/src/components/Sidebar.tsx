@@ -6,7 +6,6 @@ import {
   LogOut,
   MessageSquare,
   Settings,
-  ShieldCheck,
   Users,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +17,6 @@ const NAV_ITEMS = [
   { to: '/users', label: 'Người dùng', icon: Users },
   { to: '/donations', label: 'Donations', icon: HandHeart },
   { to: '/requests', label: 'Requests', icon: HeartHandshake },
-  { to: '/volunteers', label: 'Volunteer', icon: ShieldCheck },
   { to: '/feedback', label: 'Feedback', icon: MessageSquare },
   { to: '/profile', label: 'Tài khoản', icon: Settings },
 ];

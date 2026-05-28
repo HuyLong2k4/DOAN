@@ -65,27 +65,6 @@ class ProfileController {
         }
     }
 
-    // ── GET /api/profile/volunteers (ADMIN) ───────────────────────────────
-    static async listVolunteers(req, res) {
-        try {
-            const data = await ProfileService.listVolunteers();
-            return res.status(200).json({ success: true, data });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
-
-    // ── PATCH /api/profile/volunteers/:userId/verification (ADMIN) ────────
-    static async updateVerificationStatus(req, res) {
-        try {
-            const { status } = req.body;
-            const result = await ProfileService.updateVerificationStatus(req.params.userId, status);
-            return res.status(200).json({ success: true, ...result });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
-
     // ── PATCH /api/profile/volunteer/active-status ────────────────────────
     static async toggleActiveStatus(req, res) {
         try {

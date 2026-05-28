@@ -2,7 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const ProfileController = require('../controllers/profileController');
 const authMiddleware    = require('../middlewares/authMiddleware');
-const adminMiddleware   = require('../middlewares/adminMiddleware');
 
 // Tất cả routes đều cần đăng nhập
 router.use(authMiddleware);
@@ -27,9 +26,5 @@ router.patch('/volunteer/active-status', ProfileController.toggleActiveStatus);
 
 // PATCH /api/profile/location   → Cập nhật tọa độ GPS (Pin on map / Set Location)
 router.patch('/location',        ProfileController.updateLocation);
-
-// Admin only
-router.get('/volunteers',                              adminMiddleware, ProfileController.listVolunteers);
-router.patch('/volunteers/:userId/verification',       adminMiddleware, ProfileController.updateVerificationStatus);
 
 module.exports = router;
