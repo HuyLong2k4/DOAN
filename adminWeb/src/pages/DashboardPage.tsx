@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { HandHeart, HeartHandshake, Trophy, Users } from 'lucide-react';
+import { HandHeart, HeartHandshake, RefreshCcw, Trophy, Users } from 'lucide-react';
 import { listDonations, listRequests, listUsers } from '../api/endpoints';
 import { getErrorMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -58,31 +58,31 @@ export function DashboardPage() {
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [requests, setRequests] = useState<RequestRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    try {
+      const [usersData, donationsData, requestsData] = await Promise.all([
+        listUsers(),
+        listDonations(),
+        listRequests(),
+      ]);
+      setUsers(usersData);
+      setDonations(donationsData);
+      setRequests(requestsData);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      if (isRefresh) setRefreshing(false);
+      else setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const [usersData, donationsData, requestsData] = await Promise.all([
-          listUsers(),
-          listDonations(),
-          listRequests(),
-        ]);
-        if (cancelled) return;
-        setUsers(usersData);
-        setDonations(donationsData);
-        setRequests(requestsData);
-      } catch (error) {
-        if (!cancelled) toast.error(getErrorMessage(error));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [toast]);
+    void loadData();
+  }, [loadData]);
 
   const totalPoints = useMemo(
     () => users.reduce((sum, user) => sum + (user.points || 0), 0),
@@ -151,6 +151,16 @@ export function DashboardPage() {
       <PageHeader
         title="Tổng quan hệ thống"
         subtitle="Số liệu nhanh về người dùng, đơn quyên góp và yêu cầu nhận thực phẩm."
+        actions={
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => void loadData(true)}
+            disabled={refreshing}
+          >
+            <RefreshCcw size={16} /> Làm mới
+          </button>
+        }
       />
 
       <section className="kpi-grid">

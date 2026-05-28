@@ -3,7 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
-  ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -129,6 +129,7 @@ export default function HomeReceiverScreen() {
   const [activeTab, setActiveTab] = useState<'my' | 'donors'>('my');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [myPosts, setMyPosts] = useState<RequestItem[]>([]);
   const [donorPosts, setDonorPosts] = useState<DonationItem[]>([]);
   const [connectingDonationId, setConnectingDonationId] = useState<string | null>(null);
@@ -160,40 +161,67 @@ export default function HomeReceiverScreen() {
     }
   }, []);
 
+  const fetchData = useCallback(async () => {
+    const gps = await getCurrentGps();
+    const donationsParams = gps ? { params: { lat: gps.latitude, lon: gps.longitude } } : undefined;
+
+    const [mineRes, donorsRes, statsRes] = await Promise.all([
+      http.get('/food-requests/my'),
+      http.get('/food-donations', donationsParams),
+      getMyStats().catch(() => null),
+    ]);
+
+    return {
+      myPosts: (mineRes.data?.data ?? []) as RequestItem[],
+      donorPosts: (donorsRes.data?.data ?? []) as DonationItem[],
+      stats: statsRes ? (statsRes.data.data as ReceiverStats) : null,
+    };
+  }, [getCurrentGps]);
+
+  const applyData = useCallback((data: Awaited<ReturnType<typeof fetchData>>) => {
+    setMyPosts(data.myPosts);
+    setDonorPosts(data.donorPosts);
+    if (data.stats) setStats(data.stats);
+  }, []);
+
+  // Focus: load 1 lần (có spinner) + polling 20s im lặng để bắt donation mới
+  // donor vừa đăng mà không cần rời màn. Giữ data cũ nếu fetch lỗi.
   useFocusEffect(
     useCallback(() => {
       let active = true;
 
-      (async () => {
+      const run = async (initial: boolean) => {
+        if (initial) setLoading(true);
         try {
-          setLoading(true);
-          const gps = await getCurrentGps();
-          const donationsParams = gps ? { params: { lat: gps.latitude, lon: gps.longitude } } : undefined;
-
-          const [mineRes, donorsRes, statsRes] = await Promise.all([
-            http.get('/food-requests/my'),
-            http.get('/food-donations', donationsParams),
-            getMyStats().catch(() => null),
-          ]);
-
-          if (!active) return;
-
-          setMyPosts(mineRes.data?.data ?? []);
-          setDonorPosts(donorsRes.data?.data ?? []);
-          if (statsRes) setStats(statsRes.data.data as ReceiverStats);
+          const data = await fetchData();
+          if (active) applyData(data);
         } catch {
-          // Giữ nguyên data cũ khi fetch fail (mạng yếu, server cold start...)
-          // để user không bị mất giao diện khi back từ màn hình khác.
+          // Giữ nguyên data cũ khi fetch fail (mạng yếu, server cold start...).
         } finally {
-          if (active) setLoading(false);
+          if (active && initial) setLoading(false);
         }
-      })();
+      };
+
+      void run(true);
+      const intervalId = setInterval(() => { void run(false); }, 20_000);
 
       return () => {
         active = false;
+        clearInterval(intervalId);
       };
-    }, [getCurrentGps])
+    }, [fetchData, applyData])
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      applyData(await fetchData());
+    } catch {
+      // Giữ nguyên data cũ khi fetch fail.
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchData, applyData]);
 
   const nearDonors = donorPosts.slice(0, 2);
   const donorFeedPosts = donorPosts
@@ -288,7 +316,11 @@ export default function HomeReceiverScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+      >
         <View style={styles.contentCard}>
           <View style={styles.header}>
             <View>

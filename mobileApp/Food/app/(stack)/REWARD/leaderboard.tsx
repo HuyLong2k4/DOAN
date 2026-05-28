@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLeaderboard } from '../../../src/api/user.api';
 import type { TranslationKey } from '../../../src/i18n/translations';
@@ -35,14 +35,29 @@ export default function LeaderboardScreen() {
   const [period, setPeriod]   = useState<Period>('Week');
   const [list, setList]       = useState<LeaderEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    getLeaderboard(50, roleTab)
-      .then((res) => setList(res.data.data ?? []))
-      .catch(() => setList([]))
-      .finally(() => setLoading(false));
-  }, [period, roleTab]);
+  const load = useCallback(async () => {
+    try {
+      const res = await getLeaderboard(50, roleTab);
+      setList(res.data.data ?? []);
+    } catch {
+      setList([]);
+    }
+  }, [roleTab]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      load().finally(() => setLoading(false));
+    }, [load]),
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const top3 = list.slice(0, 3);
   const rest  = list.slice(3);
@@ -94,7 +109,11 @@ export default function LeaderboardScreen() {
           {roleTab === 'DONOR' ? t('leaderboard.emptyDonors') : t('leaderboard.emptyVolunteers')}
         </Text>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+        >
           {/* Podium top 3 */}
           <View style={styles.podiumRow}>
             {pod.map((entry, i) => {

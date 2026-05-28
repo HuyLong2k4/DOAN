@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLeaderboard, getMyStats, type DonorStats, type ReceiverStats, type VolunteerStats } from '../../../src/api/user.api';
 import { getRewardLevel } from '../../../src/constants/rewardLevels';
@@ -14,7 +14,6 @@ export default function RewardsScreen() {
   const router  = useRouter();
   const { t }   = useI18n();
   const user    = useAuthStore((s) => s.user);
-  const points  = user?.points ?? 0;
   const role    = user?.role;
   const showLevels = role === 'DONOR' || role === 'VOLUNTEER';
   const leaderboardRole: 'DONOR' | 'VOLUNTEER' = role === 'VOLUNTEER' ? 'VOLUNTEER' : 'DONOR';
@@ -22,21 +21,38 @@ export default function RewardsScreen() {
   const [lbTab, setLbTab]         = useState<'Week' | 'Yearly'>('Week');
   const [top3, setTop3]           = useState<LeaderEntry[]>([]);
   const [loadingBoard, setLoadingBoard] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<DonorStats | VolunteerStats | ReceiverStats | null>(null);
 
-  useEffect(() => {
-    getLeaderboard(3, leaderboardRole)
-      .then((res) => setTop3((res.data.data ?? []) as LeaderEntry[]))
-      .catch(() => setTop3([]))
-      .finally(() => setLoadingBoard(false));
-  }, [leaderboardRole]);
+  const points = (stats as { points?: number } | null)?.points ?? user?.points ?? 0;
 
-  useEffect(() => {
-    if (!role) return;
-    getMyStats()
-      .then((res) => setStats(res.data.data as DonorStats | VolunteerStats | ReceiverStats))
-      .catch(() => setStats(null));
-  }, [role]);
+  const loadData = useCallback(async () => {
+    const tasks: Promise<unknown>[] = [
+      getLeaderboard(3, leaderboardRole)
+        .then((res) => setTop3((res.data.data ?? []) as LeaderEntry[]))
+        .catch(() => setTop3([])),
+    ];
+    if (role) {
+      tasks.push(
+        getMyStats()
+          .then((res) => setStats(res.data.data as DonorStats | VolunteerStats | ReceiverStats))
+          .catch(() => setStats(null)),
+      );
+    }
+    await Promise.all(tasks);
+  }, [leaderboardRole, role]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData().finally(() => setLoadingBoard(false));
+    }, [loadData]),
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
 
   const { level: currentLevel, index: levelIndex, levels } = getRewardLevel(points, role);
   const nextLevel   = levels[levelIndex + 1] ?? null;
@@ -50,7 +66,11 @@ export default function RewardsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+      >
 
         {/* Header */}
         <View style={styles.header}>

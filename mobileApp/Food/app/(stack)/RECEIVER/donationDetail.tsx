@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -113,17 +113,15 @@ export default function ReceiverDonationDetailScreen() {
     }
   }, [donationId, t]);
 
-  useEffect(() => {
-    if (!donationId) {
-      setLoading(false);
-      return;
-    }
-    void (async () => {
-      setLoading(true);
-      await loadDetail();
-      setLoading(false);
-    })();
-  }, [donationId, loadDetail]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!donationId) {
+        setLoading(false);
+        return;
+      }
+      void loadDetail().finally(() => setLoading(false));
+    }, [donationId, loadDetail]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

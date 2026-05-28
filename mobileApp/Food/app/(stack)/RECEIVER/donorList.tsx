@@ -5,6 +5,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -60,6 +61,7 @@ export default function ReceiverDonorListScreen() {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<CategoryTab>('all');
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [donors, setDonors] = useState<DonationItem[]>([]);
@@ -72,29 +74,48 @@ export default function ReceiverDonorListScreen() {
     { key: 'PACKAGED',  label: t('request.packagedFood') },
   ];
 
+  const fetchDonors = useCallback(async () => {
+    const res = await http.get('/food-donations');
+    return (res.data?.data ?? []) as DonationItem[];
+  }, []);
+
+  // Focus: load 1 lần (có spinner) + polling 20s im lặng để bắt donation mới.
   useFocusEffect(
     useCallback(() => {
       let active = true;
 
-      (async () => {
+      const run = async (initial: boolean) => {
+        if (initial) setLoading(true);
         try {
-          setLoading(true);
-          const res = await http.get('/food-donations');
-          if (!active) return;
-          setDonors(res.data?.data ?? []);
+          const data = await fetchDonors();
+          if (active) setDonors(data);
         } catch {
-          if (!active) return;
-          setDonors([]);
+          if (active && initial) setDonors([]);
         } finally {
-          if (active) setLoading(false);
+          if (active && initial) setLoading(false);
         }
-      })();
+      };
+
+      void run(true);
+      const intervalId = setInterval(() => { void run(false); }, 20_000);
 
       return () => {
         active = false;
+        clearInterval(intervalId);
       };
-    }, [])
+    }, [fetchDonors])
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setDonors(await fetchDonors());
+    } catch {
+      // Giữ nguyên data cũ khi fetch fail.
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchDonors]);
 
   const filteredDonors = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -184,7 +205,11 @@ export default function ReceiverDonorListScreen() {
           <ActivityIndicator color="#008080" />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+        >
           {filteredDonors.length === 0 ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.emptyText}>{t('donorList.noDonors')}</Text>

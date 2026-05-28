@@ -1,8 +1,8 @@
 ﻿import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getMyProfile } from "../../src/api/profile.api";
 import { uploadAvatar } from "../../src/api/user.api";
@@ -60,6 +60,7 @@ export default function PersonalInfoScreen() {
 
   const [profile, setProfile] = useState<ProfileDetails | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const handlePickAvatar = async () => {
@@ -97,27 +98,28 @@ export default function PersonalInfoScreen() {
     }
   };
 
-  useEffect(() => {
-    let mounted = true;
+  const loadProfile = useCallback(async () => {
+    try {
+      const res = await getMyProfile();
+      const data = res.data?.data;
+      setProfile((data?.profile as ProfileDetails | null) ?? null);
+      if (data?.user) setUser(data.user);
+    } catch {
+      setProfile(null);
+    }
+  }, [setUser]);
 
-    getMyProfile()
-      .then((res) => {
-        if (!mounted) return;
-        setProfile((res.data?.data?.profile as ProfileDetails | null) ?? null);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setProfile(null);
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setLoadingProfile(false);
-      });
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile().finally(() => setLoadingProfile(false));
+    }, [loadProfile]),
+  );
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadProfile();
+    setRefreshing(false);
+  }, [loadProfile]);
 
   const notUpdated = t('personalInfo.notUpdated');
   const fullName = user?.full_name?.trim() || notUpdated;
@@ -142,7 +144,11 @@ export default function PersonalInfoScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+      >
         <View style={styles.profileCard}>
           <TouchableOpacity
             onPress={handlePickAvatar}
