@@ -9,8 +9,8 @@ import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { Avatar } from '../components/Avatar';
 import { VerificationPill } from '../components/StatusPill';
-import { formatDate, formatDateTime } from '../utils/format';
-import type { VerificationRecord, VolunteerRecord, VerificationStatus } from '../types';
+import { formatDateTime } from '../utils/format';
+import type { VolunteerRecord, VerificationStatus } from '../types';
 
 type Filter = VerificationStatus | 'ALL';
 
@@ -20,15 +20,6 @@ const FILTERS: { label: string; value: Filter }[] = [
   { label: 'Đã duyệt', value: 'APPROVED' },
   { label: 'Từ chối', value: 'REJECTED' },
 ];
-
-function StarRating({ value }: { value?: number }) {
-  const stars = Math.round(value ?? 0);
-  return (
-    <span style={{ color: '#f59e0b', letterSpacing: 1 }}>
-      {'★'.repeat(stars)}{'☆'.repeat(5 - stars)}
-    </span>
-  );
-}
 
 export function VolunteersPage() {
   const toast = useToast();

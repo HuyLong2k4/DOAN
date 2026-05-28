@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MessageSquare, RefreshCcw, Search, Star } from 'lucide-react';
+import { RefreshCcw, Search, Star } from 'lucide-react';
 import { listFeedback } from '../api/endpoints';
 import { getErrorMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
