@@ -32,7 +32,10 @@ export interface AdminUser {
   points?: number;
   is_phone_verified?: boolean;
   is_email_verified?: boolean;
+  is_active?: boolean;
   profile_completed?: boolean;
+  avg_rating?: number | null;
+  rating_count?: number;
   createdAt?: string;
   updatedAt?: string;
 }

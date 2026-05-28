@@ -26,7 +26,8 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}  size=%{size_download} bytes  type=%{content_type}\\\\n\" \"https://doan-production-de5f.up.railway.app/uploads/donations/6a04480eac4d9da1535d4fa3-1779941067462-5e2f986f-5d29-4168-9ab3-4b2472a322e6.jpeg\")",
       "Bash(tee /tmp/tscout.txt)",
       "Read(//tmp/**)",
-      "Bash(echo \"=== real-code errors: $\\(npx tsc --noEmit -p tsconfig.json 2>&1)"
+      "Bash(echo \"=== real-code errors: $\\(npx tsc --noEmit -p tsconfig.json 2>&1)",
+      "Bash(node -e \"require\\('./src/app/services/userService'\\);require\\('./src/app/controllers/userController'\\);console.log\\('backend modules OK'\\)\")"
     ]
   }
 }

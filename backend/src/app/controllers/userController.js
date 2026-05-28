@@ -90,7 +90,7 @@ class UserController {
 
             const allowedFields = ['full_name', 'phone_number', 'email', 'avatar_url'];
             if (req.user.role === 'ADMIN') {
-                allowedFields.push('role');
+                allowedFields.push('role', 'is_active');
             }
             const updateData = {};
 

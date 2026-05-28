@@ -18,7 +18,23 @@ class UserService {
     }
 
     static async getAllUsers() {
-        return await User.find().select('-password');
+        const users = await User.find().select('-password').lean();
+
+        // Rating trung bình + số lượt cho mỗi user được receiver chấm (donor/volunteer).
+        // Chỉ phục vụ admin (vd phát hiện tài khoản kém để khoá), không lộ ra mobile.
+        const ratings = await Feedback.aggregate([
+            { $group: { _id: '$to_user_id', avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+        ]);
+        const ratingMap = new Map(ratings.map((r) => [String(r._id), r]));
+
+        return users.map((u) => {
+            const r = ratingMap.get(String(u._id));
+            return {
+                ...u,
+                avg_rating: r ? Math.round(r.avg * 10) / 10 : null,
+                rating_count: r ? r.count : 0,
+            };
+        });
     }
     
     static async createUser(userData) {
