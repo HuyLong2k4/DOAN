@@ -41,6 +41,10 @@ export type ListsKey =
   | 'donationDetail.expiresIn'
   | 'donationDetail.expired'
   | 'donationDetail.aboutToExpire'
+  | 'donationDetail.receiverInfo'
+  | 'donationDetail.noReceiverYet'
+  | 'donationDetail.callReceiver'
+  | 'donationDetail.pickupCode'
   | 'addPickup.title'
   | 'addPickup.selectDeliveryType'
   | 'addPickup.estimateAgent'
@@ -106,6 +110,10 @@ export const listsEn: Record<ListsKey, string> = {
   'donationDetail.expiresIn': 'Expires in',
   'donationDetail.expired': 'Expired',
   'donationDetail.aboutToExpire': 'Expiring soon',
+  'donationDetail.receiverInfo': 'Receiver info',
+  'donationDetail.noReceiverYet': 'No receiver has connected yet.',
+  'donationDetail.callReceiver': 'Call',
+  'donationDetail.pickupCode': 'Pickup code',
   'addPickup.title': 'Add pickup',
   'addPickup.selectDeliveryType': 'Select Type of delivery',
   'addPickup.estimateAgent': 'Estimated Delivery time - 30mins',
@@ -172,6 +180,10 @@ export const listsVi: Record<ListsKey, string> = {
   'donationDetail.expiresIn': 'Hết hạn sau',
   'donationDetail.expired': 'Đã hết hạn',
   'donationDetail.aboutToExpire': 'Sắp hết hạn',
+  'donationDetail.receiverInfo': 'Thông tin người nhận',
+  'donationDetail.noReceiverYet': 'Chưa có người nhận kết nối.',
+  'donationDetail.callReceiver': 'Gọi',
+  'donationDetail.pickupCode': 'Mã lấy hàng',
   'addPickup.title': 'Thêm cách nhận',
   'addPickup.selectDeliveryType': 'Chọn phương thức giao',
   'addPickup.estimateAgent': 'Thời gian giao ước tính - 30 phút',

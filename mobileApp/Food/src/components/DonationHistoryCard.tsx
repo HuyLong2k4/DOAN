@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Donation } from './DonationPostCard';
 import { useStatusConfig } from './DonationPostCard';
 import { useI18n } from '../i18n/useI18n';
@@ -18,11 +19,19 @@ function timeAgo(iso: string, t: any) {
 
 export default function DonationHistoryCard({ d }: { d: Donation }) {
   const { t } = useI18n();
+  const router = useRouter();
   const statusConfig = useStatusConfig();
   const cfg = statusConfig[d.status as keyof typeof statusConfig] ?? statusConfig.PENDING;
 
+  const openDetail = () => {
+    router.push({
+      pathname: '/(stack)/DONOR/donationDetail',
+      params: { donationId: d._id, title: d.title },
+    } as any);
+  };
+
   return (
-    <View style={styles.historyCard}>
+    <TouchableOpacity style={styles.historyCard} onPress={openDetail} activeOpacity={0.7}>
       <View style={styles.historyInfo}>
         <View style={styles.historyTop}>
           <Text style={styles.historyId}>ID: {d._id.slice(-6).toUpperCase()}</Text>
@@ -42,7 +51,7 @@ export default function DonationHistoryCard({ d }: { d: Donation }) {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

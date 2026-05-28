@@ -12,6 +12,7 @@ export default function StackLayout() {
       <Stack.Screen name="DONOR/home" />
       <Stack.Screen name="DONOR/donate" />
       <Stack.Screen name="DONOR/historyDonation" />
+      <Stack.Screen name="DONOR/donationDetail" />
       <Stack.Screen name="NGO/ngoList" />
       <Stack.Screen name="RECEIVER/home" />
       <Stack.Screen name="RECEIVER/donorList" />

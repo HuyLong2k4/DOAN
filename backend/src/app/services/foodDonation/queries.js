@@ -9,6 +9,7 @@
 const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
+const User = require('../../models/userModel');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
 const Feedback = require('../../models/feedbackModel');
@@ -347,6 +348,28 @@ async function getDonationById(donationId, viewer = null) {
             distanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
     }
 
+    // Chủ đơn (donor) xem chi tiết: kèm thông tin người nhận đã ghép + mã lấy
+    // hàng để đọc cho volunteer. Chỉ owner mới thấy để tránh lộ thông tin
+    // receiver cho người dùng khác fetch theo id.
+    const isOwner = viewer?.id && donorObjectId && String(donorObjectId) === String(viewer.id);
+    let selected_receiver = null;
+    let pickup_code = null;
+    let delivery_status = null;
+    if (isOwner) {
+        if (donation.selected_receiver_id) {
+            selected_receiver = await User.findById(donation.selected_receiver_id)
+                .select('full_name avatar_url phone_number')
+                .lean();
+        }
+        if (donation.delivery_id) {
+            const delivery = await Delivery.findById(donation.delivery_id)
+                .select('pickup_code status')
+                .lean();
+            pickup_code = delivery?.pickup_code ?? null;
+            delivery_status = delivery?.status ?? null;
+        }
+    }
+
     const donorHasValidCoord = isValidCoord(donorProfile?.latitude, donorProfile?.longitude);
     return {
         ...donation,
@@ -355,6 +378,9 @@ async function getDonationById(donationId, viewer = null) {
         pickup_latitude:     donorHasValidCoord ? donorProfile.latitude  : null,
         pickup_longitude:    donorHasValidCoord ? donorProfile.longitude : null,
         pickup_distance_km,
+        selected_receiver,
+        pickup_code,
+        delivery_status,
     };
 }
 

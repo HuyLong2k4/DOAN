@@ -27,7 +27,9 @@
       "Bash(tee /tmp/tscout.txt)",
       "Read(//tmp/**)",
       "Bash(echo \"=== real-code errors: $\\(npx tsc --noEmit -p tsconfig.json 2>&1)",
-      "Bash(node -e \"require\\('./src/app/services/userService'\\);require\\('./src/app/controllers/userController'\\);console.log\\('backend modules OK'\\)\")"
+      "Bash(node -e \"require\\('./src/app/services/userService'\\);require\\('./src/app/controllers/userController'\\);console.log\\('backend modules OK'\\)\")",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { $p = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; [PSCustomObject]@{ Port=$_.LocalPort; PID=$_.OwningProcess; Name=$p.ProcessName; Path=$p.Path } } | Format-List)",
+      "Bash(node --check src/app/services/foodDonation/queries.js)"
     ]
   }
 }
