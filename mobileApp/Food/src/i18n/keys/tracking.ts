@@ -35,7 +35,6 @@ export type TrackingKey =
   | 'tracking.tip'
   | 'tracking.feedback'
   | 'tracking.confirmReceived'
-  | 'tracking.awaitingConfirmation'
   | 'tracking.noPhone'
   | 'tracking.noPhoneMsg'
   | 'tracking.cannotCallTitle'
@@ -105,7 +104,6 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.tip': '+ Tip',
   'tracking.feedback': 'Feedback',
   'tracking.confirmReceived': 'Confirm received',
-  'tracking.awaitingConfirmation': 'Volunteer reported delivery — please confirm you received the food.',
   'tracking.noPhone': 'No phone number',
   'tracking.noPhoneMsg': 'Contact phone is not available yet.',
   'tracking.cannotCallTitle': 'Cannot open phone',
@@ -176,7 +174,6 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.tip': '+ Tiền thưởng',
   'tracking.feedback': 'Đánh giá',
   'tracking.confirmReceived': 'Xác nhận đã nhận',
-  'tracking.awaitingConfirmation': 'Volunteer báo đã giao — vui lòng xác nhận bạn đã nhận hàng.',
   'tracking.noPhone': 'Không có số điện thoại',
   'tracking.noPhoneMsg': 'Số điện thoại liên hệ chưa có.',
   'tracking.cannotCallTitle': 'Không thể gọi',

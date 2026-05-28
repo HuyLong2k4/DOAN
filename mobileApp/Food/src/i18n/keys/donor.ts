@@ -1,18 +1,10 @@
 export type DonorKey =
   | 'donor.greeting'
-  | 'donor.greetingFallback'
   | 'donor.rolePrefix'
   | 'donor.role'
-  | 'donor.level.newMember'
-  | 'donor.level.bronzeDonor'
-  | 'donor.level.silverDonor'
-  | 'donor.level.goldDonor'
-  | 'donor.level.superDonor'
-  | 'donor.level.legend'
   | 'donor.stats.donations'
   | 'donor.stats.feedback'
   | 'donor.stats.points'
-  | 'donor.impact.title'
   | 'donor.impact.donationsLabel'
   | 'donor.impact.portionsLabel'
   | 'donor.impact.message'
@@ -32,11 +24,6 @@ export type DonorKey =
   | 'donor.viewDonation'
   | 'donor.receiverFallback'
   | 'donor.donationLabel'
-  | 'donor.phoneLabel'
-  | 'donor.rejecting'
-  | 'donor.reject'
-  | 'donor.approving'
-  | 'donor.approve'
   | 'donor.approvedRequestsTitle'
   | 'donor.delivery.viaAgent'
   | 'donor.delivery.selfPickup'
@@ -61,14 +48,6 @@ export type DonorKey =
   | 'donor.faq.oneTime'
   | 'donor.notSpecified'
   | 'donor.portion'
-  | 'donor.alert.approveTitle'
-  | 'donor.alert.approveBody'
-  | 'donor.alert.approveFailedTitle'
-  | 'donor.alert.approveFailedBody'
-  | 'donor.alert.rejectTitle'
-  | 'donor.alert.rejectBody'
-  | 'donor.alert.rejectFailedTitle'
-  | 'donor.alert.rejectFailedBody'
   | 'donor.alert.acceptSuccessTitle'
   | 'donor.alert.acceptSuccessBody'
   | 'donor.alert.acceptFailedTitle'
@@ -127,7 +106,6 @@ export type DonorKey =
   | 'donor.donate.expirationTime'
   | 'donor.donate.dateFormat'
   | 'donor.donate.timeFormat'
-  | 'donor.donate.qualityAssurance'
   | 'donor.donate.assuranceText'
   | 'donor.donate.submit'
   | 'donor.donate.donateAgain'
@@ -143,19 +121,11 @@ export type DonorKey =
 
 export const donorEn: Record<DonorKey, string> = {
   'donor.greeting': 'Hi',
-  'donor.greetingFallback': 'there',
   'donor.rolePrefix': 'You are a',
   'donor.role': 'Donor',
-  'donor.level.newMember': 'New Member',
-  'donor.level.bronzeDonor': 'Bronze Donor',
-  'donor.level.silverDonor': 'Silver Donor',
-  'donor.level.goldDonor': 'Gold Donor',
-  'donor.level.superDonor': 'Super Donor',
-  'donor.level.legend': 'Legend',
   'donor.stats.donations': 'No of Donations',
   'donor.stats.feedback': 'Feedback received',
   'donor.stats.points': 'Points earned',
-  'donor.impact.title': 'Your impact',
   'donor.impact.donationsLabel': 'Donations',
   'donor.impact.portionsLabel': 'Portions shared',
   'donor.impact.message': 'Thank you for making a difference!',
@@ -175,11 +145,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.viewDonation': 'View donation',
   'donor.receiverFallback': 'Receiver',
   'donor.donationLabel': 'Donation',
-  'donor.phoneLabel': 'Phone',
-  'donor.rejecting': 'Rejecting...',
-  'donor.reject': 'Reject',
-  'donor.approving': 'Approving...',
-  'donor.approve': 'Approve',
   'donor.approvedRequestsTitle': 'Approved Requests',
   'donor.delivery.viaAgent': 'Via Agent',
   'donor.delivery.selfPickup': 'Self Pickup',
@@ -204,14 +169,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.faq.oneTime': 'Can we perform one-time donations?',
   'donor.notSpecified': 'Not specified',
   'donor.portion': 'portion',
-  'donor.alert.approveTitle': 'Approved',
-  'donor.alert.approveBody': 'Receiver request approved.',
-  'donor.alert.approveFailedTitle': 'Approve failed',
-  'donor.alert.approveFailedBody': 'Please try again.',
-  'donor.alert.rejectTitle': 'Rejected',
-  'donor.alert.rejectBody': 'Receiver request rejected.',
-  'donor.alert.rejectFailedTitle': 'Reject failed',
-  'donor.alert.rejectFailedBody': 'Please try again.',
   'donor.alert.acceptSuccessTitle': 'Accepted',
   'donor.alert.acceptSuccessBody': 'Receiver request accepted.',
   'donor.alert.acceptFailedTitle': 'Cannot accept',
@@ -270,7 +227,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.donate.expirationTime': 'Expiration Time',
   'donor.donate.dateFormat': 'DD MMM YYYY',
   'donor.donate.timeFormat': 'HH:MM AM/PM',
-  'donor.donate.qualityAssurance': 'Quality Assurance',
   'donor.donate.assuranceText': 'I assure that the food quality and hygiene has maintained',
   'donor.donate.submit': 'Submit',
   'donor.donate.donateAgain': 'Donate Again',
@@ -287,19 +243,11 @@ export const donorEn: Record<DonorKey, string> = {
 
 export const donorVi: Record<DonorKey, string> = {
   'donor.greeting': 'Xin chào',
-  'donor.greetingFallback': 'bạn',
   'donor.rolePrefix': 'Bạn là',
   'donor.role': 'Người cho',
-  'donor.level.newMember': 'Thành viên mới',
-  'donor.level.bronzeDonor': 'Người cho đồng',
-  'donor.level.silverDonor': 'Người cho bạc',
-  'donor.level.goldDonor': 'Người cho vàng',
-  'donor.level.superDonor': 'Siêu người cho',
-  'donor.level.legend': 'Huyền thoại',
   'donor.stats.donations': 'Số lượt ủng hộ',
   'donor.stats.feedback': 'Phản hồi đã nhận',
   'donor.stats.points': 'Điểm đã nhận',
-  'donor.impact.title': 'Đóng góp của bạn',
   'donor.impact.donationsLabel': 'Lượt ủng hộ',
   'donor.impact.portionsLabel': 'Suất đã chia sẻ',
   'donor.impact.message': 'Cảm ơn bạn đã tạo nên sự khác biệt!',
@@ -319,11 +267,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.viewDonation': 'Xem đơn',
   'donor.receiverFallback': 'Người nhận',
   'donor.donationLabel': 'Ủng hộ',
-  'donor.phoneLabel': 'Điện thoại',
-  'donor.rejecting': 'Đang từ chối...',
-  'donor.reject': 'Từ chối',
-  'donor.approving': 'Đang duyệt...',
-  'donor.approve': 'Duyệt',
   'donor.approvedRequestsTitle': 'Yêu cầu đã duyệt',
   'donor.delivery.viaAgent': 'Qua tình nguyện viên',
   'donor.delivery.selfPickup': 'Tự nhận',
@@ -348,14 +291,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.faq.oneTime': 'Có thể ủng hộ một lần không?',
   'donor.notSpecified': 'Chưa xác định',
   'donor.portion': 'suất',
-  'donor.alert.approveTitle': 'Đã duyệt',
-  'donor.alert.approveBody': 'Đã duyệt yêu cầu từ người nhận.',
-  'donor.alert.approveFailedTitle': 'Duyệt thất bại',
-  'donor.alert.approveFailedBody': 'Vui lòng thử lại.',
-  'donor.alert.rejectTitle': 'Đã từ chối',
-  'donor.alert.rejectBody': 'Đã từ chối yêu cầu từ người nhận.',
-  'donor.alert.rejectFailedTitle': 'Từ chối thất bại',
-  'donor.alert.rejectFailedBody': 'Vui lòng thử lại.',
   'donor.alert.acceptSuccessTitle': 'Tiếp nhận thành công',
   'donor.alert.acceptSuccessBody': 'Đã tiếp nhận yêu cầu từ người nhận.',
   'donor.alert.acceptFailedTitle': 'Không thể tiếp nhận',
@@ -414,7 +349,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.donate.expirationTime': 'Thời gian hết hạn',
   'donor.donate.dateFormat': 'DD MMM YYYY',
   'donor.donate.timeFormat': 'HH:MM AM/PM',
-  'donor.donate.qualityAssurance': 'Đảm bảo chất lượng',
   'donor.donate.assuranceText': 'Tôi đảm bảo rằng chất lượng thực phẩm và vệ sinh đã được duy trì',
   'donor.donate.submit': 'Gửi',
   'donor.donate.donateAgain': 'Ủng hộ lại',

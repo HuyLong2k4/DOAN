@@ -5,7 +5,6 @@ import { type ReceiverKey, receiverEn, receiverVi } from './keys/receiver';
 import { type VolunteerKey, volunteerEn, volunteerVi } from './keys/volunteer';
 import { type TrackingKey, trackingEn, trackingVi } from './keys/tracking';
 import { type FeedbackKey, feedbackEn, feedbackVi } from './keys/feedback';
-import { type ChatKey, chatEn, chatVi } from './keys/chat';
 import { type RewardsKey, rewardsEn, rewardsVi } from './keys/rewards';
 import { type RequestKey, requestEn, requestVi } from './keys/request';
 import { type ListsKey, listsEn, listsVi } from './keys/lists';
@@ -22,7 +21,6 @@ export type TranslationKey =
   | VolunteerKey
   | TrackingKey
   | FeedbackKey
-  | ChatKey
   | RewardsKey
   | RequestKey
   | ListsKey
@@ -35,7 +33,6 @@ const en: Record<TranslationKey, string> = {
   ...volunteerEn,
   ...trackingEn,
   ...feedbackEn,
-  ...chatEn,
   ...rewardsEn,
   ...requestEn,
   ...listsEn,
@@ -49,7 +46,6 @@ const vi: Record<TranslationKey, string> = {
   ...volunteerVi,
   ...trackingVi,
   ...feedbackVi,
-  ...chatVi,
   ...rewardsVi,
   ...requestVi,
   ...listsVi,

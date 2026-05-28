@@ -77,18 +77,6 @@ class ProfileController {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });
         }
     }
-
-    // ── PATCH /api/profile/location ────────────────────────────────────────
-    // UI: "Pin Location by map" / "Set Location" button
-    static async updateLocation(req, res) {
-        try {
-            const { latitude, longitude } = req.body;
-            const result = await ProfileService.updateLocation(req.user.id, req.user.role, latitude, longitude);
-            return res.status(200).json({ success: true, ...result });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
 }
 
 module.exports = ProfileController;

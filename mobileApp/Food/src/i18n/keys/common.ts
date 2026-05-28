@@ -26,7 +26,6 @@ export type CommonKey =
   | 'profile.signOutTitle'
   | 'profile.signOutConfirm'
   | 'profile.cancel'
-  | 'profile.language'
   | 'profile.languageEnglish'
   | 'profile.languageVietnamese'
   | 'settings.title'
@@ -55,12 +54,7 @@ export type CommonKey =
   | 'message.unknownUser'
   | 'notifications.title'
   | 'notifications.empty'
-  | 'notifications.reject'
-  | 'notifications.approve'
   | 'notifications.errorLoad'
-  | 'notifications.later'
-  | 'notifications.openNow'
-  | 'notifications.actionMsg'
   | 'notifications.timeJustNow'
   | 'notifications.timeMinutes'
   | 'notifications.timeHours'
@@ -91,7 +85,6 @@ export type CommonKey =
   | 'personalInfo.editTitle'
   | 'personalInfo.save'
   | 'personalInfo.cancel'
-  | 'personalInfo.saving'
   | 'personalInfo.nameRequired'
   | 'personalInfo.phoneInvalid'
   | 'personalInfo.updateSuccess'
@@ -127,7 +120,6 @@ export const commonEn: Record<CommonKey, string> = {
   'profile.signOutTitle': 'Sign Out',
   'profile.signOutConfirm': 'Are you sure you want to sign out?',
   'profile.cancel': 'Cancel',
-  'profile.language': 'Language',
   'profile.languageEnglish': 'English',
   'profile.languageVietnamese': 'Vietnamese',
   'settings.title': 'Settings',
@@ -156,12 +148,7 @@ export const commonEn: Record<CommonKey, string> = {
   'message.unknownUser': 'Unknown user',
   'notifications.title': 'Notifications',
   'notifications.empty': 'No notifications yet',
-  'notifications.reject': 'Reject',
-  'notifications.approve': 'Approve',
   'notifications.errorLoad': 'Cannot load notifications.',
-  'notifications.later': 'Later',
-  'notifications.openNow': 'Open now',
-  'notifications.actionMsg': 'You can handle this request in the donation management page.',
   'notifications.timeJustNow': 'Just now',
   'notifications.timeMinutes': '{n}m ago',
   'notifications.timeHours': '{n}h ago',
@@ -192,7 +179,6 @@ export const commonEn: Record<CommonKey, string> = {
   'personalInfo.editTitle': 'Edit personal info',
   'personalInfo.save': 'Save',
   'personalInfo.cancel': 'Cancel',
-  'personalInfo.saving': 'Saving...',
   'personalInfo.nameRequired': 'Please enter your full name.',
   'personalInfo.phoneInvalid': 'Please enter a valid phone number.',
   'personalInfo.updateSuccess': 'Your information has been updated.',
@@ -229,7 +215,6 @@ export const commonVi: Record<CommonKey, string> = {
   'profile.signOutTitle': 'Đăng xuất',
   'profile.signOutConfirm': 'Bạn có chắc chắn muốn đăng xuất không?',
   'profile.cancel': 'Hủy',
-  'profile.language': 'Ngôn ngữ',
   'profile.languageEnglish': 'Tiếng Anh',
   'profile.languageVietnamese': 'Tiếng Việt',
   'settings.title': 'Cài đặt',
@@ -258,12 +243,7 @@ export const commonVi: Record<CommonKey, string> = {
   'message.unknownUser': 'Người dùng không rõ',
   'notifications.title': 'Thông báo',
   'notifications.empty': 'Chưa có thông báo',
-  'notifications.reject': 'Từ chối',
-  'notifications.approve': 'Duyệt',
   'notifications.errorLoad': 'Không thể tải thông báo.',
-  'notifications.later': 'Để sau',
-  'notifications.openNow': 'Mở ngay',
-  'notifications.actionMsg': 'Bạn có thể xử lý yêu cầu này trong trang quản lý donation.',
   'notifications.timeJustNow': 'Vừa xong',
   'notifications.timeMinutes': '{n} phút trước',
   'notifications.timeHours': '{n} giờ trước',
@@ -294,7 +274,6 @@ export const commonVi: Record<CommonKey, string> = {
   'personalInfo.editTitle': 'Sửa thông tin cá nhân',
   'personalInfo.save': 'Lưu',
   'personalInfo.cancel': 'Huỷ',
-  'personalInfo.saving': 'Đang lưu...',
   'personalInfo.nameRequired': 'Vui lòng nhập họ và tên.',
   'personalInfo.phoneInvalid': 'Số điện thoại không hợp lệ.',
   'personalInfo.updateSuccess': 'Đã cập nhật thông tin của bạn.',

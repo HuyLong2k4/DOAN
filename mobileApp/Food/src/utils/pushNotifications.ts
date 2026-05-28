@@ -85,13 +85,3 @@ export async function registerForPushNotifications(): Promise<string | null> {
   }
 }
 
-/**
- * Báo backend xoá push token (gọi khi logout) — phòng trường hợp logout không gọi /auth/logout.
- */
-export async function unregisterPushNotifications(): Promise<void> {
-  try {
-    await http.post('/users/me/push-token', { token: '' });
-  } catch {
-    // im lặng — token sẽ bị clear khi user login lại
-  }
-}

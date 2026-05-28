@@ -93,10 +93,3 @@ export const completeReceiverProfile = (data: ReceiverProfileRequest): Promise<A
 // UI: Volunteer Details form
 export const completeVolunteerProfile = (data: VolunteerProfileRequest): Promise<AxiosResponse<ProfileResponse>> =>
   http.post('/profile/volunteer', data);
-
-// UI: Pin Location by map / Set Location
-export const updateLocation = (
-  latitude: number,
-  longitude: number,
-): Promise<AxiosResponse<{ success: boolean; message: string }>> =>
-  http.patch('/profile/location', { latitude, longitude });

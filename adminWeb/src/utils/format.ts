@@ -10,13 +10,6 @@ export function formatDateTime(value?: string | null): string {
   }).format(date);
 }
 
-export function formatDate(value?: string | null): string {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(date);
-}
-
 export function formatNumber(value?: number | null): string {
   return (value ?? 0).toLocaleString('vi-VN');
 }

@@ -19,11 +19,9 @@ export type ListsKey =
   | 'ngoList.viewDetails'
   | 'ngoList.donate'
   | 'donationDetail.title'
-  | 'donationDetail.from'
   | 'donationDetail.quantity'
   | 'donationDetail.expires'
   | 'donationDetail.pickupAddress'
-  | 'donationDetail.status'
   | 'donationDetail.deliveryType'
   | 'donationDetail.connectDonation'
   | 'donationDetail.noAddress'
@@ -31,12 +29,10 @@ export type ListsKey =
   | 'donationDetail.cannotOpenMap'
   | 'donationDetail.cannotDetermineMsg'
   | 'donationDetail.description'
-  | 'donationDetail.photos'
   | 'donationDetail.loadFailed'
   | 'donationDetail.donorInfo'
   | 'donationDetail.callDonor'
   | 'donationDetail.chatDonor'
-  | 'donationDetail.openingChat'
   | 'donationDetail.cannotOpenChat'
   | 'donationDetail.expiresIn'
   | 'donationDetail.expired'
@@ -52,18 +48,9 @@ export type ListsKey =
   | 'addPickup.requestApproved'
   | 'addPickup.selectAgentHint'
   | 'addPickup.selfPickupHint'
-  | 'addPickup.chooseAgent'
-  | 'addPickup.noAgents'
   | 'addPickup.selfPickupInfo'
   | 'addPickup.currentDonation'
-  | 'addPickup.distanceNA'
-  | 'addPickup.errorLoadVolunteer'
-  | 'addPickup.selectAgentTitle'
-  | 'addPickup.selectAgentMsg'
   | 'addPickup.cannotContinue'
-  | 'addPickup.completed'
-  | 'addPickup.pickup'
-  | 'addPickup.pickups'
   | 'addPickup.autoMatchTitle'
   | 'addPickup.autoMatchHint';
 
@@ -88,11 +75,9 @@ export const listsEn: Record<ListsKey, string> = {
   'ngoList.viewDetails': 'View Details',
   'ngoList.donate': 'Donate',
   'donationDetail.title': 'Donation Details',
-  'donationDetail.from': 'From:',
   'donationDetail.quantity': 'Quantity',
   'donationDetail.expires': 'Expires',
   'donationDetail.pickupAddress': 'Pickup Address',
-  'donationDetail.status': 'Status',
   'donationDetail.deliveryType': 'Delivery Type',
   'donationDetail.connectDonation': 'Connect Donation',
   'donationDetail.noAddress': 'No address',
@@ -100,12 +85,10 @@ export const listsEn: Record<ListsKey, string> = {
   'donationDetail.cannotOpenMap': 'Cannot open map',
   'donationDetail.cannotDetermineMsg': 'Cannot determine donation to continue.',
   'donationDetail.description': 'Description',
-  'donationDetail.photos': 'Photos',
   'donationDetail.loadFailed': 'Failed to load donation details.',
   'donationDetail.donorInfo': 'Donor info',
   'donationDetail.callDonor': 'Call',
   'donationDetail.chatDonor': 'Chat',
-  'donationDetail.openingChat': 'Opening chat...',
   'donationDetail.cannotOpenChat': 'Cannot open chat',
   'donationDetail.expiresIn': 'Expires in',
   'donationDetail.expired': 'Expired',
@@ -121,18 +104,9 @@ export const listsEn: Record<ListsKey, string> = {
   'addPickup.requestApproved': 'Your request is Approved by donor',
   'addPickup.selectAgentHint': 'Please select an agent to collect your food.',
   'addPickup.selfPickupHint': 'Please coordinate with donor for self pickup.',
-  'addPickup.chooseAgent': 'Choose agent to pick Up',
-  'addPickup.noAgents': 'No volunteers available right now. Please try again later.',
   'addPickup.selfPickupInfo': 'You selected self pickup. Donor contact details will be shown in tracking step.',
   'addPickup.currentDonation': 'Current donation:',
-  'addPickup.distanceNA': 'Distance N/A',
-  'addPickup.errorLoadVolunteer': 'Cannot load volunteers',
-  'addPickup.selectAgentTitle': 'Select agent',
-  'addPickup.selectAgentMsg': 'Please select an agent to continue.',
   'addPickup.cannotContinue': 'Cannot continue',
-  'addPickup.completed': 'Completed',
-  'addPickup.pickup': 'pickup',
-  'addPickup.pickups': 'pickups',
   'addPickup.autoMatchTitle': 'Auto-match volunteer',
   'addPickup.autoMatchHint': 'The system will broadcast this delivery to nearby volunteers. Whoever accepts first will pick up your food.',
 };
@@ -158,11 +132,9 @@ export const listsVi: Record<ListsKey, string> = {
   'ngoList.viewDetails': 'Xem chi tiết',
   'ngoList.donate': 'Quyên góp',
   'donationDetail.title': 'Chi tiết bài ủng hộ',
-  'donationDetail.from': 'Từ:',
   'donationDetail.quantity': 'Số lượng',
   'donationDetail.expires': 'Hết hạn',
   'donationDetail.pickupAddress': 'Địa chỉ lấy hàng',
-  'donationDetail.status': 'Trạng thái',
   'donationDetail.deliveryType': 'Phương thức giao',
   'donationDetail.connectDonation': 'Kết nối',
   'donationDetail.noAddress': 'Không có địa chỉ',
@@ -170,12 +142,10 @@ export const listsVi: Record<ListsKey, string> = {
   'donationDetail.cannotOpenMap': 'Không thể mở bản đồ',
   'donationDetail.cannotDetermineMsg': 'Không thể xác định bài ủng hộ để tiếp tục.',
   'donationDetail.description': 'Mô tả',
-  'donationDetail.photos': 'Ảnh',
   'donationDetail.loadFailed': 'Không tải được chi tiết bài ủng hộ.',
   'donationDetail.donorInfo': 'Thông tin người tặng',
   'donationDetail.callDonor': 'Gọi',
   'donationDetail.chatDonor': 'Nhắn tin',
-  'donationDetail.openingChat': 'Đang mở chat...',
   'donationDetail.cannotOpenChat': 'Không thể mở chat',
   'donationDetail.expiresIn': 'Hết hạn sau',
   'donationDetail.expired': 'Đã hết hạn',
@@ -191,18 +161,9 @@ export const listsVi: Record<ListsKey, string> = {
   'addPickup.requestApproved': 'Yêu cầu của bạn đã được người tặng duyệt',
   'addPickup.selectAgentHint': 'Vui lòng chọn tình nguyện viên để lấy thực phẩm.',
   'addPickup.selfPickupHint': 'Vui lòng liên hệ người tặng để tự nhận.',
-  'addPickup.chooseAgent': 'Chọn tình nguyện viên',
-  'addPickup.noAgents': 'Hiện chưa có tình nguyện viên. Vui lòng thử lại sau.',
   'addPickup.selfPickupInfo': 'Bạn đã chọn tự nhận. Thông tin liên hệ của người tặng sẽ hiển thị trong bước theo dõi.',
   'addPickup.currentDonation': 'Bài ủng hộ hiện tại:',
-  'addPickup.distanceNA': 'N/A',
-  'addPickup.errorLoadVolunteer': 'Không tải được tình nguyện viên',
-  'addPickup.selectAgentTitle': 'Chọn tình nguyện viên',
-  'addPickup.selectAgentMsg': 'Vui lòng chọn tình nguyện viên để tiếp tục.',
   'addPickup.cannotContinue': 'Không thể tiếp tục',
-  'addPickup.completed': 'Đã hoàn thành',
-  'addPickup.pickup': 'chuyến',
-  'addPickup.pickups': 'chuyến',
   'addPickup.autoMatchTitle': 'Tự động ghép volunteer',
   'addPickup.autoMatchHint': 'Hệ thống sẽ gửi đơn này đến các volunteer gần bạn. Volunteer nào nhận đầu tiên sẽ đến lấy hàng.',
 };

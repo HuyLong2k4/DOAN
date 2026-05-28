@@ -7,12 +7,6 @@ import type {
   ApiResponse,
 } from "../types";
 
-export const getUserById = (
-  id: string
-): Promise<AxiosResponse<ApiResponse<User>>> => {
-  return http.get(`/users/${id}`);
-};
-
 export const updateUser = (
   id: string,
   data: UpdateUserRequest

@@ -4,7 +4,6 @@ export type ReceiverKey =
   | 'receiver.role'
   | 'receiver.ordersReceived'
   | 'receiver.pointsEarned'
-  | 'receiver.impact.title'
   | 'receiver.impact.mealsLabel'
   | 'receiver.impact.ngosLabel'
   | 'receiver.impact.message'
@@ -56,7 +55,6 @@ export const receiverEn: Record<ReceiverKey, string> = {
   'receiver.role': 'Receiver',
   'receiver.ordersReceived': 'No of orders received',
   'receiver.pointsEarned': 'Points earned',
-  'receiver.impact.title': 'Your journey',
   'receiver.impact.mealsLabel': 'Meals received',
   'receiver.impact.ngosLabel': 'Kind donors',
   'receiver.impact.message': 'We\'re glad to be part of your journey.',
@@ -109,7 +107,6 @@ export const receiverVi: Record<ReceiverKey, string> = {
   'receiver.role': 'Người nhận',
   'receiver.ordersReceived': 'Số đơn đã nhận',
   'receiver.pointsEarned': 'Điểm đã tích lũy',
-  'receiver.impact.title': 'Hành trình của bạn',
   'receiver.impact.mealsLabel': 'Bữa đã nhận',
   'receiver.impact.ngosLabel': 'Người tặng tốt bụng',
   'receiver.impact.message': 'Chúng tôi rất vui được đồng hành cùng bạn.',

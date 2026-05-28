@@ -4,12 +4,6 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
-export interface ApiError {
-  success: false;
-  message: string;
-  error?: string;
-}
-
 export interface PaginatedResponse<T> {
   success: boolean;
   data: T[];

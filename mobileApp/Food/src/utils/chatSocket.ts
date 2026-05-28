@@ -33,15 +33,3 @@ export function connectChatSocket(token: string) {
 
   return socket;
 }
-
-export function getChatSocket() {
-  return socket;
-}
-
-export function disconnectChatSocket() {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-  activeToken = null;
-}

@@ -38,7 +38,24 @@
       "Bash(sed -E 's/.*static \\(async \\)?//')",
       "Bash(sed 's/.*\\\\.//')",
       "Bash(sed 's/static //')",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(node _deadcode_scan.cjs)",
+      "Bash(grep -rnE \"\\\\bt\\\\\\(\\\\s*[\\\\`]|\\\\bt\\\\\\(\\\\s*[a-zA-Z_][a-zA-Z0-9_.]*\\\\s*\\\\\\)|\\\\bt\\\\\\(\\\\s*['\\\\\"][^'\\\\\"]*\\\\$\\\\{\" src app --include='*.ts' --include='*.tsx')",
+      "Bash(echo \"exit:$?\")",
+      "Bash(node -e \"require\\('./app/routes/profileRoutes'\\); console.log\\('profileRoutes OK'\\)\")",
+      "Bash(rm -rf app-example)",
+      "Bash(ls -d app-example)",
+      "Bash(sed -n '95,115p' app/\\\\\\(stack\\\\\\)/RECEIVER/home.tsx)",
+      "Bash(sed -n '40,66p' app/\\\\\\(tabs\\\\\\)/profile.tsx)",
+      "Bash(grep -rnE \"[\\\\`']\\([a-z]+\\)\\\\.[a-zA-Z0-9_.]*\\\\$\\\\{|'[a-z]+\\\\.' *\\\\+|\\\\\" *\\\\+ *[a-z]\" src app --include='*.ts' --include='*.tsx')",
+      "Bash(grep -rnE \"\\\\\\\\\\\\$\\\\{[^}]*\\\\}|' *\\\\+|\\\\+ *'\" src app --include='*.ts' --include='*.tsx')",
+      "Bash(node _i18n_scan.cjs)",
+      "Bash(grep -rnE \"'chat\\\\.|\\\\\"chat\\\\.|\\\\`chat\\\\.\" src app --include='*.ts' --include='*.tsx')",
+      "Bash(node _i18n_apply.cjs)",
+      "Bash(rm _i18n_scan.cjs _i18n_apply.cjs)",
+      "Bash(sed -n '105,112p' src/i18n/keys/auth.ts)",
+      "Bash(echo \"grep-exit:$?\")",
+      "Bash(node -e \"['authRoutes','userRoutes','profileRoutes','foodDonationRoutes','foodRequestRoutes','chatRoutes','feedbackRoutes','notificationRoutes'].forEach\\(r=>require\\('./app/routes/'+r\\)\\); console.log\\('All backend routes load OK'\\);\")"
     ]
   }
 }

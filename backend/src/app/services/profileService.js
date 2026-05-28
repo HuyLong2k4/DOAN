@@ -228,20 +228,6 @@ class ProfileService {
         return { is_active: profile.is_active };
     }
 
-    static async updateLocation(userId, role, latitude, longitude) {
-        if (latitude == null || longitude == null) {
-            throw this._error('Thiếu latitude hoặc longitude.');
-        }
-
-        const update = { latitude, longitude };
-
-        if (role === 'DONOR')     await DonorProfile.findOneAndUpdate({ user_id: userId }, update);
-        if (role === 'RECEIVER')  await ReceiverProfile.findOneAndUpdate({ user_id: userId }, update);
-        if (role === 'VOLUNTEER') await VolunteerProfile.findOneAndUpdate({ user_id: userId }, update);
-
-        return { message: 'Vị trí đã được cập nhật.' };
-    }
-
     // ──────────────────────────────────────────────────────────────────────
     // GET /api/profile/ngos-nearby — danh sách Receiver loại NGO
     // ──────────────────────────────────────────────────────────────────────

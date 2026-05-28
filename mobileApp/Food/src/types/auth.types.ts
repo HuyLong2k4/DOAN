@@ -75,7 +75,3 @@ export interface SelectRoleResponse {
   message: string;
   user: User;
 }
-
-// ── Legacy aliases (giữ cho các file cũ khỏi bị lỗi) ─────────────────────
-export interface RegisterRequest extends SignupRequest {}
-export interface RegisterResponse extends SignupResponse {}

@@ -24,7 +24,4 @@ router.post('/volunteer',        ProfileController.completeVolunteerProfile);
 // PATCH /api/profile/volunteer/active-status → Volunteer bật/tắt nhận đơn
 router.patch('/volunteer/active-status', ProfileController.toggleActiveStatus);
 
-// PATCH /api/profile/location   → Cập nhật tọa độ GPS (Pin on map / Set Location)
-router.patch('/location',        ProfileController.updateLocation);
-
 module.exports = router;

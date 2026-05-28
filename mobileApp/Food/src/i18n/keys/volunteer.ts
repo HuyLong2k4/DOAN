@@ -5,7 +5,6 @@ export type VolunteerKey =
   | 'volunteer.stats.delivered'
   | 'volunteer.stats.feedback'
   | 'volunteer.stats.points'
-  | 'volunteer.impact.title'
   | 'volunteer.impact.deliveriesLabel'
   | 'volunteer.impact.portionsLabel'
   | 'volunteer.impact.message'
@@ -45,7 +44,6 @@ export type VolunteerKey =
   | 'volunteer.pickupCode.hint'
   | 'volunteer.pickupCode.confirm'
   | 'volunteer.pickupCode.cancel'
-  | 'volunteer.pickupCode.invalidLength'
   | 'volunteer.pickupCode.wrongCode'
   | 'volunteer.pickupCode.genericError'
   | 'volunteer.pickUp'
@@ -90,7 +88,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.stats.delivered': 'No of orders delivered',
   'volunteer.stats.feedback': 'Feedback received',
   'volunteer.stats.points': 'Points earned',
-  'volunteer.impact.title': 'Your impact',
   'volunteer.impact.deliveriesLabel': 'Deliveries',
   'volunteer.impact.portionsLabel': 'Portions delivered',
   'volunteer.impact.message': 'Heroes don\'t always wear capes. Thank you!',
@@ -130,7 +127,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.pickupCode.hint': 'Ask the donor to read out the 4-digit code shown on their app.',
   'volunteer.pickupCode.confirm': 'Confirm pickup',
   'volunteer.pickupCode.cancel': 'Cancel',
-  'volunteer.pickupCode.invalidLength': 'Code must be 4 digits.',
   'volunteer.pickupCode.wrongCode': 'Wrong code. Please ask the donor again.',
   'volunteer.pickupCode.genericError': 'Could not confirm pickup. Please try again.',
   'volunteer.pickUp': 'Picked Up',
@@ -176,7 +172,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.stats.delivered': 'Số đơn đã giao',
   'volunteer.stats.feedback': 'Phản hồi đã nhận',
   'volunteer.stats.points': 'Điểm đã tích lũy',
-  'volunteer.impact.title': 'Đóng góp của bạn',
   'volunteer.impact.deliveriesLabel': 'Lượt giao',
   'volunteer.impact.portionsLabel': 'Suất đã giao',
   'volunteer.impact.message': 'Người hùng thầm lặng. Cảm ơn bạn!',
@@ -216,7 +211,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.pickupCode.hint': 'Yêu cầu donor đọc mã 4 chữ số hiển thị trong app của họ.',
   'volunteer.pickupCode.confirm': 'Xác nhận lấy hàng',
   'volunteer.pickupCode.cancel': 'Huỷ',
-  'volunteer.pickupCode.invalidLength': 'Mã phải gồm 4 chữ số.',
   'volunteer.pickupCode.wrongCode': 'Mã không khớp. Vui lòng nhờ donor đọc lại.',
   'volunteer.pickupCode.genericError': 'Không xác nhận được. Vui lòng thử lại.',
   'volunteer.pickUp': 'Đã lấy hàng',

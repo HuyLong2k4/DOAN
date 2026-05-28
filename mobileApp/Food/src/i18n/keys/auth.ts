@@ -4,8 +4,6 @@ export type AuthKey =
   | 'auth.login.passwordPlaceholder'
   | 'auth.login.rememberMe'
   | 'auth.login.forgotPassword'
-  | 'auth.login.or'
-  | 'auth.login.loginWith'
   | 'auth.login.noAccount'
   | 'auth.login.signUp'
   | 'auth.login.btn'
@@ -116,8 +114,6 @@ export const authEn: Record<AuthKey, string> = {
   'auth.login.passwordPlaceholder': 'Enter Your Password',
   'auth.login.rememberMe': 'Remember me',
   'auth.login.forgotPassword': 'Forgot Password?',
-  'auth.login.or': 'or',
-  'auth.login.loginWith': 'Login with:',
   'auth.login.noAccount': 'Don\'t have an account?',
   'auth.login.signUp': 'Sign Up',
   'auth.login.btn': 'Login',
@@ -229,8 +225,6 @@ export const authVi: Record<AuthKey, string> = {
   'auth.login.passwordPlaceholder': 'Nhập mật khẩu',
   'auth.login.rememberMe': 'Ghi nhớ đăng nhập',
   'auth.login.forgotPassword': 'Quên mật khẩu?',
-  'auth.login.or': 'hoặc',
-  'auth.login.loginWith': 'Đăng nhập với:',
   'auth.login.noAccount': 'Chưa có tài khoản?',
   'auth.login.signUp': 'Đăng ký',
   'auth.login.btn': 'Đăng nhập',

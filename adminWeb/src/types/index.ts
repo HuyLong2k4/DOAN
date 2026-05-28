@@ -93,9 +93,3 @@ export interface ApiEnvelope<T> {
   accessToken?: string;
   user?: AuthUser;
 }
-
-export interface AuthSession {
-  token: string;
-  user: AuthUser;
-  apiBaseUrl: string;
-}
