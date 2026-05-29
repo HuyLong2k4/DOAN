@@ -402,7 +402,7 @@ class ChatService {
                     title: senderUser.full_name || 'Tin nhắn mới',
                     message: lastMessagePreview,
                     type: 'NEW_MESSAGE',
-                    related_entity_type: 'CONVERSATION',
+                    related_entity_type: 'Conversation',
                     related_entity_id: conversation._id,
                 });
 

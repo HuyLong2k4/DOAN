@@ -8,7 +8,6 @@ export type VolunteerKey =
   | 'volunteer.impact.deliveriesLabel'
   | 'volunteer.impact.portionsLabel'
   | 'volunteer.impact.message'
-  | 'volunteer.goal'
   | 'volunteer.requestToDeliver'
   | 'volunteer.myDeliveryProgress'
   | 'volunteer.noPendingRequests'
@@ -79,7 +78,10 @@ export type VolunteerKey =
   | 'volunteer.youEarned'
   | 'volunteer.donorEarned'
   | 'volunteer.online'
-  | 'volunteer.offline';
+  | 'volunteer.offline'
+  | 'volunteer.offlineRequestsHint'
+  | 'volunteer.statusOnSubtitle'
+  | 'volunteer.statusOffSubtitle';
 
 export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.greeting': 'Hi',
@@ -91,7 +93,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.impact.deliveriesLabel': 'Deliveries',
   'volunteer.impact.portionsLabel': 'Portions delivered',
   'volunteer.impact.message': 'Heroes don\'t always wear capes. Thank you!',
-  'volunteer.goal': 'Set your Goal to make a difference',
   'volunteer.requestToDeliver': 'Request to deliver',
   'volunteer.myDeliveryProgress': 'My delivery progress',
   'volunteer.noPendingRequests': 'No pending delivery requests right now',
@@ -163,6 +164,9 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.donorEarned': 'Donor earned +',
   'volunteer.online': 'Online',
   'volunteer.offline': 'Offline',
+  'volunteer.offlineRequestsHint': 'You are offline. Turn on Online to receive delivery requests.',
+  'volunteer.statusOnSubtitle': 'Receiving nearby delivery requests',
+  'volunteer.statusOffSubtitle': "You won't receive delivery requests",
 };
 
 export const volunteerVi: Record<VolunteerKey, string> = {
@@ -175,7 +179,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.impact.deliveriesLabel': 'Lượt giao',
   'volunteer.impact.portionsLabel': 'Suất đã giao',
   'volunteer.impact.message': 'Người hùng thầm lặng. Cảm ơn bạn!',
-  'volunteer.goal': 'Đặt mục tiêu để tạo ra sự khác biệt',
   'volunteer.requestToDeliver': 'Yêu cầu giao hàng',
   'volunteer.myDeliveryProgress': 'Tiến độ giao hàng của tôi',
   'volunteer.noPendingRequests': 'Hiện không có yêu cầu giao hàng nào',
@@ -247,4 +250,7 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.donorEarned': 'Người tặng được +',
   'volunteer.online': 'Trực tuyến',
   'volunteer.offline': 'Ngoại tuyến',
+  'volunteer.offlineRequestsHint': 'Bạn đang ngoại tuyến. Bật Trực tuyến để nhận yêu cầu giao hàng.',
+  'volunteer.statusOnSubtitle': 'Đang nhận yêu cầu giao hàng gần bạn',
+  'volunteer.statusOffSubtitle': 'Bạn sẽ không nhận yêu cầu giao hàng',
 };

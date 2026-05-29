@@ -82,18 +82,45 @@ export default function VolunteerHomeScreen() {
     try {
       setTogglingActive(true);
       const res = await http.patch('/profile/volunteer/active-status');
-      setIsActive(Boolean(res.data?.is_active));
+      const nowActive = Boolean(res.data?.is_active);
+      setIsActive(nowActive);
+      if (nowActive) {
+        setLoadingRequests(true);
+        await refreshRequests().catch(() => {});
+        setLoadingRequests(false);
+      } else {
+        // Offline: backend không trả đơn nào nữa, xoá list để khớp UI.
+        setRequests([]);
+      }
     } catch {
       Alert.alert(t('volunteer.cannotUpdate'), t('volunteer.somethingWrong'));
     } finally {
       setTogglingActive(false);
     }
-  }, [t]);
+  }, [refreshRequests, t]);
 
   const refreshMyDeliveries = useCallback(async () => {
     const myDeliveryRes = await http.get('/food-donations/volunteer/my-deliveries');
     const myDeliveryData = (myDeliveryRes.data?.data ?? []) as VolunteerDeliveryApiItem[];
     setMyDeliveries(mapVolunteerDeliveries(myDeliveryData, t));
+  }, [t]);
+
+  const refreshRequests = useCallback(async () => {
+    const requestRes = await http.get('/food-donations');
+    const requestData = (requestRes.data?.data ?? []) as FoodDonationApiItem[];
+    setRequests(
+      requestData.map((item) => ({
+        id: item._id,
+        title: item.title,
+        quantityLabel: `${t('volunteer.foodQtyPrefix')} ${item.quantity} ${item.unit}`,
+        address:
+          [item.pickup_address_line, item.pickup_city].filter(Boolean).join(', ') ||
+          t('volunteer.pickupAddrUnavailable'),
+        pickupLatitude: item.pickup_latitude,
+        pickupLongitude: item.pickup_longitude,
+        isPreferredForYou: Boolean(item.is_preferred_for_you),
+      })),
+    );
   }, [t]);
 
   const removeRequestFromList = useCallback((id: string) => {
@@ -362,7 +389,7 @@ export default function VolunteerHomeScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerTextWrap}>
             <Text style={styles.greeting}>{t('volunteer.greeting')} {firstName}</Text>
             <View style={styles.roleRow}>
               <Text style={styles.roleText}>{t('volunteer.rolePrefix')} </Text>
@@ -370,19 +397,6 @@ export default function VolunteerHomeScreen() {
             </View>
           </View>
           <View style={styles.headerActions}>
-            <View style={styles.activeToggleWrap}>
-              <View style={[styles.activeStatusDot, { backgroundColor: isActive ? '#2E7D32' : '#9E9E9E' }]} />
-              <Text style={[styles.activeStatusLabel, { color: isActive ? '#2E7D32' : '#9E9E9E' }]}>
-                {isActive ? t('volunteer.online') : t('volunteer.offline')}
-              </Text>
-              <Switch
-                value={isActive}
-                onValueChange={handleToggleActive}
-                disabled={togglingActive}
-                trackColor={{ false: '#CFD8DC', true: '#A5D6A7' }}
-                thumbColor={isActive ? '#2E7D32' : '#90A4AE'}
-              />
-            </View>
             <TouchableOpacity
               onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
               style={styles.langPill}
@@ -392,6 +406,32 @@ export default function VolunteerHomeScreen() {
             </TouchableOpacity>
             <NotificationBell size={26} />
           </View>
+        </View>
+
+        <View style={[styles.statusCard, isActive ? styles.statusCardOn : styles.statusCardOff]}>
+          <View style={[styles.statusIconWrap, { backgroundColor: isActive ? '#2E7D32' : '#9E9E9E' }]}>
+            <Ionicons name={isActive ? 'bicycle' : 'pause'} size={18} color="#fff" />
+          </View>
+          <View style={styles.statusTextWrap}>
+            <Text style={[styles.statusTitle, { color: isActive ? '#1B5E20' : '#5F6368' }]}>
+              {isActive ? t('volunteer.online') : t('volunteer.offline')}
+            </Text>
+            <Text style={styles.statusSubtitle} numberOfLines={1}>
+              {isActive ? t('volunteer.statusOnSubtitle') : t('volunteer.statusOffSubtitle')}
+            </Text>
+          </View>
+          {togglingActive ? (
+            <ActivityIndicator color={isActive ? '#2E7D32' : '#9E9E9E'} style={styles.statusSwitch} />
+          ) : (
+            <Switch
+              value={isActive}
+              onValueChange={handleToggleActive}
+              disabled={togglingActive}
+              trackColor={{ false: '#CFD8DC', true: '#A5D6A7' }}
+              thumbColor={isActive ? '#2E7D32' : '#FAFAFA'}
+              style={styles.statusSwitch}
+            />
+          )}
         </View>
 
         {stats && stats.deliveries > 0 && (
@@ -419,14 +459,14 @@ export default function VolunteerHomeScreen() {
           <StatItem value={String(points)} label={t('volunteer.stats.points')} />
         </View>
 
-        <TouchableOpacity style={styles.goalButton}>
-          <Text style={styles.goalButtonText}>{t('volunteer.goal')}</Text>
-        </TouchableOpacity>
-
         <Text style={styles.sectionTitle}>{t('volunteer.requestToDeliver')}</Text>
         {loadingRequests ? (
           <View style={styles.requestStateCard}>
             <ActivityIndicator color="#008080" />
+          </View>
+        ) : !isActive ? (
+          <View style={styles.requestStateCard}>
+            <Text style={styles.requestStateText}>{t('volunteer.offlineRequestsHint')}</Text>
           </View>
         ) : requests.length === 0 ? (
           <View style={styles.requestStateCard}>
@@ -604,27 +644,32 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 10,
   },
+  headerTextWrap: { flexShrink: 1, marginRight: 8 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activeToggleWrap: {
+  statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    marginHorizontal: 18,
+    marginTop: 4,
+    marginBottom: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
-  activeStatusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  statusCardOn: { backgroundColor: '#E8F5E9', borderColor: '#A5D6A7' },
+  statusCardOff: { backgroundColor: '#FFFFFF', borderColor: '#E0E0E0' },
+  statusIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeStatusLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
+  statusTextWrap: { flex: 1, marginLeft: 12, marginRight: 8 },
+  statusTitle: { fontSize: 15, fontWeight: '700' },
+  statusSubtitle: { fontSize: 12, color: '#777', marginTop: 1 },
+  statusSwitch: { transform: [{ scale: 0.95 }] },
   langPill: {
     borderWidth: 1,
     borderColor: c.border,
@@ -651,16 +696,6 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 22, fontWeight: '700', color: '#111' },
   statLabel: { fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2, paddingHorizontal: 6 },
   statDivider: { width: 1, backgroundColor: '#E4E4E4', marginVertical: 6 },
-
-  goalButton: {
-    marginHorizontal: 18,
-    backgroundColor: '#808080',
-    borderRadius: 8,
-    paddingVertical: 13,
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  goalButtonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
   sectionTitle: {
     fontSize: 15,

@@ -40,6 +40,15 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
     }
 
     if (viewer?.role === 'VOLUNTEER' && viewer?.id) {
+        // Volunteer offline (is_active = false) thì không nhận đơn nào trong list,
+        // đồng bộ với broadcast push (chỉ gửi cho is_active = true).
+        const volunteerProfile = await VolunteerProfile.findOne({ user_id: viewer.id })
+            .select('is_active')
+            .lean();
+        if (!volunteerProfile?.is_active) {
+            return [];
+        }
+
         query.rejected_by = { $nin: [viewer.id] };
         query.selected_receiver_id = { $ne: null };
         query.delivery_type = 'VIA_AGENT';
