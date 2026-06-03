@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { useI18n } from '../../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 type DeliveryType = 'VIA_AGENT' | 'SELF_PICKUP';
 
@@ -115,7 +116,7 @@ export default function ReceiverAddPickupScreen() {
 
         {deliveryType === 'VIA_AGENT' ? (
           <View style={styles.autoMatchCard}>
-            <Ionicons name="sparkles-outline" size={20} color="#006666" />
+            <Ionicons name="sparkles-outline" size={20} color={roleUi.colors.primaryStrong} />
             <View style={{ flex: 1 }}>
               <Text style={styles.autoMatchTitle}>{t('addPickup.autoMatchTitle')}</Text>
               <Text style={styles.autoMatchHint}>{t('addPickup.autoMatchHint')}</Text>
@@ -123,7 +124,7 @@ export default function ReceiverAddPickupScreen() {
           </View>
         ) : (
           <View style={styles.selfPickupCard}>
-            <Ionicons name="walk-outline" size={18} color="#006666" />
+            <Ionicons name="walk-outline" size={18} color={roleUi.colors.primaryStrong} />
             <Text style={styles.selfPickupText}>{t('addPickup.selfPickupInfo')}</Text>
           </View>
         )}
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
   },
-  optionBtnActive: { backgroundColor: '#008080' },
+  optionBtnActive: { backgroundColor: roleUi.colors.primary },
   optionText: { fontSize: 18, color: '#222', fontWeight: '500' },
   optionTextActive: { color: '#fff' },
   estimateWrap: {
@@ -177,9 +178,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   approvedBox: {
-    backgroundColor: '#EAF9EB',
+    backgroundColor: roleUi.colors.successSoft,
     borderWidth: 1,
-    borderColor: '#5EC45E',
+    borderColor: roleUi.colors.success,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#4CAF50',
+    backgroundColor: roleUi.colors.success,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
@@ -199,12 +200,12 @@ const styles = StyleSheet.create({
   approvedTextWrap: { flex: 1, marginLeft: 10 },
   approvedMainText: { fontSize: 14, color: '#1E1E1E', fontWeight: '600' },
   approvedSubText: { fontSize: 14, color: '#1E1E1E', marginTop: 2 },
-  approvedDivider: { height: 1, backgroundColor: '#BFDDBF', marginTop: 10, marginBottom: 8 },
+  approvedDivider: { height: 1, backgroundColor: '#C7D8C9', marginTop: 10, marginBottom: 8 },
   approvedFooterText: { fontSize: 13, color: '#2D2D2D' },
   selfPickupCard: {
-    backgroundColor: '#E8F1FF',
+    backgroundColor: roleUi.colors.infoSoft,
     borderWidth: 1,
-    borderColor: '#C8DCF9',
+    borderColor: '#D5E0EC',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -213,9 +214,9 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 14,
   },
-  selfPickupText: { flex: 1, color: '#006666', fontSize: 13, lineHeight: 18 },
+  selfPickupText: { flex: 1, color: roleUi.colors.primaryStrong, fontSize: 13, lineHeight: 18 },
   autoMatchCard: {
-    backgroundColor: '#E0F2F1',
+    backgroundColor: roleUi.colors.primarySoft,
     borderWidth: 1,
     borderColor: '#B2DFDB',
     borderRadius: 10,
@@ -226,11 +227,11 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 14,
   },
-  autoMatchTitle: { fontSize: 14, color: '#006666', fontWeight: '700', marginBottom: 4 },
-  autoMatchHint: { fontSize: 13, color: '#1F2937', lineHeight: 18 },
+  autoMatchTitle: { fontSize: 14, color: roleUi.colors.primaryStrong, fontWeight: '700', marginBottom: 4 },
+  autoMatchHint: { fontSize: 13, color: '#111111', lineHeight: 18 },
   confirmBtn: {
     marginTop: 14,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     borderRadius: 0,
     height: 50,
     alignItems: 'center',
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   bottomHint: {
     marginTop: 10,
     fontSize: 11,
-    color: '#6B7280',
+    color: '#666666',
     textAlign: 'center',
   },
 });

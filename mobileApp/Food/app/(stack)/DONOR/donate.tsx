@@ -135,10 +135,10 @@ export default function DonateScreen() {
             <Text style={styles.submitBtnText}>{t('donor.donate.donateAgain')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.submitBtn, { marginTop: 12, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#008080' }]}
+            style={[styles.submitBtn, { marginTop: 12, backgroundColor: '#fff', borderWidth: 1.5, borderColor: c.primary }]}
             onPress={() => router.replace('/(tabs)/DONOR/home' as any)}
           >
-            <Text style={[styles.submitBtnText, { color: '#008080' }]}>{t('donor.donate.viewMyPosts')}</Text>
+            <Text style={[styles.submitBtnText, { color: c.primary }]}>{t('donor.donate.viewMyPosts')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -342,12 +342,12 @@ const styles = StyleSheet.create({
   dateInput:             { flex: 1, fontSize: 14, color: c.textPrimary },
   assuranceRow:          { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 18, marginBottom: 8 },
   assuranceText:         { flex: 1, fontSize: 13, color: '#555', lineHeight: 18 },
-  error:                 { color: '#E53935', fontSize: 13, marginTop: 10 },
+  error:                 { color: c.danger, fontSize: 13, marginTop: 10 },
   footer:                { padding: 16, paddingBottom: Platform.OS === 'ios' ? 28 : 16, borderTopWidth: 1, borderTopColor: '#F0F0F0', backgroundColor: c.surface },
   submitBtn:             { backgroundColor: c.surface, borderRadius: r.sm, height: 50, justifyContent: 'center', alignItems: 'center', borderColor: c.primary, borderWidth: 1.5 },
   submitBtnText:         { color: c.primary, fontWeight: '700', fontSize: 16, paddingLeft: 16, paddingRight: 16 },
   successBox:            { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  circle:                { width: 90, height: 90, borderRadius: 45, backgroundColor: '#4CAF50', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+  circle:                { width: 90, height: 90, borderRadius: 45, backgroundColor: c.success, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
   check:                 { color: '#fff', fontSize: 44, fontWeight: '700' },
   successTitle:          { fontSize: 24, fontWeight: '700', marginBottom: 12, color: '#111' },
   successSub:            { textAlign: 'center', color: c.textSecondary, lineHeight: 22, marginBottom: 32 },

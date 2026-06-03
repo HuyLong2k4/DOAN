@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signup } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function Register() {
   const router = useRouter();
@@ -109,8 +110,8 @@ const styles = StyleSheet.create({
     borderRadius: 6, height: 50, paddingHorizontal: 14,
     fontSize: 15, color: '#111', marginBottom: 14,
   },
-  error:     { color: '#E53935', marginBottom: 12, fontSize: 13 },
-  btn:       { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
+  error:     { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
+  btn:       { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
   btnText:   { color: '#fff', fontWeight: '700', fontSize: 16 },
   divider:   { flexDirection: 'row', alignItems: 'center', marginVertical: 22 },
   line:      { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
@@ -120,5 +121,5 @@ const styles = StyleSheet.create({
   socialBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: '#E0E0E0', backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   socialIcon: { fontSize: 18, fontWeight: '700', color: '#333' },
   link:      { textAlign: 'center', color: '#555', fontSize: 14 },
-  linkBold:  { color: '#008080', fontWeight: '700' },
+  linkBold:  { color: roleUi.colors.primary, fontWeight: '700' },
 });

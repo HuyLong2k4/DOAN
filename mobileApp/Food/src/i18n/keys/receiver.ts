@@ -3,10 +3,7 @@ export type ReceiverKey =
   | 'receiver.rolePrefix'
   | 'receiver.role'
   | 'receiver.ordersReceived'
-  | 'receiver.pointsEarned'
-  | 'receiver.impact.mealsLabel'
   | 'receiver.impact.ngosLabel'
-  | 'receiver.impact.message'
   | 'receiver.myPost'
   | 'receiver.donorsPosts'
   | 'receiver.nothingTillNow'
@@ -54,10 +51,7 @@ export const receiverEn: Record<ReceiverKey, string> = {
   'receiver.rolePrefix': 'You are a',
   'receiver.role': 'Receiver',
   'receiver.ordersReceived': 'No of orders received',
-  'receiver.pointsEarned': 'Points earned',
-  'receiver.impact.mealsLabel': 'Meals received',
   'receiver.impact.ngosLabel': 'Kind donors',
-  'receiver.impact.message': 'We\'re glad to be part of your journey.',
   'receiver.myPost': 'My Post',
   'receiver.donorsPosts': 'Donor\'s Posts',
   'receiver.nothingTillNow': 'Nothing till now',
@@ -106,10 +100,7 @@ export const receiverVi: Record<ReceiverKey, string> = {
   'receiver.rolePrefix': 'Bạn là',
   'receiver.role': 'Người nhận',
   'receiver.ordersReceived': 'Số đơn đã nhận',
-  'receiver.pointsEarned': 'Điểm đã tích lũy',
-  'receiver.impact.mealsLabel': 'Bữa đã nhận',
   'receiver.impact.ngosLabel': 'Người tặng tốt bụng',
-  'receiver.impact.message': 'Chúng tôi rất vui được đồng hành cùng bạn.',
   'receiver.myPost': 'Bài đăng của tôi',
   'receiver.donorsPosts': 'Bài đăng từ người tặng',
   'receiver.nothingTillNow': 'Chưa có dữ liệu',

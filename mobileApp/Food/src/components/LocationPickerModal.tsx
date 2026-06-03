@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { roleUi } from '@/src/theme/roleUi';
 
 export interface PickedLocation {
   latitude:     number;
@@ -320,21 +321,21 @@ export default function LocationPickerModal({ visible, onClose, onConfirm, initi
               draggable
               coordinate={{ latitude: pin.lat, longitude: pin.lng }}
               onDragEnd={onMarkerDragEnd}
-              pinColor="#008080"
+              pinColor={roleUi.colors.primary}
             />
           </MapView>
 
           {/* GPS button */}
           <TouchableOpacity style={styles.gpsBtn} onPress={() => { void getCurrentLocation(true); }} disabled={locLoading}>
             {locLoading
-              ? <ActivityIndicator color="#008080" size="small" />
+              ? <ActivityIndicator color={roleUi.colors.primary} size="small" />
               : <Text style={styles.gpsIcon}>⊕</Text>
             }
           </TouchableOpacity>
         </View>
 
         {/* Address result */}
-        {geocoding && <ActivityIndicator color="#008080" style={{ marginTop: 8 }} />}
+        {geocoding && <ActivityIndicator color={roleUi.colors.primary} style={{ marginTop: 8 }} />}
         {!geocoding && geocodeResult?.display ? (
           <View style={styles.addrBox}>
             <Text style={styles.addrLabel}>Address:</Text>
@@ -395,16 +396,16 @@ const styles = StyleSheet.create({
   mapWrapper:     { flex: 1, position: 'relative' },
   map:            { ...StyleSheet.absoluteFillObject },
   gpsBtn:         { position: 'absolute', bottom: 16, right: 16, width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4 },
-  gpsIcon:        { fontSize: 26, color: '#008080' },
-  addrBox:        { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#EFF6FF' },
-  addrLabel:      { fontSize: 11, fontWeight: '600', color: '#008080', marginBottom: 2 },
+  gpsIcon:        { fontSize: 26, color: roleUi.colors.primary },
+  addrBox:        { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#EEF1F6' },
+  addrLabel:      { fontSize: 11, fontWeight: '600', color: roleUi.colors.primary, marginBottom: 2 },
   addrText:       { fontSize: 12, color: '#333', lineHeight: 17 },
   nearbyTitle:    { fontSize: 14, fontWeight: '700', color: '#111', marginLeft: 16, marginTop: 10, marginBottom: 6 },
   nearbyCard:     { width: 180, backgroundColor: '#F8F8F8', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: '#E8E8E8' },
   nearbyName:     { fontWeight: '700', color: '#111', fontSize: 13, marginBottom: 3 },
   nearbyAddr:     { fontSize: 11, color: '#777', lineHeight: 15 },
   footer:         { padding: 16, paddingBottom: Platform.OS === 'android' ? 16 : 8 },
-  setBtn:         { backgroundColor: '#008080', borderRadius: 8, height: 52, justifyContent: 'center', alignItems: 'center' },
-  setBtnDisabled: { backgroundColor: '#A0C4F8' },
+  setBtn:         { backgroundColor: roleUi.colors.primary, borderRadius: 8, height: 52, justifyContent: 'center', alignItems: 'center' },
+  setBtnDisabled: { backgroundColor: '#AEC2D8' },
   setBtnText:     { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

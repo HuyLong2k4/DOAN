@@ -62,6 +62,9 @@ export default function ProfileScreen() {
           {role === 'DONOR' && (
             <MenuItem label={t('profile.yourDonations')} onPress={() => router.push('/(stack)/DONOR/historyDonation' as any)} />
           )}
+          {role === 'VOLUNTEER' && (
+            <MenuItem label={t('profile.yourDeliveries')} onPress={() => router.push('/(stack)/VOLUNTEER/historyDelivery' as any)} />
+          )}
           <MenuItem label={t(rewardsLabelKey)} onPress={() => router.push('/(stack)/REWARD/rewards' as any)} />
           <MenuItem label={t('profile.settings')} onPress={() => router.push('/(stack)/SETTINGS/settings' as any)} />
           <MenuItem label={t('profile.help')} onPress={() => router.push('/(stack)/HELP/help' as any)} last />
@@ -99,29 +102,6 @@ const styles = StyleSheet.create({
   headerTitle:  { fontSize: 18, fontWeight: '700', color: '#111' },
   divider:      { height: 1, backgroundColor: '#E8E8E8' },
   scroll:       { paddingBottom: 40 },
-  languageCard: {
-    marginTop: 12,
-    marginHorizontal: 16,
-    marginBottom: 4,
-    borderRadius: 10,
-    backgroundColor: '#F5F5F5',
-    padding: 10,
-  },
-  languageHeader: { marginBottom: 8 },
-  languageLabel: { fontSize: 13, fontWeight: '600', color: '#333' },
-  languageSwitch: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    gap: 1,
-  },
-  languageOption: { flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center' },
-  languageOptionActive: { backgroundColor: '#008080' },
-  languageOptionText: { color: '#666', fontWeight: '500', fontSize: 12 },
-  languageOptionTextActive: { color: '#fff', fontWeight: '600' },
   menu:         { paddingHorizontal: 24, paddingTop: 8 },
   menuItem:     { paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
   menuItemLast: { borderBottomWidth: 0 },

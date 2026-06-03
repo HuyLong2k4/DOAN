@@ -3,35 +3,53 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { http } from '../../../src/api/http';
 import { getLeaderboard, getMyStats, type DonorStats, type ReceiverStats, type VolunteerStats } from '../../../src/api/user.api';
 import { getRewardLevel } from '../../../src/constants/rewardLevels';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 interface LeaderEntry { _id: string; full_name: string; points: number; role?: string; }
 
+interface ReceivedMeal {
+  _id: string;
+  title: string;
+  quantity?: number;
+  unit?: string;
+  food_type?: string;
+  donor_name?: string | null;
+  received_at?: string;
+}
+
 export default function RewardsScreen() {
   const router  = useRouter();
-  const { t }   = useI18n();
+  const { t, locale } = useI18n();
   const user    = useAuthStore((s) => s.user);
   const role    = user?.role;
   const showLevels = role === 'DONOR' || role === 'VOLUNTEER';
+  // Receiver không tham gia tích điểm thi đua → ẩn bảng xếp hạng & cấp độ danh hiệu,
+  // chỉ hiển thị hoạt động của chính họ (bữa đã nhận, NGO đã kết nối, phản hồi đã gửi).
+  const showLeaderboard = role !== 'RECEIVER';
   const leaderboardRole: 'DONOR' | 'VOLUNTEER' = role === 'VOLUNTEER' ? 'VOLUNTEER' : 'DONOR';
 
-  const [lbTab, setLbTab]         = useState<'Week' | 'Yearly'>('Week');
   const [top3, setTop3]           = useState<LeaderEntry[]>([]);
   const [loadingBoard, setLoadingBoard] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<DonorStats | VolunteerStats | ReceiverStats | null>(null);
+  const [receivedMeals, setReceivedMeals] = useState<ReceivedMeal[]>([]);
 
   const points = (stats as { points?: number } | null)?.points ?? user?.points ?? 0;
 
   const loadData = useCallback(async () => {
-    const tasks: Promise<unknown>[] = [
-      getLeaderboard(3, leaderboardRole)
-        .then((res) => setTop3((res.data.data ?? []) as LeaderEntry[]))
-        .catch(() => setTop3([])),
-    ];
+    const tasks: Promise<unknown>[] = [];
+    if (showLeaderboard) {
+      tasks.push(
+        getLeaderboard(3, leaderboardRole)
+          .then((res) => setTop3((res.data.data ?? []) as LeaderEntry[]))
+          .catch(() => setTop3([])),
+      );
+    }
     if (role) {
       tasks.push(
         getMyStats()
@@ -39,8 +57,15 @@ export default function RewardsScreen() {
           .catch(() => setStats(null)),
       );
     }
+    if (role === 'RECEIVER') {
+      tasks.push(
+        http.get('/food-donations/received', { params: { limit: 5 } })
+          .then((res) => setReceivedMeals((res.data?.data ?? []) as ReceivedMeal[]))
+          .catch(() => setReceivedMeals([])),
+      );
+    }
     await Promise.all(tasks);
-  }, [leaderboardRole, role]);
+  }, [leaderboardRole, role, showLeaderboard]);
 
   useFocusEffect(
     useCallback(() => {
@@ -69,7 +94,7 @@ export default function RewardsScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} colors={[roleUi.colors.primary]} />}
       >
 
         {/* Header */}
@@ -77,7 +102,7 @@ export default function RewardsScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color="#111" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('rewards.title')}</Text>
+          <Text style={styles.headerTitle}>{showLeaderboard ? t('rewards.title') : t('profile.myActivity')}</Text>
           <View style={{ width: 22 }} />
         </View>
 
@@ -121,46 +146,83 @@ export default function RewardsScreen() {
           })()}
         </View>
 
-        {/* Leaderboard mini */}
-        <View style={styles.lbHeader}>
-          <Text style={styles.sectionTitle}>{t('rewards.leaderboard')}</Text>
-          <View style={styles.lbTabs}>
-            {(['Week', 'Yearly'] as const).map((tabKey) => (
-              <TouchableOpacity key={tabKey} style={[styles.lbTab, lbTab === tabKey && styles.lbTabActive]} onPress={() => setLbTab(tabKey)}>
-                <Text style={[styles.lbTabText, lbTab === tabKey && styles.lbTabTextActive]}>
-                  {tabKey === 'Week' ? t('rewards.week') : t('rewards.yearly')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {loadingBoard
-          ? <ActivityIndicator color="#111" style={{ marginVertical: 16 }} />
-          : (
-            <View style={styles.podiumRow}>
-              {pod.map((entry, i) => {
-                const rank  = i === 0 ? 2 : i === 1 ? 1 : 3;
-                const label = [t('rewards.rank1'), t('rewards.rank2'), t('rewards.rank3')][rank - 1];
-                const size  = rank === 1 ? 64 : 52;
-                return (
-                  <View key={entry?._id ?? i} style={[styles.podiumItem, rank === 1 && styles.podiumCenter]}>
-                    <Text style={styles.podiumRank}>{label}</Text>
-                    <View style={[styles.podiumAvatar, { width: size, height: size, borderRadius: size / 2 }]}>
-                      <Ionicons name="person" size={size * 0.5} color="#999" />
-                    </View>
-                    <Text style={styles.podiumName}>{entry?.full_name?.split(' ')[0] ?? '—'}</Text>
-                    <Text style={styles.podiumPts}>{entry?.points ?? 0}{t('rewards.pt')}</Text>
-                  </View>
-                );
-              })}
+        {showLeaderboard && (
+          <>
+            {/* Leaderboard mini */}
+            <View style={styles.lbHeader}>
+              <Text style={styles.sectionTitle}>{t('rewards.leaderboard')}</Text>
             </View>
-          )
-        }
 
-        <TouchableOpacity style={styles.viewAllBtn} onPress={() => router.push('/(stack)/REWARD/leaderboard' as any)}>
-          <Text style={styles.viewAllText}>{t('rewards.viewFull')}</Text>
-        </TouchableOpacity>
+            {loadingBoard
+              ? <ActivityIndicator color="#111" style={{ marginVertical: 16 }} />
+              : (
+                <View style={styles.podiumRow}>
+                  {pod.map((entry, i) => {
+                    const rank  = i === 0 ? 2 : i === 1 ? 1 : 3;
+                    const label = [t('rewards.rank1'), t('rewards.rank2'), t('rewards.rank3')][rank - 1];
+                    const size  = rank === 1 ? 64 : 52;
+                    return (
+                      <View key={entry?._id ?? i} style={[styles.podiumItem, rank === 1 && styles.podiumCenter]}>
+                        <Text style={styles.podiumRank}>{label}</Text>
+                        <View style={[styles.podiumAvatar, { width: size, height: size, borderRadius: size / 2 }]}>
+                          <Ionicons name="person" size={size * 0.5} color="#999" />
+                        </View>
+                        <Text style={styles.podiumName}>{entry?.full_name?.split(' ')[0] ?? '—'}</Text>
+                        <Text style={styles.podiumPts}>{entry?.points ?? 0}{t('rewards.pt')}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )
+            }
+
+            <TouchableOpacity style={styles.viewAllBtn} onPress={() => router.push('/(stack)/REWARD/leaderboard' as any)}>
+              <Text style={styles.viewAllText}>{t('rewards.viewFull')}</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {!showLeaderboard && (
+          <View style={styles.mealsSection}>
+            <Text style={styles.mealsHeading}>{t('rewards.recentMealsTitle')}</Text>
+            {loadingBoard ? (
+              <ActivityIndicator color="#111" style={{ marginVertical: 16 }} />
+            ) : receivedMeals.length === 0 ? (
+              <Text style={styles.mealsEmpty}>{t('rewards.noMealsYet')}</Text>
+            ) : (
+              receivedMeals.map((m) => {
+                const metaParts: string[] = [];
+                if (m.donor_name) metaParts.push(`${t('rewards.fromDonor')} ${m.donor_name}`);
+                if (m.quantity != null) metaParts.push(`${m.quantity} ${m.unit || ''}`.trim());
+                return (
+                  <TouchableOpacity
+                    key={m._id}
+                    style={styles.mealCard}
+                    activeOpacity={0.7}
+                    onPress={() => router.push({
+                      pathname: '/(stack)/RECEIVER/donationDetail',
+                      params: { donationId: m._id, title: m.title },
+                    } as any)}
+                  >
+                    <View style={styles.mealIcon}>
+                      <Ionicons name="restaurant-outline" size={20} color={roleUi.colors.successText} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.mealTitle} numberOfLines={1}>{m.title}</Text>
+                      {metaParts.length > 0 && (
+                        <Text style={styles.mealMeta} numberOfLines={1}>{metaParts.join('  ·  ')}</Text>
+                      )}
+                      {m.received_at ? (
+                        <Text style={styles.mealDate}>{new Date(m.received_at).toLocaleDateString(locale)}</Text>
+                      ) : null}
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#BBB" />
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        )}
 
         {showLevels && (
           <>
@@ -259,13 +321,8 @@ const styles = StyleSheet.create({
   statLabel:        { fontSize: 10, color: '#888', marginBottom: 4, textAlign: 'center' },
   statValue:        { fontSize: 20, fontWeight: '700', color: '#111' },
   statDiv:          { width: 1, backgroundColor: '#EEE', marginVertical: 4 },
-  lbHeader:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 18, marginBottom: 12 },
+  lbHeader:         { paddingHorizontal: 18, marginBottom: 12 },
   sectionTitle:     { fontSize: 16, fontWeight: '700', color: '#111' },
-  lbTabs:           { flexDirection: 'row', gap: 6 },
-  lbTab:            { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#DDD' },
-  lbTabActive:      { backgroundColor: '#fff', borderColor: '#111' },
-  lbTabText:        { fontSize: 12, color: '#999' },
-  lbTabTextActive:  { color: '#111', fontWeight: '700' },
   podiumRow:        { flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', paddingHorizontal: 18, marginBottom: 8, gap: 16 },
   podiumItem:       { alignItems: 'center', flex: 1 },
   podiumCenter:     { marginBottom: 12 },
@@ -274,7 +331,7 @@ const styles = StyleSheet.create({
   podiumName:       { fontSize: 13, fontWeight: '700', color: '#111' },
   podiumPts:        { fontSize: 11, color: '#888' },
   viewAllBtn:       { alignSelf: 'center', marginVertical: 8 },
-  viewAllText:      { fontSize: 13, color: '#008080', fontWeight: '600' },
+  viewAllText:      { fontSize: 13, color: roleUi.colors.primary, fontWeight: '600' },
   badgeRow:         { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: 18, borderRadius: 8, padding: 16, marginBottom: 16, gap: 12 },
   badgeIconWrap:    { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center' },
   badgeMsg:         { fontSize: 14, color: '#333', marginBottom: 4 },
@@ -297,4 +354,12 @@ const styles = StyleSheet.create({
   levelRange:       { fontSize: 11, color: '#999' },
   currentBadge:     { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   currentBadgeText: { fontSize: 10, color: '#fff', fontWeight: '700' },
+  mealsSection:     { paddingHorizontal: 18, marginTop: 4 },
+  mealsHeading:     { fontSize: 16, fontWeight: '700', color: '#111', marginBottom: 12 },
+  mealsEmpty:       { fontSize: 13, color: '#999', paddingVertical: 12 },
+  mealCard:         { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 10, gap: 12 },
+  mealIcon:         { width: 40, height: 40, borderRadius: 20, backgroundColor: roleUi.colors.successSoft, justifyContent: 'center', alignItems: 'center' },
+  mealTitle:        { fontSize: 14, fontWeight: '700', color: '#111' },
+  mealMeta:         { fontSize: 12, color: '#666', marginTop: 2 },
+  mealDate:         { fontSize: 11, color: '#999', marginTop: 2 },
 });

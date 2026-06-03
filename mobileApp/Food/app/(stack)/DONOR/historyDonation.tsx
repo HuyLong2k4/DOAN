@@ -16,6 +16,7 @@ import DonationHistoryCard from '../../../src/components/DonationHistoryCard';
 import { Donation } from '../../../src/components/DonationPostCard';
 import { http } from '../../../src/api/http';
 import { useI18n } from '@/src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function DonationHistoryScreen() {
     const router = useRouter();
@@ -94,7 +95,7 @@ export default function DonationHistoryScreen() {
 
             {loading ? (
                 <View style={styles.centerState}>
-                    <ActivityIndicator size="large" color="#008080" />
+                    <ActivityIndicator size="large" color={roleUi.colors.primary} />
                     <Text style={styles.stateText}>{t('donor.history.loading')}</Text>
                 </View>
             ) : (
@@ -104,7 +105,7 @@ export default function DonationHistoryScreen() {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={() => loadDonations(true)}
-                            tintColor="#008080"
+                            tintColor={roleUi.colors.primary}
                         />
                     }
                     contentContainerStyle={styles.listContent}
@@ -201,12 +202,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     emptyText: { fontSize: 14, color: '#555', textAlign: 'center' },
-    errorText: { fontSize: 14, color: '#D32F2F', textAlign: 'center', marginBottom: 12 },
+    errorText: { fontSize: 14, color: roleUi.colors.dangerText, textAlign: 'center', marginBottom: 12 },
     retryBtn: {
-        backgroundColor: '#E0F2F1',
+        backgroundColor: roleUi.colors.primarySoft,
         paddingHorizontal: 14,
         paddingVertical: 8,
         borderRadius: 8,
     },
-    retryBtnText: { color: '#006666', fontWeight: '600' },
+    retryBtnText: { color: roleUi.colors.primaryStrong, fontWeight: '600' },
 });

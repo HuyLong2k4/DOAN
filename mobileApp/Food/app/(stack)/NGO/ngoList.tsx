@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getNearbyNgos, NearbyNgoItem } from '../../../src/api/profile.api';
 import { useI18n } from '../../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 type Tab = 'near' | 'popular';
 
@@ -101,7 +102,7 @@ export default function NgoListScreen() {
       {/* ── NGO Cards ── */}
       {loading ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
   btnRow:         { flexDirection: 'row', gap: 10 },
   detailsBtn:     { flex: 1, height: 40, borderWidth: 1, borderColor: '#bbb', borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
   detailsBtnText: { fontSize: 14, color: '#333', fontWeight: '500' },
-  donateBtn:      { flex: 1, height: 40, backgroundColor: '#008080', borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
+  donateBtn:      { flex: 1, height: 40, backgroundColor: roleUi.colors.primary, borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
   donateBtnText:  { fontSize: 14, color: '#fff', fontWeight: '600' },
   notifyBtn:      { flex: 1, height: 40, borderWidth: 1, borderColor: '#bbb', borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
   notifyBtnText:  { fontSize: 14, color: '#333', fontWeight: '500' },

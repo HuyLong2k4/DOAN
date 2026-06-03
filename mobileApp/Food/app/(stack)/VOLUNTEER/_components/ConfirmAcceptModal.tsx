@@ -1,6 +1,7 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { DeliveryRequest, TFn } from './types';
+import { roleUi } from '@/src/theme/roleUi';
 
 type Props = {
   target: DeliveryRequest | null;
@@ -61,8 +62,8 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
   modalBtn: { flex: 1, height: 38, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   modalNoBtn: { borderWidth: 1, borderColor: '#CFD8DC' },
-  modalNoText: { color: '#37474F', fontWeight: '600', fontSize: 13 },
-  modalYesBtn: { backgroundColor: '#006666' },
+  modalNoText: { color: '#4A4A4A', fontWeight: '600', fontSize: 13 },
+  modalYesBtn: { backgroundColor: roleUi.colors.primaryStrong },
   modalYesText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   disabled: { opacity: 0.55 },
 });

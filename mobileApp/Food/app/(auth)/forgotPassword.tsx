@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { forgotPassword } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -74,8 +75,8 @@ const styles = StyleSheet.create({
     borderRadius: 6, height: 50, paddingHorizontal: 14,
     fontSize: 15, color: '#111', marginBottom: 14,
   },
-  error:   { color: '#E53935', marginBottom: 12, fontSize: 13 },
-  btn:     { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  error:   { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
+  btn:     { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  back:    { textAlign: 'center', color: '#008080', fontSize: 14 },
+  back:    { textAlign: 'center', color: roleUi.colors.primary, fontSize: 14 },
 });

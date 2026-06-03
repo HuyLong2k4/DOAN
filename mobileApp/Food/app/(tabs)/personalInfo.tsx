@@ -8,6 +8,7 @@ import { getMyProfile } from "../../src/api/profile.api";
 import { updateUser, uploadAvatar } from "../../src/api/user.api";
 import { useI18n } from "../../src/i18n/useI18n";
 import { useAuthStore } from "../../src/store/authStore";
+import { roleUi } from '@/src/theme/roleUi';
 
 type ProfileDetails = {
   address_line?: string | null;
@@ -219,14 +220,14 @@ export default function PersonalInfoScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('personalInfo.title')}</Text>
         <TouchableOpacity onPress={openEdit} style={styles.editBtn} accessibilityLabel={t('personalInfo.editProfile')}>
-          <Ionicons name="create-outline" size={22} color="#008080" />
+          <Ionicons name="create-outline" size={22} color={roleUi.colors.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} colors={[roleUi.colors.primary]} />}
       >
         <View style={styles.profileCard}>
           <TouchableOpacity
@@ -257,7 +258,7 @@ export default function PersonalInfoScreen() {
 
         <View style={styles.pinCard}>
           <View style={styles.pinHeader}>
-            <Ionicons name="location" size={18} color={pinSet ? "#047857" : "#B45309"} />
+            <Ionicons name="location" size={18} color={pinSet ? roleUi.colors.successText : roleUi.colors.warningText} />
             <Text style={styles.pinTitle}>{t('personalInfo.pinLocation')}</Text>
             <View style={[styles.pinBadge, pinSet ? styles.pinBadgeSet : styles.pinBadgeUnset]}>
               <Text style={[styles.pinBadgeText, pinSet ? styles.pinBadgeTextSet : styles.pinBadgeTextUnset]}>
@@ -311,7 +312,7 @@ export default function PersonalInfoScreen() {
               value={editName}
               onChangeText={setEditName}
               placeholder={t('personalInfo.fullName')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#8A8A8A"
               autoCapitalize="words"
             />
 
@@ -321,7 +322,7 @@ export default function PersonalInfoScreen() {
               value={editPhone}
               onChangeText={setEditPhone}
               placeholder={t('personalInfo.phone')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#8A8A8A"
               keyboardType="phone-pad"
             />
 
@@ -331,7 +332,7 @@ export default function PersonalInfoScreen() {
               value={editEmail}
               onChangeText={setEditEmail}
               placeholder={t('personalInfo.email')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#8A8A8A"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -400,7 +401,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 16,
-    backgroundColor: "#111827",
+    backgroundColor: "#111111",
     paddingVertical: 22,
     alignItems: "center",
   },
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     width: 78,
     height: 78,
     borderRadius: 39,
-    backgroundColor: "#374151",
+    backgroundColor: "#4A4A4A",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
@@ -434,7 +435,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: "#008080",
+    backgroundColor: roleUi.colors.primary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
   },
   roleText: {
     marginTop: 4,
-    color: "#CBD5E1",
+    color: "#E0E0E0",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E6E6E6",
   },
   pinHeader: {
     flexDirection: "row",
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "700",
-    color: "#111827",
+    color: "#111111",
   },
   pinBadge: {
     borderRadius: 999,
@@ -478,25 +479,25 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   pinBadgeSet: {
-    backgroundColor: "#ECFDF3",
+    backgroundColor: roleUi.colors.successSoft,
   },
   pinBadgeUnset: {
-    backgroundColor: "#FFFBEB",
+    backgroundColor: "#F6F1E2",
   },
   pinBadgeText: {
     fontSize: 12,
     fontWeight: "700",
   },
   pinBadgeTextSet: {
-    color: "#047857",
+    color: roleUi.colors.successText,
   },
   pinBadgeTextUnset: {
-    color: "#B45309",
+    color: roleUi.colors.warningText,
   },
   pinSubText: {
     marginTop: 8,
     fontSize: 12,
-    color: "#4B5563",
+    color: "#4A4A4A",
     lineHeight: 18,
   },
   addressBlock: {
@@ -507,12 +508,12 @@ const styles = StyleSheet.create({
   },
   addressLabel: {
     fontSize: 12,
-    color: "#6B7280",
+    color: "#666666",
     marginBottom: 4,
   },
   addressValue: {
     fontSize: 14,
-    color: "#111827",
+    color: "#111111",
     fontWeight: "600",
     lineHeight: 20,
   },
@@ -531,12 +532,12 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 13,
-    color: "#6B7280",
+    color: "#666666",
     marginBottom: 6,
   },
   infoValue: {
     fontSize: 16,
-    color: "#111827",
+    color: "#111111",
     fontWeight: "600",
   },
   loadingRow: {
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 12,
-    color: "#6B7280",
+    color: "#666666",
   },
   modalBackdrop: {
     flex: 1,
@@ -567,24 +568,24 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#111827",
+    color: "#111111",
     marginBottom: 14,
   },
   fieldLabel: {
     fontSize: 13,
-    color: "#6B7280",
+    color: "#666666",
     marginBottom: 6,
     marginTop: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E6E6E6",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    color: "#111827",
-    backgroundColor: "#F9FAFB",
+    color: "#111111",
+    backgroundColor: "#FAFAFA",
   },
   modalActions: {
     flexDirection: "row",
@@ -600,16 +601,16 @@ const styles = StyleSheet.create({
   },
   modalCancelBtn: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#E6E6E6",
     backgroundColor: "#fff",
   },
   modalCancelText: {
-    color: "#374151",
+    color: "#4A4A4A",
     fontSize: 14,
     fontWeight: "700",
   },
   modalSaveBtn: {
-    backgroundColor: "#008080",
+    backgroundColor: roleUi.colors.primary,
   },
   modalSaveText: {
     color: "#fff",

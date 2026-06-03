@@ -16,8 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import { http } from '../../../src/api/http';
 import { getNearbyNgos, type NearbyNgoItem } from '../../../src/api/profile.api';
-import { getMyStats, type VolunteerStats } from '../../../src/api/user.api';
-import { getRewardLevel } from '../../../src/constants/rewardLevels';
+import { getMyStats } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import PickupCodeModal from '../../../src/components/PickupCodeModal';
@@ -34,24 +33,23 @@ import type {
   VolunteerSummary,
 } from './_components/types';
 import { roleUi } from '@/src/theme/roleUi';
-import NotificationBell from '@/src/components/NotificationBell';
+import HomeHeader from '@/src/components/HomeHeader';
 
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
     <View style={styles.statItem}>
-      <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
     </View>
   );
 }
 
 export default function VolunteerHomeScreen() {
   const router = useRouter();
-  const { t, locale, language, setLanguage } = useI18n();
+  const { t } = useI18n();
   const user = useAuthStore((s) => s.user);
   const firstName = user?.full_name?.split(' ')[0] ?? '';
-  const points = user?.points ?? 200;
-  const { level: volunteerLevel } = getRewardLevel(points, 'VOLUNTEER');
+  const points = user?.points ?? 0;
 
   const FAQS = [
     { q: t('volunteer.faqQ1') },
@@ -64,7 +62,6 @@ export default function VolunteerHomeScreen() {
   const [myDeliveries, setMyDeliveries] = useState<VolunteerDeliveryItem[]>([]);
   const [nearbyNgos, setNearbyNgos] = useState<NearbyNgo[]>([]);
   const [summary, setSummary] = useState<VolunteerSummary>({ delivered_count: 0, feedback_count: 0 });
-  const [stats, setStats] = useState<VolunteerStats | null>(null);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingMyDeliveries, setLoadingMyDeliveries] = useState(false);
   const [loadingNgos, setLoadingNgos] = useState(false);
@@ -77,27 +74,6 @@ export default function VolunteerHomeScreen() {
   const [pickupCodeError, setPickupCodeError] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [togglingActive, setTogglingActive] = useState(false);
-
-  const handleToggleActive = useCallback(async () => {
-    try {
-      setTogglingActive(true);
-      const res = await http.patch('/profile/volunteer/active-status');
-      const nowActive = Boolean(res.data?.is_active);
-      setIsActive(nowActive);
-      if (nowActive) {
-        setLoadingRequests(true);
-        await refreshRequests().catch(() => {});
-        setLoadingRequests(false);
-      } else {
-        // Offline: backend không trả đơn nào nữa, xoá list để khớp UI.
-        setRequests([]);
-      }
-    } catch {
-      Alert.alert(t('volunteer.cannotUpdate'), t('volunteer.somethingWrong'));
-    } finally {
-      setTogglingActive(false);
-    }
-  }, [refreshRequests, t]);
 
   const refreshMyDeliveries = useCallback(async () => {
     const myDeliveryRes = await http.get('/food-donations/volunteer/my-deliveries');
@@ -122,6 +98,27 @@ export default function VolunteerHomeScreen() {
       })),
     );
   }, [t]);
+
+  const handleToggleActive = useCallback(async () => {
+    try {
+      setTogglingActive(true);
+      const res = await http.patch('/profile/volunteer/active-status');
+      const nowActive = Boolean(res.data?.is_active);
+      setIsActive(nowActive);
+      if (nowActive) {
+        setLoadingRequests(true);
+        await refreshRequests().catch(() => {});
+        setLoadingRequests(false);
+      } else {
+        // Offline: backend không trả đơn nào nữa, xoá list để khớp UI.
+        setRequests([]);
+      }
+    } catch {
+      Alert.alert(t('volunteer.cannotUpdate'), t('volunteer.somethingWrong'));
+    } finally {
+      setTogglingActive(false);
+    }
+  }, [refreshRequests, t]);
 
   const removeRequestFromList = useCallback((id: string) => {
     setRequests((prev) => prev.filter((r) => r.id !== id));
@@ -347,7 +344,15 @@ export default function VolunteerHomeScreen() {
               feedback_count: Number(summaryData.feedback_count || 0),
             });
             setNearbyNgos(mappedNgos);
-            if (statsRes) setStats(statsRes.data.data as VolunteerStats);
+            if (statsRes) {
+              // Đồng bộ user.points (server cộng điểm khi receiver xác nhận giao);
+              // user chỉ set lúc login nên cần làm mới để Stats row hiển thị đúng.
+              const freshPoints = (statsRes.data?.data as { points?: number } | undefined)?.points;
+              const store = useAuthStore.getState();
+              if (freshPoints != null && store.user && store.user.points !== freshPoints) {
+                store.setUser({ ...store.user, points: freshPoints });
+              }
+            }
             if (profileRes) setIsActive(Boolean(profileRes.data?.data?.profile?.is_active));
           }
         } catch {
@@ -388,32 +393,20 @@ export default function VolunteerHomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <View style={styles.headerTextWrap}>
-            <Text style={styles.greeting}>{t('volunteer.greeting')} {firstName}</Text>
-            <View style={styles.roleRow}>
-              <Text style={styles.roleText}>{t('volunteer.rolePrefix')} </Text>
-              <Text style={styles.roleBold}>{t('volunteer.role')}</Text>
-            </View>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
-              style={styles.langPill}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.langPillText}>{language === 'vi' ? 'VI' : 'EN'}</Text>
-            </TouchableOpacity>
-            <NotificationBell size={26} />
-          </View>
-        </View>
+        <HomeHeader
+          greeting={t('volunteer.greeting')}
+          firstName={firstName}
+          rolePrefix={t('volunteer.rolePrefix')}
+          roleLabel={t('volunteer.role')}
+          containerStyle={styles.header}
+        />
 
         <View style={[styles.statusCard, isActive ? styles.statusCardOn : styles.statusCardOff]}>
-          <View style={[styles.statusIconWrap, { backgroundColor: isActive ? '#2E7D32' : '#9E9E9E' }]}>
+          <View style={[styles.statusIconWrap, { backgroundColor: isActive ? c.successText : '#9E9E9E' }]}>
             <Ionicons name={isActive ? 'bicycle' : 'pause'} size={18} color="#fff" />
           </View>
           <View style={styles.statusTextWrap}>
-            <Text style={[styles.statusTitle, { color: isActive ? '#1B5E20' : '#5F6368' }]}>
+            <Text style={[styles.statusTitle, { color: isActive ? c.successText : '#666666' }]}>
               {isActive ? t('volunteer.online') : t('volunteer.offline')}
             </Text>
             <Text style={styles.statusSubtitle} numberOfLines={1}>
@@ -421,48 +414,28 @@ export default function VolunteerHomeScreen() {
             </Text>
           </View>
           {togglingActive ? (
-            <ActivityIndicator color={isActive ? '#2E7D32' : '#9E9E9E'} style={styles.statusSwitch} />
+            <ActivityIndicator color={isActive ? c.successText : '#9E9E9E'} style={styles.statusSwitch} />
           ) : (
             <Switch
               value={isActive}
               onValueChange={handleToggleActive}
               disabled={togglingActive}
-              trackColor={{ false: '#CFD8DC', true: '#A5D6A7' }}
-              thumbColor={isActive ? '#2E7D32' : '#FAFAFA'}
+              trackColor={{ false: '#CFD8DC', true: '#AEC9B7' }}
+              thumbColor={isActive ? c.successText : '#FAFAFA'}
               style={styles.statusSwitch}
             />
           )}
         </View>
 
-        {stats && stats.deliveries > 0 && (
-          <View style={[styles.impactCard, { backgroundColor: volunteerLevel.color + '15', borderColor: volunteerLevel.color + '40' }]}>
-            <View style={styles.impactRow}>
-              <View style={styles.impactMetric}>
-                <Text style={[styles.impactNumber, { color: volunteerLevel.color }]}>{stats.deliveries}</Text>
-                <Text style={styles.impactLabel}>{t('volunteer.impact.deliveriesLabel')}</Text>
-              </View>
-              <View style={styles.impactDivider} />
-              <View style={styles.impactMetric}>
-                <Text style={[styles.impactNumber, { color: volunteerLevel.color }]}>{stats.totalPortions}</Text>
-                <Text style={styles.impactLabel}>{t('volunteer.impact.portionsLabel')}</Text>
-              </View>
-            </View>
-            <Text style={styles.impactMessage}>{t('volunteer.impact.message')}</Text>
-          </View>
-        )}
-
         <View style={styles.statsRow}>
           <StatItem value={String(summary.delivered_count)} label={t('volunteer.stats.delivered')} />
-          <View style={styles.statDivider} />
-          <StatItem value={String(summary.feedback_count)} label={t('volunteer.stats.feedback')} />
-          <View style={styles.statDivider} />
           <StatItem value={String(points)} label={t('volunteer.stats.points')} />
         </View>
 
         <Text style={styles.sectionTitle}>{t('volunteer.requestToDeliver')}</Text>
         {loadingRequests ? (
           <View style={styles.requestStateCard}>
-            <ActivityIndicator color="#008080" />
+            <ActivityIndicator color={c.primary} />
           </View>
         ) : !isActive ? (
           <View style={styles.requestStateCard}>
@@ -497,7 +470,7 @@ export default function VolunteerHomeScreen() {
         <Text style={styles.sectionTitle}>{t('volunteer.myDeliveryProgress')}</Text>
         {loadingMyDeliveries ? (
           <View style={styles.requestStateCard}>
-            <ActivityIndicator color="#008080" />
+            <ActivityIndicator color={c.primary} />
           </View>
         ) : myDeliveries.length === 0 ? (
           <View style={styles.requestStateCard}>
@@ -556,7 +529,7 @@ export default function VolunteerHomeScreen() {
 
         {loadingNgos ? (
           <View style={styles.requestStateCard}>
-            <ActivityIndicator color="#008080" />
+            <ActivityIndicator color={c.primary} />
           </View>
         ) : visibleNgos.length === 0 ? (
           <View style={styles.requestStateCard}>
@@ -630,7 +603,6 @@ export default function VolunteerHomeScreen() {
 }
 
 const c = roleUi.colors;
-const r = roleUi.radius; 
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
@@ -644,8 +616,6 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 10,
   },
-  headerTextWrap: { flexShrink: 1, marginRight: 8 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -657,7 +627,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
   },
-  statusCardOn: { backgroundColor: '#E8F5E9', borderColor: '#A5D6A7' },
+  statusCardOn: { backgroundColor: c.successSoft, borderColor: '#AEC9B7' },
   statusCardOff: { backgroundColor: '#FFFFFF', borderColor: '#E0E0E0' },
   statusIconWrap: {
     width: 34,
@@ -670,32 +640,20 @@ const styles = StyleSheet.create({
   statusTitle: { fontSize: 15, fontWeight: '700' },
   statusSubtitle: { fontSize: 12, color: '#777', marginTop: 1 },
   statusSwitch: { transform: [{ scale: 0.95 }] },
-  langPill: {
-    borderWidth: 1,
-    borderColor: c.border,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: c.surface,
-  },
-  langPillText: { fontSize: 12, fontWeight: '700', color: c.textPrimary },
-  greeting: { fontSize: 16, color: '#555' },
-  roleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  roleText: { fontSize: 20, color: '#111' },
-  roleBold: { fontSize: 20, fontWeight: '800', color: '#111' },
 
   statsRow: {
     flexDirection: 'row',
     marginHorizontal: 18,
-    backgroundColor: '#fff',
+    backgroundColor: c.surface,
+    borderWidth: 1,
+    borderColor: c.border,
     borderRadius: 10,
     paddingVertical: 12,
     marginBottom: 14,
   },
   statItem: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: 22, fontWeight: '700', color: '#111' },
-  statLabel: { fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2, paddingHorizontal: 6 },
-  statDivider: { width: 1, backgroundColor: '#E4E4E4', marginVertical: 6 },
+  statLabel: { fontSize: 10, color: '#888', textAlign: 'center', marginBottom: 2, paddingHorizontal: 6 },
 
   sectionTitle: {
     fontSize: 15,
@@ -732,9 +690,9 @@ const styles = StyleSheet.create({
   tabsLeft: { flexDirection: 'row', flex: 1 },
   tab: { paddingVertical: 10, marginRight: 20 },
   tabActive: { borderBottomWidth: 2, borderBottomColor: '#111' },
-  tabText: { fontSize: 13, color: '#9A9A9A' },
+  tabText: { fontSize: 13, color: '#8A8A8A' },
   tabTextActive: { color: '#111', fontWeight: '700' },
-  seeMoreText: { fontSize: 13, color: '#008080', fontWeight: '700' },
+  seeMoreText: { fontSize: 13, color: c.primary, fontWeight: '700' },
 
   ngoCard: {
     flexDirection: 'row',
@@ -754,7 +712,7 @@ const styles = StyleSheet.create({
   ngoBody: { flex: 1, padding: 10 },
   ngoName: { fontSize: 14, fontWeight: '700', color: '#111' },
   ngoDistance: { fontSize: 12, color: '#777', marginTop: 2, marginBottom: 8 },
-  ngoAddress: { fontSize: 11, color: '#8B8B8B', marginBottom: 8 },
+  ngoAddress: { fontSize: 11, color: '#8A8A8A', marginBottom: 8 },
   ngoActionRow: { flexDirection: 'row', gap: 8 },
   outlineButton: {
     borderWidth: 1,
@@ -765,7 +723,7 @@ const styles = StyleSheet.create({
   },
   outlineButtonText: { fontSize: 11, color: '#111', fontWeight: '600' },
   primaryButton: {
-    backgroundColor: '#008080',
+    backgroundColor: c.primary,
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -784,11 +742,4 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   faqQuestion: { fontSize: 14, color: '#111', flex: 1, marginRight: 8 },
-  impactCard:    { marginHorizontal: 18, marginBottom: 14, borderRadius: 8, padding: 14, borderWidth: 1 },
-  impactRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', marginBottom: 8 },
-  impactMetric:  { flex: 1, alignItems: 'center' },
-  impactNumber:  { fontSize: 22, fontWeight: '800' },
-  impactLabel:   { fontSize: 11, color: '#666', marginTop: 2, textAlign: 'center' },
-  impactDivider: { width: 1, height: 32, backgroundColor: '#DDD', marginHorizontal: 8 },
-  impactMessage: { fontSize: 12, color: '#444', textAlign: 'center', fontStyle: 'italic' },
 });

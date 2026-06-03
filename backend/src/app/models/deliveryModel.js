@@ -25,6 +25,9 @@ const DeliverySchema = new mongoose.Schema({
 
     // Mã lấy hàng — volunteer dùng để xác nhận với donor
     pickup_code: { type: String, default: null },
+    // Chống brute-force mã pickup: đếm số lần nhập sai + thời điểm hết tạm khoá.
+    pickup_attempt_count: { type: Number, default: 0 },
+    pickup_locked_until:  { type: Date, default: null },
 
     assigned_at:  { type: Date, default: null },
     picked_up_at: { type: Date, default: null },

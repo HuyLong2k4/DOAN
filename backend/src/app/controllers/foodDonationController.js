@@ -91,6 +91,52 @@ class FoodDonationController {
         }
     }
 
+    // ── GET /api/food-donations/received ────────────────────────────────
+    static async getMyReceivedDonations(req, res) {
+        try {
+            if (req.user.role !== 'RECEIVER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể xem bữa đã nhận.' });
+            }
+
+            const parsedLimit = Number(req.query.limit);
+            const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 0;
+            const data = await FoodDonationService.getMyReceivedDonations(req.user.id, limit);
+            return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── GET /api/food-donations/volunteer/delivered ─────────────────────
+    static async getMyVolunteerDeliveryHistory(req, res) {
+        try {
+            if (req.user.role !== 'VOLUNTEER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Volunteer mới có thể xem đơn đã giao.' });
+            }
+
+            const parsedLimit = Number(req.query.limit);
+            const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 0;
+            const data = await FoodDonationService.getMyVolunteerDeliveryHistory(req.user.id, limit);
+            return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // ── GET /api/food-donations/:id/volunteer-delivery ──────────────────
+    static async getVolunteerDeliveryDetail(req, res) {
+        try {
+            if (req.user.role !== 'VOLUNTEER') {
+                return res.status(403).json({ success: false, message: 'Chỉ Volunteer mới có thể xem chi tiết đơn giao.' });
+            }
+
+            const data = await FoodDonationService.getVolunteerDeliveryDetail(req.params.id, req.user.id);
+            return res.status(200).json({ success: true, data });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
     // ── GET /api/food-donations/volunteer/summary ───────────────────────
     static async getVolunteerSummary(req, res) {
         try {

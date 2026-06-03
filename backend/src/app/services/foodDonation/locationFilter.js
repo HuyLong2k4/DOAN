@@ -8,23 +8,10 @@
 const DonorProfile = require('../../models/donorProfileModel');
 const ReceiverProfile = require('../../models/receiverProfileModel');
 const User = require('../../models/userModel');
+const { distanceKm } = require('./distance');
 
 const DEFAULT_RADIUS_KM = 10;
 const MAX_FALLBACK_DONORS = 200;
-
-function _toRad(value) {
-    return (value * Math.PI) / 180;
-}
-
-function _distanceKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = _toRad(lat2 - lat1);
-    const dLon = _toRad(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(_toRad(lat1)) * Math.cos(_toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 /**
  * Tìm danh sách donor user_id sẵn sàng nhận notification từ 1 receiver.
@@ -62,7 +49,7 @@ async function findNearbyDonorIds(receiverId, radiusKm = DEFAULT_RADIUS_KM) {
 
     const nearbyIds = [];
     for (const profile of donorProfiles) {
-        const km = _distanceKm(
+        const km = distanceKm(
             receiverProfile.latitude,
             receiverProfile.longitude,
             profile.latitude,

@@ -5,6 +5,7 @@ export type CommonKey =
   | 'profile.title'
   | 'profile.personalInfo'
   | 'profile.yourDonations'
+  | 'profile.yourDeliveries'
   | 'profile.rewards'
   | 'profile.myActivity'
   | 'profile.settings'
@@ -99,6 +100,7 @@ export const commonEn: Record<CommonKey, string> = {
   'profile.title': 'My Profile',
   'profile.personalInfo': 'Personal Info',
   'profile.yourDonations': 'Your Donations',
+  'profile.yourDeliveries': 'Your Deliveries',
   'profile.rewards': 'Achievement',
   'profile.myActivity': 'My Activity',
   'profile.settings': 'Settings',
@@ -194,6 +196,7 @@ export const commonVi: Record<CommonKey, string> = {
   'profile.title': 'Hồ sơ của tôi',
   'profile.personalInfo': 'Thông tin cá nhân',
   'profile.yourDonations': 'Khoản ủng hộ của bạn',
+  'profile.yourDeliveries': 'Đơn bạn đã giao',
   'profile.rewards': 'Thành tích',
   'profile.myActivity': 'Hoạt động của tôi',
   'profile.settings': 'Cài đặt',

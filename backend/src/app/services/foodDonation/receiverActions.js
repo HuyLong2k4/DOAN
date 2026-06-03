@@ -61,10 +61,15 @@ async function connectDonationByReceiver(donationId, receiverId) {
         throw _error('Bạn không thể connect đơn của chính mình.');
     }
 
-    await FoodDonation.updateOne(
-        { _id: donationId },
+    // Atomic claim — chỉ chốt khi đơn vẫn PENDING & chưa có receiver. Chống race:
+    // hai receiver bấm cùng lúc thì chỉ một người thắng, người kia nhận 409.
+    const claim = await FoodDonation.updateOne(
+        { _id: donationId, status: 'PENDING', selected_receiver_id: null },
         { $set: { selected_receiver_id: receiverId, selected_at: new Date() } },
     );
+    if (claim.modifiedCount === 0) {
+        throw _error('Đơn vừa được người khác nhận. Vui lòng chọn đơn khác.', 409);
+    }
 
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Một receiver';
@@ -154,8 +159,10 @@ async function chooseDeliveryByReceiver(donationId, receiverId, deliveryType /* 
         pickup_code: pickupCode,
     });
 
-    await FoodDonation.updateOne(
-        { _id: donationId },
+    // Atomic claim: chỉ gán delivery khi đơn vẫn PENDING, đúng receiver và CHƯA có
+    // delivery. Chống double-tap tạo ra 2 Delivery (mồ côi + 2 broadcast/pickup code).
+    const claim = await FoodDonation.updateOne(
+        { _id: donationId, status: 'PENDING', selected_receiver_id: receiverId, delivery_id: null },
         {
             $set: {
                 delivery_id: delivery._id,
@@ -164,6 +171,24 @@ async function chooseDeliveryByReceiver(donationId, receiverId, deliveryType /* 
             },
         },
     );
+    if (claim.modifiedCount === 0) {
+        // Mất cuộc đua — xoá delivery vừa tạo, trả về phương thức đã chốt trước đó.
+        await Delivery.deleteOne({ _id: delivery._id }).catch(() => {});
+        const fresh = await FoodDonation.findById(donationId).lean();
+        const existingDelivery = fresh?.delivery_id
+            ? await Delivery.findById(fresh.delivery_id).lean()
+            : null;
+        return {
+            message: 'Đơn này đã chọn phương thức nhận trước đó.',
+            already_selected: true,
+            donation: {
+                id: donation._id,
+                delivery_type: fresh?.delivery_type ?? null,
+                delivery_id: fresh?.delivery_id ?? null,
+            },
+            delivery: existingDelivery,
+        };
+    }
 
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Receiver';
@@ -501,11 +526,8 @@ async function completeSelfPickupByReceiver(donationId, receiverId, pickupCode =
         throw _error('Đơn chưa ở trạng thái có thể xác nhận tự lấy hàng.', 400);
     }
 
-    // Verify pickup_code (delivery cũ chưa có code sẽ được pass qua để giữ
-    // tương thích — verifyPickupCode trả true khi expected là null).
-    if (!pickupCodeUtil.verifyPickupCode(pickupCode, delivery.pickup_code)) {
-        throw _error('Mã pickup không khớp. Vui lòng nhờ donor đọc lại mã.', 400);
-    }
+    // Verify pickup_code kèm chống brute-force (throw nếu sai/đang khoá).
+    await pickupCodeUtil.assertPickupCode(delivery, pickupCode);
 
     // Atomic: SELF_PICKUP_READY → DELIVERED (chống double-confirm).
     const deliveryStatusUpdate = await Delivery.updateOne(

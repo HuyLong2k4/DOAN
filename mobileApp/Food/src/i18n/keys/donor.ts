@@ -3,11 +3,7 @@ export type DonorKey =
   | 'donor.rolePrefix'
   | 'donor.role'
   | 'donor.stats.donations'
-  | 'donor.stats.feedback'
   | 'donor.stats.points'
-  | 'donor.impact.donationsLabel'
-  | 'donor.impact.portionsLabel'
-  | 'donor.impact.message'
   | 'donor.tab.myPost'
   | 'donor.tab.requests'
   | 'donor.empty.promptDonate'
@@ -124,11 +120,7 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.rolePrefix': 'You are a',
   'donor.role': 'Donor',
   'donor.stats.donations': 'No of Donations',
-  'donor.stats.feedback': 'Feedback received',
   'donor.stats.points': 'Points earned',
-  'donor.impact.donationsLabel': 'Donations',
-  'donor.impact.portionsLabel': 'Portions shared',
-  'donor.impact.message': 'Thank you for making a difference!',
   'donor.tab.myPost': 'My Post',
   'donor.tab.requests': 'Receiver Requests',
   'donor.empty.promptDonate': 'Do you have some food to donate?',
@@ -246,11 +238,7 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.rolePrefix': 'Bạn là',
   'donor.role': 'Người cho',
   'donor.stats.donations': 'Số lượt ủng hộ',
-  'donor.stats.feedback': 'Phản hồi đã nhận',
   'donor.stats.points': 'Điểm đã nhận',
-  'donor.impact.donationsLabel': 'Lượt ủng hộ',
-  'donor.impact.portionsLabel': 'Suất đã chia sẻ',
-  'donor.impact.message': 'Cảm ơn bạn đã tạo nên sự khác biệt!',
   'donor.tab.myPost': 'Bài đăng của tôi',
   'donor.tab.requests': 'Yêu cầu từ người nhận',
   'donor.empty.promptDonate': 'Bạn có thực phẩm muốn ủng hộ không?',

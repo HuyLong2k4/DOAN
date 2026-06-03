@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getReceiverFeedbackContext, submitReceiverFeedback } from '../../../src/api/feedback.api';
 import { useI18n } from '../../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 type FeedbackParams = {
   donationId?: string | string[];
@@ -31,7 +32,7 @@ function Stars({ value, onChange }: { value: number; onChange: (value: number) =
     <View style={styles.starsRow}>
       {[1, 2, 3, 4, 5].map((star) => (
         <TouchableOpacity key={star} onPress={() => onChange(star)} style={styles.starBtn}>
-          <Ionicons name={star <= value ? 'star' : 'star-outline'} size={26} color={star <= value ? '#F59E0B' : '#6B7280'} />
+          <Ionicons name={star <= value ? 'star' : 'star-outline'} size={26} color={star <= value ? roleUi.colors.warning : '#666666'} />
         </TouchableOpacity>
       ))}
     </View>
@@ -155,7 +156,7 @@ export default function ReceiverFeedbackScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -172,7 +173,7 @@ export default function ReceiverFeedbackScreen() {
           <Text style={styles.title}>{t('feedback.title')}</Text>
 
           <View style={styles.successBox}>
-            <Ionicons name="checkmark-circle" size={32} color="#18A518" />
+            <Ionicons name="checkmark-circle" size={32} color={roleUi.colors.successText} />
             <View style={{ marginLeft: 10 }}>
               <Text style={styles.successHeading}>{t('feedback.congrats')}</Text>
               <Text style={styles.successText}>{t('feedback.delivered')}</Text>
@@ -205,7 +206,7 @@ export default function ReceiverFeedbackScreen() {
                   value={volunteerComment}
                   onChangeText={setVolunteerComment}
                   placeholder={t('feedback.typePlaceholder')}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#8A8A8A"
                   multiline
                 />
 
@@ -215,7 +216,7 @@ export default function ReceiverFeedbackScreen() {
                   value={tipAmount}
                   onChangeText={setTipAmount}
                   placeholder={t('feedback.tipPlaceholder')}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#8A8A8A"
                   keyboardType="number-pad"
                 />
               </>
@@ -235,7 +236,7 @@ export default function ReceiverFeedbackScreen() {
               value={donorComment}
               onChangeText={setDonorComment}
               placeholder={t('feedback.typePlaceholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#8A8A8A"
               multiline
             />
           </View>
@@ -262,15 +263,15 @@ const styles = StyleSheet.create({
   successBox: {
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#77C777',
-    backgroundColor: '#EAF8EA',
+    borderColor: roleUi.colors.success,
+    backgroundColor: roleUi.colors.successSoft,
     padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14,
   },
-  successHeading: { fontSize: 24, fontWeight: '700', color: '#1F2937' },
-  successText: { fontSize: 20, color: '#1F2937', marginTop: 2 },
+  successHeading: { fontSize: 24, fontWeight: '700', color: '#111111' },
+  successText: { fontSize: 20, color: '#111111', marginTop: 2 },
   earnedWrap: {
     borderTopWidth: 1,
     borderBottomWidth: 1,
@@ -282,8 +283,8 @@ const styles = StyleSheet.create({
   earnedValue: { fontSize: 44, fontWeight: '800', color: '#111', marginTop: 2 },
   earnedSub: { fontSize: 15, color: '#444', marginTop: 4 },
   earnedTitle: { fontSize: 13, color: '#666', marginTop: 6 },
-  warnBox: { backgroundColor: '#FEF3C7', borderRadius: 8, padding: 10, marginBottom: 12 },
-  warnText: { color: '#92400E', fontSize: 14 },
+  warnBox: { backgroundColor: '#F1E8CF', borderRadius: 8, padding: 10, marginBottom: 12 },
+  warnText: { color: roleUi.colors.warningText, fontSize: 14 },
   section: {
     borderTopWidth: 1,
     borderColor: '#D5D5D5',
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   input: {
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E6E6E6',
     backgroundColor: '#F5F6F7',
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -307,11 +308,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
     marginBottom: 10,
   },
-  noVolunteerText: { fontSize: 20, color: '#6B7280' },
+  noVolunteerText: { fontSize: 20, color: '#666666' },
   submitBtn: {
     height: 52,
     borderRadius: 8,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,

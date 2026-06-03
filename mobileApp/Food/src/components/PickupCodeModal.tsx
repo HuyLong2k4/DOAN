@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useI18n } from '../i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 const CODE_LENGTH = 4;
 
@@ -66,7 +67,7 @@ export default function PickupCodeModal({
       >
         <View style={styles.card}>
           <View style={styles.headRow}>
-            <Ionicons name="key-outline" size={20} color="#006666" />
+            <Ionicons name="key-outline" size={20} color={roleUi.colors.primaryStrong} />
             <Text style={styles.title}>{t('volunteer.pickupCode.title')}</Text>
           </View>
 
@@ -91,7 +92,7 @@ export default function PickupCodeModal({
 
           {error ? (
             <View style={styles.errorRow}>
-              <Ionicons name="alert-circle" size={14} color="#C62828" />
+              <Ionicons name="alert-circle" size={14} color={roleUi.colors.dangerText} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
@@ -127,21 +128,21 @@ const styles = StyleSheet.create({
   hint: { fontSize: 13, color: '#666', lineHeight: 18, marginBottom: 14 },
   input: {
     borderWidth: 1,
-    borderColor: '#006666',
+    borderColor: roleUi.colors.primaryStrong,
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 28,
     fontWeight: '700',
-    color: '#006666',
+    color: roleUi.colors.primaryStrong,
     textAlign: 'center',
     letterSpacing: 14,
     backgroundColor: '#F5FAFF',
   },
   inputError: {
-    borderColor: '#C62828',
-    color: '#C62828',
-    backgroundColor: '#FFF5F5',
+    borderColor: roleUi.colors.dangerText,
+    color: roleUi.colors.dangerText,
+    backgroundColor: '#F7EDEC',
   },
   errorRow: {
     flexDirection: 'row',
@@ -149,12 +150,12 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 8,
   },
-  errorText: { fontSize: 12, color: '#C62828', flex: 1, fontWeight: '600' },
+  errorText: { fontSize: 12, color: roleUi.colors.dangerText, flex: 1, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: 10, marginTop: 16 },
   btn: { flex: 1, paddingVertical: 11, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  btnPrimary: { backgroundColor: '#006666' },
+  btnPrimary: { backgroundColor: roleUi.colors.primaryStrong },
   btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   btnGhost: { borderWidth: 1, borderColor: '#CFD8DC' },
-  btnGhostText: { color: '#37474F', fontWeight: '600', fontSize: 14 },
+  btnGhostText: { color: '#4A4A4A', fontWeight: '600', fontSize: 14 },
   btnDisabled: { opacity: 0.55 },
 });

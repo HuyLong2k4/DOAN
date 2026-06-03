@@ -3,11 +3,7 @@ export type VolunteerKey =
   | 'volunteer.rolePrefix'
   | 'volunteer.role'
   | 'volunteer.stats.delivered'
-  | 'volunteer.stats.feedback'
   | 'volunteer.stats.points'
-  | 'volunteer.impact.deliveriesLabel'
-  | 'volunteer.impact.portionsLabel'
-  | 'volunteer.impact.message'
   | 'volunteer.requestToDeliver'
   | 'volunteer.myDeliveryProgress'
   | 'volunteer.noPendingRequests'
@@ -81,18 +77,36 @@ export type VolunteerKey =
   | 'volunteer.offline'
   | 'volunteer.offlineRequestsHint'
   | 'volunteer.statusOnSubtitle'
-  | 'volunteer.statusOffSubtitle';
+  | 'volunteer.statusOffSubtitle'
+  | 'volunteer.history.title'
+  | 'volunteer.history.searchPlaceholder'
+  | 'volunteer.history.loading'
+  | 'volunteer.history.loadFailed'
+  | 'volunteer.history.tryAgain'
+  | 'volunteer.history.noMatch'
+  | 'volunteer.history.noYet'
+  | 'volunteer.history.viewAll'
+  | 'volunteer.history.toReceiver'
+  | 'volunteer.deliveryDetail.title'
+  | 'volunteer.deliveryDetail.donor'
+  | 'volunteer.deliveryDetail.receiver'
+  | 'volunteer.deliveryDetail.pickupAddress'
+  | 'volunteer.deliveryDetail.quantity'
+  | 'volunteer.deliveryDetail.timeline'
+  | 'volunteer.deliveryDetail.assignedAt'
+  | 'volunteer.deliveryDetail.pickedUpAt'
+  | 'volunteer.deliveryDetail.deliveredAt'
+  | 'volunteer.deliveryDetail.completed'
+  | 'volunteer.deliveryDetail.loadFailed'
+  | 'volunteer.deliveryDetail.noAddress'
+  | 'volunteer.deliveryDetail.noPhone';
 
 export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.greeting': 'Hi',
   'volunteer.rolePrefix': 'You are a',
   'volunteer.role': 'Volunteer',
   'volunteer.stats.delivered': 'No of orders delivered',
-  'volunteer.stats.feedback': 'Feedback received',
   'volunteer.stats.points': 'Points earned',
-  'volunteer.impact.deliveriesLabel': 'Deliveries',
-  'volunteer.impact.portionsLabel': 'Portions delivered',
-  'volunteer.impact.message': 'Heroes don\'t always wear capes. Thank you!',
   'volunteer.requestToDeliver': 'Request to deliver',
   'volunteer.myDeliveryProgress': 'My delivery progress',
   'volunteer.noPendingRequests': 'No pending delivery requests right now',
@@ -167,6 +181,28 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.offlineRequestsHint': 'You are offline. Turn on Online to receive delivery requests.',
   'volunteer.statusOnSubtitle': 'Receiving nearby delivery requests',
   'volunteer.statusOffSubtitle': "You won't receive delivery requests",
+  'volunteer.history.title': 'Delivery history',
+  'volunteer.history.searchPlaceholder': 'Search by name or status...',
+  'volunteer.history.loading': 'Loading...',
+  'volunteer.history.loadFailed': "Couldn't load delivery history.",
+  'volunteer.history.tryAgain': 'Try again',
+  'volunteer.history.noMatch': 'No matching orders.',
+  'volunteer.history.noYet': "You haven't delivered any orders yet.",
+  'volunteer.history.viewAll': 'View all',
+  'volunteer.history.toReceiver': 'To',
+  'volunteer.deliveryDetail.title': 'Delivery details',
+  'volunteer.deliveryDetail.donor': 'Donor',
+  'volunteer.deliveryDetail.receiver': 'Receiver',
+  'volunteer.deliveryDetail.pickupAddress': 'Pickup address',
+  'volunteer.deliveryDetail.quantity': 'Quantity',
+  'volunteer.deliveryDetail.timeline': 'Timeline',
+  'volunteer.deliveryDetail.assignedAt': 'Accepted order',
+  'volunteer.deliveryDetail.pickedUpAt': 'Picked up food',
+  'volunteer.deliveryDetail.deliveredAt': 'Delivered',
+  'volunteer.deliveryDetail.completed': 'Completed',
+  'volunteer.deliveryDetail.loadFailed': "Couldn't load this delivery.",
+  'volunteer.deliveryDetail.noAddress': 'Address unavailable',
+  'volunteer.deliveryDetail.noPhone': 'No phone number',
 };
 
 export const volunteerVi: Record<VolunteerKey, string> = {
@@ -174,11 +210,7 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.rolePrefix': 'Bạn là',
   'volunteer.role': 'Tình nguyện viên',
   'volunteer.stats.delivered': 'Số đơn đã giao',
-  'volunteer.stats.feedback': 'Phản hồi đã nhận',
   'volunteer.stats.points': 'Điểm đã tích lũy',
-  'volunteer.impact.deliveriesLabel': 'Lượt giao',
-  'volunteer.impact.portionsLabel': 'Suất đã giao',
-  'volunteer.impact.message': 'Người hùng thầm lặng. Cảm ơn bạn!',
   'volunteer.requestToDeliver': 'Yêu cầu giao hàng',
   'volunteer.myDeliveryProgress': 'Tiến độ giao hàng của tôi',
   'volunteer.noPendingRequests': 'Hiện không có yêu cầu giao hàng nào',
@@ -253,4 +285,26 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.offlineRequestsHint': 'Bạn đang ngoại tuyến. Bật Trực tuyến để nhận yêu cầu giao hàng.',
   'volunteer.statusOnSubtitle': 'Đang nhận yêu cầu giao hàng gần bạn',
   'volunteer.statusOffSubtitle': 'Bạn sẽ không nhận yêu cầu giao hàng',
+  'volunteer.history.title': 'Lịch sử giao hàng',
+  'volunteer.history.searchPlaceholder': 'Tìm theo tên hoặc trạng thái...',
+  'volunteer.history.loading': 'Đang tải...',
+  'volunteer.history.loadFailed': 'Không tải được lịch sử giao hàng.',
+  'volunteer.history.tryAgain': 'Thử lại',
+  'volunteer.history.noMatch': 'Không có đơn phù hợp.',
+  'volunteer.history.noYet': 'Bạn chưa giao đơn nào.',
+  'volunteer.history.viewAll': 'Xem tất cả',
+  'volunteer.history.toReceiver': 'Giao cho',
+  'volunteer.deliveryDetail.title': 'Chi tiết đơn giao',
+  'volunteer.deliveryDetail.donor': 'Người cho',
+  'volunteer.deliveryDetail.receiver': 'Người nhận',
+  'volunteer.deliveryDetail.pickupAddress': 'Địa chỉ lấy hàng',
+  'volunteer.deliveryDetail.quantity': 'Số lượng',
+  'volunteer.deliveryDetail.timeline': 'Tiến trình',
+  'volunteer.deliveryDetail.assignedAt': 'Đã nhận đơn',
+  'volunteer.deliveryDetail.pickedUpAt': 'Đã lấy hàng',
+  'volunteer.deliveryDetail.deliveredAt': 'Đã giao xong',
+  'volunteer.deliveryDetail.completed': 'Hoàn tất',
+  'volunteer.deliveryDetail.loadFailed': 'Không tải được đơn này.',
+  'volunteer.deliveryDetail.noAddress': 'Không có địa chỉ',
+  'volunteer.deliveryDetail.noPhone': 'Không có số điện thoại',
 };

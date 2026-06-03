@@ -168,7 +168,7 @@ export default function ReceiverRequestScreen() {
 
           {prefillDonorName ? (
             <View style={styles.prefillNote}>
-              <Ionicons name="person-circle-outline" size={16} color="#008080" />
+              <Ionicons name="person-circle-outline" size={16} color={c.primary} />
               <Text style={styles.prefillNoteText}>{t('request.connectingWith')} {prefillDonorName}</Text>
             </View>
           ) : null}
@@ -305,7 +305,7 @@ export default function ReceiverRequestScreen() {
                   activeOpacity={0.85}
                 >
                   <Text style={[styles.popupOptionText, active && styles.popupOptionTextActive]}>{option.label}</Text>
-                  {active ? <Ionicons name="checkmark-circle" size={18} color="#008080" /> : null}
+                  {active ? <Ionicons name="checkmark-circle" size={18} color={c.primary} /> : null}
                 </TouchableOpacity>
               );
             })}
@@ -313,22 +313,6 @@ export default function ReceiverRequestScreen() {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
-  );
-}
-
-function PrefChip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity style={[styles.prefChip, active && styles.prefChipActive]} onPress={onPress} activeOpacity={0.8}>
-      <Text style={[styles.prefChipText, active && styles.prefChipTextActive]}>{label}</Text>
-    </TouchableOpacity>
   );
 }
 
@@ -347,7 +331,7 @@ const styles = StyleSheet.create({
     backgroundColor: c.primarySoft,
     borderRadius: r.md,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#D5E0EC',
     paddingHorizontal: 10,
     paddingVertical: 8,
     flexDirection: 'row',
@@ -382,19 +366,6 @@ const styles = StyleSheet.create({
   },
   textarea: { height: 100, paddingTop: 12, textAlignVertical: 'top' },
 
-  prefWrap: { flexDirection: 'row', gap: 8 },
-  prefChip: {
-    borderWidth: 1,
-    borderColor: c.divider,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: c.surfaceAlt,
-  },
-  prefChipActive: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  prefChipText: { fontSize: 13, color: c.textSecondary, fontWeight: '500' },
-  prefChipTextActive: { color: c.primaryStrong, fontWeight: '700' },
-
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -419,7 +390,7 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: c.primary, borderColor: c.primary },
   assuranceText: { flex: 1, fontSize: 13, color: '#555', lineHeight: 18 },
 
-  error: { color: '#E53935', fontSize: 13, marginTop: 10 },
+  error: { color: c.danger, fontSize: 13, marginTop: 10 },
   footer: {
     padding: 16,
     paddingBottom: Platform.OS === 'ios' ? 28 : 16,
@@ -441,7 +412,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#4CAF50',
+    backgroundColor: c.success,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,

@@ -8,13 +8,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import { getNearbyNgos, NearbyNgoItem } from '../../../src/api/profile.api';
-import { getMyStats, type DonorStats } from '../../../src/api/user.api';
+import { getMyStats } from '../../../src/api/user.api';
 import { useAuthStore } from '../../../src/store/authStore';
 import DonationPostCard from '../../../src/components/DonationPostCard';
 import DonationHistoryCard from '../../../src/components/DonationHistoryCard';
 import { roleUi } from '../../../src/theme/roleUi';
 import { useI18n } from '@/src/i18n/useI18n';
-import NotificationBell from '../../../src/components/NotificationBell';
+import HomeHeader from '../../../src/components/HomeHeader';
 import { getRewardLevel } from '../../../src/constants/rewardLevels';
 import type {
   ApprovedReceiverRequest,
@@ -34,7 +34,7 @@ export default function HomeScreen() {
   const firstName = user?.full_name?.split(' ')[0] ?? 'there';
   const points    = user?.points ?? 0;
   const { level } = getRewardLevel(points, 'DONOR');
-  const { t, locale, language, setLanguage }     = useI18n();
+  const { t }     = useI18n();
 
   const [activeTab, setActiveTab]         = useState<'my' | 'requests'>('my');
   const [openFaq, setOpenFaq]             = useState<number | null>(null);
@@ -47,7 +47,6 @@ export default function HomeScreen() {
   const [acceptingFoodRequestId, setAcceptingFoodRequestId] = useState<string | null>(null);
   const [cancellingDonationId, setCancellingDonationId] = useState<string | null>(null);
   const [releasingDonationId, setReleasingDonationId] = useState<string | null>(null);
-  const [stats, setStats] = useState<DonorStats | null>(null);
 
   const isDonationOpen = (donation: DonorDonation) => {
     const normalizedStatus = String(donation.status || '').toUpperCase();
@@ -76,6 +75,11 @@ export default function HomeScreen() {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 3);
   }, [donations]);
+
+  // "Ủng hộ" = số đơn hoàn tất thành công (khớp cách backend đếm: status COMPLETED).
+  const completedDonations = donations.filter(
+    (d) => String(d.status || '').toUpperCase() === 'COMPLETED',
+  ).length;
 
   const hasReceiverRequestsContent =
     receiverFoodRequests.length > 0 ||
@@ -259,7 +263,14 @@ export default function HomeScreen() {
           setDonations(donationRes.data.data ?? []);
           setNearbyNgos(ngoRes.data.data.ngos ?? []);
           setReceiverFoodRequests(requestRes.data?.data ?? []);
-          if (statsRes) setStats(statsRes.data.data as DonorStats);
+
+          // Server cộng điểm cho donor khi receiver xác nhận đơn. user.points chỉ
+          // set lúc login → đồng bộ lại điểm mới nhất để Stats row hiển thị đúng.
+          const freshPoints = (statsRes?.data?.data as { points?: number } | undefined)?.points;
+          const store = useAuthStore.getState();
+          if (freshPoints != null && store.user && store.user.points !== freshPoints) {
+            store.setUser({ ...store.user, points: freshPoints });
+          }
         } catch { /* ignore */ }
         finally {
           if (active) {
@@ -277,25 +288,13 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
 
         {/* ── Header ── */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{t('donor.greeting')} {firstName}</Text>
-            <View style={styles.roleRow}>
-              <Text style={styles.roleText}>{t('donor.rolePrefix')} </Text>
-              <Text style={styles.roleBold}>{t('donor.role')} </Text>
-              <Ionicons name="chevron-down" size={16} color="#111" />
-            </View>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-            onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
-            style={styles.langPill}
-            activeOpacity={0.85}>
-              <Text style={styles.langPillText}>{language === 'vi' ? 'VI' : 'EN'}</Text>
-            </TouchableOpacity>
-            <NotificationBell size={26} />
-          </View>
-        </View>
+        <HomeHeader
+          greeting={t('donor.greeting')}
+          firstName={firstName}
+          rolePrefix={t('donor.rolePrefix')}
+          roleLabel={t('donor.role')}
+          containerStyle={styles.header}
+        />
 
         {/* ── Badge ── */}
         <View style={styles.badgeRow}>
@@ -305,30 +304,9 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Impact card ── */}
-        {stats && stats.donations > 0 && (
-          <View style={[styles.impactCard, { backgroundColor: level.color + '15', borderColor: level.color + '40' }]}>
-            <View style={styles.impactRow}>
-              <View style={styles.impactMetric}>
-                <Text style={[styles.impactNumber, { color: level.color }]}>{stats.donations}</Text>
-                <Text style={styles.impactLabel}>{t('donor.impact.donationsLabel')}</Text>
-              </View>
-              <View style={styles.impactDivider} />
-              <View style={styles.impactMetric}>
-                <Text style={[styles.impactNumber, { color: level.color }]}>{stats.totalPortions}</Text>
-                <Text style={styles.impactLabel}>{t('donor.impact.portionsLabel')}</Text>
-              </View>
-            </View>
-            <Text style={styles.impactMessage}>{t('donor.impact.message')}</Text>
-          </View>
-        )}
-
         {/* ── Stats ── */}
         <View style={styles.statsRow}>
-          <StatItem value={String(donations.length)} label={t('donor.stats.donations')} />
-          <View style={styles.statDivider} />
-          <StatItem value={String(stats?.feedbackReceived ?? 0)} label={t('donor.stats.feedback')} />
-          <View style={styles.statDivider} />
+          <StatItem value={String(completedDonations)} label={t('donor.stats.donations')} />
           <StatItem value={String(points)} label={t('donor.stats.points')} />
         </View>
 
@@ -345,7 +323,7 @@ export default function HomeScreen() {
         {/* ── Tab Content ── */}
         {activeTab === 'my' ? (
           loadingDonations ? (
-            <View style={styles.emptyCard}><ActivityIndicator color="#008080" /></View>
+            <View style={styles.emptyCard}><ActivityIndicator color={c.primary} /></View>
           ) : myPostDonations.length > 0 ? (
             <View style={{ marginHorizontal: 18, marginTop: 1, marginBottom: 10 }}>
               {myPostDonations.map(d => (
@@ -376,7 +354,7 @@ export default function HomeScreen() {
           )
         ) : (
           loadingDonations ? (
-            <View style={styles.emptyCard}><ActivityIndicator color="#008080" /></View>
+            <View style={styles.emptyCard}><ActivityIndicator color={c.primary} /></View>
           ) : hasReceiverRequestsContent ? (
             <View style={styles.requestListWrap}>
               {receiverFoodRequests.length > 0 ? (
@@ -399,7 +377,7 @@ export default function HomeScreen() {
                           <Ionicons
                             name={isAccepted ? 'checkmark-circle' : 'document-text-outline'}
                             size={22}
-                            color={isAccepted ? '#2E7D32' : '#006666'}
+                            color={isAccepted ? c.successText : c.primaryStrong}
                           />
                           <View style={{ flex: 1 }}>
                             <Text style={styles.receiverReqName}>{receiverName}</Text>
@@ -420,7 +398,7 @@ export default function HomeScreen() {
                               style={styles.viewDonationBtn}
                               onPress={() => setActiveTab('my')}
                             >
-                              <Ionicons name="open-outline" size={16} color="#006666" />
+                              <Ionicons name="open-outline" size={16} color={c.primaryStrong} />
                               <Text style={styles.viewDonationBtnText}>{t('donor.viewDonation')}</Text>
                             </TouchableOpacity>
                           ) : null
@@ -430,7 +408,7 @@ export default function HomeScreen() {
                             disabled={accepting}
                             onPress={() => handleAcceptFoodRequest(req._id)}
                           >
-                            <Ionicons name="checkmark-circle-outline" size={16} color="#006666" />
+                            <Ionicons name="checkmark-circle-outline" size={16} color={c.primaryStrong} />
                             <Text style={styles.receiverAcceptFoodReqBtnText}>
                               {accepting ? t('donor.accepting') : t('donor.accept')}
                             </Text>
@@ -448,7 +426,7 @@ export default function HomeScreen() {
                   {approvedReceiverRequests.map((req) => (
                     <View key={`approved:${req.donationId}:${req.receiver._id}`} style={styles.approvedReqCard}>
                       <View style={styles.receiverReqHead}>
-                        <Ionicons name="checkmark-circle-outline" size={22} color="#2E7D32" />
+                        <Ionicons name="checkmark-circle-outline" size={22} color={c.successText} />
                         <View style={{ flex: 1 }}>
                           <Text style={styles.receiverReqName}>{req.receiver.full_name || t('donor.receiverFallback')}</Text>
                           <Text style={styles.receiverReqSub} numberOfLines={1}>{t('donor.donationLabel')}: {req.donationTitle}</Text>
@@ -479,7 +457,7 @@ export default function HomeScreen() {
                           onPress={() => openVolunteerChat(req.donationId)}
                           disabled={openingChatDonationId === req.donationId}
                         >
-                          <Ionicons name="chatbubble-ellipses-outline" size={14} color="#006666" />
+                          <Ionicons name="chatbubble-ellipses-outline" size={14} color={c.primaryStrong} />
                           <Text style={styles.openVolunteerChatBtnText}>
                             {openingChatDonationId === req.donationId ? t('donor.openingChat') : t('donor.chatWithVolunteer')}
                           </Text>
@@ -497,7 +475,7 @@ export default function HomeScreen() {
                 {approvedReceiverRequests.map((req) => (
                   <View key={`approved:${req.donationId}:${req.receiver._id}`} style={styles.approvedReqCard}>
                     <View style={styles.receiverReqHead}>
-                      <Ionicons name="checkmark-circle-outline" size={22} color="#2E7D32" />
+                      <Ionicons name="checkmark-circle-outline" size={22} color={c.successText} />
                       <View style={{ flex: 1 }}>
                         <Text style={styles.receiverReqName}>{req.receiver.full_name || t('donor.receiverFallback')}</Text>
                         <Text style={styles.receiverReqSub} numberOfLines={1}>{t('donor.donationLabel')}: {req.donationTitle}</Text>
@@ -528,7 +506,7 @@ export default function HomeScreen() {
                         onPress={() => openVolunteerChat(req.donationId)}
                         disabled={openingChatDonationId === req.donationId}
                       >
-                        <Ionicons name="chatbubble-ellipses-outline" size={14} color="#006666" />
+                        <Ionicons name="chatbubble-ellipses-outline" size={14} color={c.primaryStrong} />
                         <Text style={styles.openVolunteerChatBtnText}>
                           {openingChatDonationId === req.donationId ? t('donor.openingChat') : t('donor.chatWithVolunteer')}
                         </Text>
@@ -555,7 +533,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         {loadingDonations ? (
-          <View style={styles.emptyCard}><ActivityIndicator color="#008080" /></View>
+          <View style={styles.emptyCard}><ActivityIndicator color={c.primary} /></View>
         ) : donations.length === 0 ? (
           <View style={[styles.emptyCard, { marginBottom: 20 }]}>
             <Text style={styles.emptyGray}>{t('donor.noDonationsYet')}</Text>
@@ -576,7 +554,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         {loadingNgos ? (
-          <View style={styles.emptyCard}><ActivityIndicator color="#008080" /></View>
+          <View style={styles.emptyCard}><ActivityIndicator color={c.primary} /></View>
         ) : nearbyNgos.length === 0 ? (
           <View style={[styles.emptyCard, { marginTop: 0 }]}>
             <Text style={styles.emptyGray}>{t('donor.noNgosYet')}</Text>
@@ -599,7 +577,7 @@ export default function HomeScreen() {
 
         {/* ── FAQs ── */}
         <Text style={styles.sectionTitle}>{t('donor.faq.title')}</Text>
-        {FAQS.map((faq, i) => (
+        {FAQS.map((_faq, i) => (
           <TouchableOpacity key={i} style={styles.faqItem} onPress={() => setOpenFaq(openFaq === i ? null : i)} activeOpacity={0.7}>
             <Text style={styles.faqQ}>{i === 0 ? t('donor.faq.pickup') : t('donor.faq.oneTime')}</Text>
             <Ionicons name={openFaq === i ? 'chevron-up' : 'chevron-down'} size={20} color="#666" />
@@ -614,8 +592,8 @@ export default function HomeScreen() {
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
     <View style={styles.statItem}>
-      <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
     </View>
   );
 }
@@ -626,28 +604,13 @@ const r = roleUi.radius;
 const styles = StyleSheet.create({
   container:       { flex: 1, backgroundColor: c.pageBg },
   header:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 8 },
-  greeting:        { fontSize: 16, color: '#555' },
-  roleRow:         { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  roleText:        { fontSize: 20, color: '#111' },
-  roleBold:        { fontSize: 20, fontWeight: '800', color: '#111' },
   badgeRow:        { paddingHorizontal: 18, marginBottom: 14 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  langPill: {
-    borderWidth: 1,
-    borderColor: c.border,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: c.surface,
-  },
-  langPillText: { fontSize: 12, fontWeight: '700', color: c.textPrimary },
   badge:           { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
   badgeText:       { fontSize: 12, fontWeight: '700' },
-  statsRow:        { flexDirection: 'row', marginHorizontal: 18, marginBottom: 18 },
+  statsRow:        { flexDirection: 'row', marginHorizontal: 18, marginBottom: 18, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: r.lg, paddingVertical: 12 },
   statItem:        { flex: 1, alignItems: 'center' },
   statValue:       { fontSize: 22, fontWeight: '700', color: '#111' },
-  statLabel:       { fontSize: 10, color: '#888', textAlign: 'center', marginTop: 2 },
-  statDivider:     { width: 1, backgroundColor: '#DDD', marginVertical: 4 },
+  statLabel:       { fontSize: 10, color: '#888', textAlign: 'center', marginBottom: 2 },
   tabs:            { flexDirection: 'row', marginHorizontal: 18, marginBottom: 2, borderBottomWidth: 1, borderBottomColor: '#E0E0E0' },
   tab:             { flex: 1, paddingVertical: 10, alignItems: 'center' },
   tabActive:       { borderBottomWidth: 2, borderBottomColor: '#111' },
@@ -673,7 +636,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
   },
-  receiverRejectBtnText: { color: '#C62828', fontWeight: '700', fontSize: 13 },
+  receiverRejectBtnText: { color: c.dangerText, fontWeight: '700', fontSize: 13 },
   receiverApproveBtn: {
     flex: 1,
     backgroundColor: c.primarySoft,
@@ -686,7 +649,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: r.md,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#D5E0EC',
     backgroundColor: c.primarySoft,
     paddingVertical: 9,
     alignItems: 'center',
@@ -700,22 +663,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: c.successSoft,
   },
-  acceptedBadgeText: { color: '#2E7D32', fontWeight: '700', fontSize: 10, letterSpacing: 0.3 },
+  acceptedBadgeText: { color: c.successText, fontWeight: '700', fontSize: 10, letterSpacing: 0.3 },
   viewDonationBtn: {
     marginTop: 10,
     borderRadius: r.md,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
-    backgroundColor: '#E0F2F1',
+    borderColor: '#D5E0EC',
+    backgroundColor: c.primarySoft,
     paddingVertical: 9,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
   },
-  viewDonationBtnText: { color: '#006666', fontWeight: '700', fontSize: 13 },
+  viewDonationBtnText: { color: c.primaryStrong, fontWeight: '700', fontSize: 13 },
   approvedSection: {
     marginTop: 4,
     paddingTop: 6,
@@ -741,7 +704,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: r.md,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#D5E0EC',
     backgroundColor: c.primarySoft,
     paddingVertical: 8,
     alignItems: 'center',
@@ -759,9 +722,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  approvedBadgeViaAgent: { backgroundColor: '#E0F2F1' },
-  approvedBadgeSelfPickup: { backgroundColor: '#E8F5E9' },
-  approvedBadgeAwaiting: { backgroundColor: '#FFF8E1' },
+  approvedBadgeViaAgent: { backgroundColor: c.primarySoft },
+  approvedBadgeSelfPickup: { backgroundColor: c.successSoft },
+  approvedBadgeAwaiting: { backgroundColor: c.warningSoft },
   approvedBadgeText: { fontSize: 11, color: '#111', fontWeight: '700' },
   emptyCard:       { backgroundColor: c.surface, marginHorizontal: 18, marginTop: 1, padding: 28, alignItems: 'center', marginBottom: 20, borderRadius: r.lg, borderWidth: 1, borderColor: c.border },
   emptyGray:       { fontSize: 13, color: '#bbb', marginBottom: 8 },
@@ -779,11 +742,4 @@ const styles = StyleSheet.create({
   ngoDist:         { fontSize: 11, color: '#888', paddingHorizontal: 6, paddingBottom: 8 },
   faqItem:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.surface, marginHorizontal: 18, marginBottom: 8, borderRadius: r.md, paddingHorizontal: 14, paddingVertical: 16, borderWidth: 1, borderColor: c.border },
   faqQ:            { fontSize: 14, color: '#111', flex: 1, marginRight: 8 },
-  impactCard:      { marginHorizontal: 18, marginBottom: 14, borderRadius: r.md, padding: 14, borderWidth: 1 },
-  impactRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', marginBottom: 8 },
-  impactMetric:    { flex: 1, alignItems: 'center' },
-  impactNumber:    { fontSize: 22, fontWeight: '800' },
-  impactLabel:     { fontSize: 11, color: '#666', marginTop: 2, textAlign: 'center' },
-  impactDivider:   { width: 1, height: 32, backgroundColor: '#DDD', marginHorizontal: 8 },
-  impactMessage:   { fontSize: 12, color: '#444', textAlign: 'center', fontStyle: 'italic' },
 });

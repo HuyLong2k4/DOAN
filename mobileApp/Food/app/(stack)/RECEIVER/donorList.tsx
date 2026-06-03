@@ -18,6 +18,7 @@ import { http } from '../../../src/api/http';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 type TFn = (key: TranslationKey) => string;
 
@@ -157,7 +158,7 @@ export default function ReceiverDonorListScreen() {
             value={search}
             onChangeText={setSearch}
             placeholder={t('donorList.searchPlaceholder')}
-            placeholderTextColor="#9B9B9B"
+            placeholderTextColor="#8A8A8A"
             style={styles.searchInput}
           />
           <Ionicons name="search-outline" size={18} color="#666" />
@@ -202,13 +203,13 @@ export default function ReceiverDonorListScreen() {
 
       {loading ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
         </View>
       ) : (
         <ScrollView
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} colors={[roleUi.colors.primary]} />}
         >
           {filteredDonors.length === 0 ? (
             <View style={styles.emptyWrap}>
@@ -507,7 +508,7 @@ const styles = StyleSheet.create({
   },
   tabButton: { marginRight: 20, paddingBottom: 8 },
   tabButtonActive: { borderBottomWidth: 2, borderBottomColor: '#111' },
-  tabLabel: { fontSize: 16, color: '#9A9A9A' },
+  tabLabel: { fontSize: 16, color: '#8A8A8A' },
   tabLabelActive: { color: '#111', fontWeight: '600' },
 
   loadingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -516,7 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderColor: '#E0E0E0',
     padding: 20,
     alignItems: 'center',
     marginTop: 12,
@@ -533,8 +534,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, color: '#111', fontWeight: '600', flex: 1, marginRight: 8 },
   distancePill: {
     fontSize: 11,
-    color: '#006666',
-    backgroundColor: '#E0F2F1',
+    color: roleUi.colors.primaryStrong,
+    backgroundColor: roleUi.colors.primarySoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
@@ -554,7 +555,7 @@ const styles = StyleSheet.create({
   donationTitle: { fontSize: 14, color: '#111', fontWeight: '700', marginBottom: 8 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8, gap: 6 },
   infoBadge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: roleUi.colors.successSoft,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -598,13 +599,13 @@ const styles = StyleSheet.create({
   },
   viewBtnText: { fontSize: 11, color: '#111' },
   connectBtn: {
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     borderRadius: 18,
     paddingHorizontal: 22,
     paddingVertical: 6,
   },
   connectBtnApproved: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: roleUi.colors.successText,
   },
   connectBtnMuted: {
     backgroundColor: '#546E7A',

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
+  Alert, AppState,
   ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import * as Location from 'expo-location';
@@ -12,7 +12,7 @@ import { getMyStats, type ReceiverStats } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '../../../src/theme/roleUi';
-import NotificationBell from '../../../src/components/NotificationBell';
+import HomeHeader from '../../../src/components/HomeHeader';
 
 type DonationItem = {
   _id: string;
@@ -78,23 +78,23 @@ function getRequestStatusMeta(t: (key: any) => string): Record<
     ACCEPTED: {
       icon: 'checkmark-circle-outline',
       text: t('receiver.accepted'),
-      bg: '#E0F2F1',
-      border: '#90CAF9',
-      color: '#006666',
+      bg: c.primarySoft,
+      border: '#A9C0D6',
+      color: c.primaryStrong,
     },
     FULFILLED: {
       icon: 'checkmark-done-outline',
       text: t('receiver.fulfilled'),
-      bg: '#E8F5E9',
-      border: '#A5D6A7',
-      color: '#1B5E20',
+      bg: c.successSoft,
+      border: '#AEC9B7',
+      color: c.successText,
     },
     CANCELLED: {
       icon: 'close-circle-outline',
       text: t('receiver.cancelled'),
-      bg: '#FFEBEE',
+      bg: c.dangerSoft,
       border: '#EF9A9A',
-      color: '#B71C1C',
+      color: c.dangerText,
     },
   };
 }
@@ -119,10 +119,9 @@ const FAQS = [
 
 export default function HomeReceiverScreen() {
   const router = useRouter();
-  const { t, locale, language, setLanguage } = useI18n();
+  const { t, locale } = useI18n();
   const user = useAuthStore((s) => s.user);
   const firstName = user?.full_name?.split(' ')[0] ?? 'Friend';
-  const points = user?.points ?? 0;
   const currentUserId = String((user as any)?.id || (user as any)?._id || '');
   const requestStatusMeta = getRequestStatusMeta(t);
 
@@ -211,6 +210,23 @@ export default function HomeReceiverScreen() {
       };
     }, [fetchData, applyData])
   );
+
+  // Khi app quay lại foreground (vd: vừa tap notification từ background), useFocusEffect
+  // KHÔNG tự chạy lại vì màn hình chưa từng mất focus. Tự refetch im lặng để dữ liệu
+  // luôn mới sau khi rời app rồi quay lại.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      void (async () => {
+        try {
+          applyData(await fetchData());
+        } catch {
+          // Giữ nguyên data cũ khi fetch fail.
+        }
+      })();
+    });
+    return () => sub.remove();
+  }, [fetchData, applyData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -319,55 +335,26 @@ export default function HomeReceiverScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" colors={['#008080']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.primary} colors={[c.primary]} />}
       >
         <View style={styles.contentCard}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.greeting}>{t('receiver.greeting')} {firstName}</Text>
-              <View style={styles.roleRow}>
-                <Text style={styles.roleText}>{t('receiver.rolePrefix')} </Text>
-                <Text style={styles.roleBold}>{t('receiver.role')}</Text>
-                <Ionicons name="chevron-down" size={16} color="#111" style={{ marginLeft: 2 }} />
-              </View>
-            </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
-                style={styles.langPill}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.langPillText}>{language === 'vi' ? 'VI' : 'EN'}</Text>
-              </TouchableOpacity>
-              <NotificationBell />
-            </View>
-          </View>
-
-          {stats && stats.mealsReceived > 0 && (
-            <View style={styles.impactCard}>
-              <View style={styles.impactRow}>
-                <View style={styles.impactMetric}>
-                  <Text style={styles.impactNumber}>{stats.mealsReceived}</Text>
-                  <Text style={styles.impactLabel}>{t('receiver.impact.mealsLabel')}</Text>
-                </View>
-                <View style={styles.impactDivider} />
-                <View style={styles.impactMetric}>
-                  <Text style={styles.impactNumber}>{stats.ngosConnected}</Text>
-                  <Text style={styles.impactLabel}>{t('receiver.impact.ngosLabel')}</Text>
-                </View>
-              </View>
-              <Text style={styles.impactMessage}>{t('receiver.impact.message')}</Text>
-            </View>
-          )}
+          <HomeHeader
+            greeting={t('receiver.greeting')}
+            firstName={firstName}
+            rolePrefix={t('receiver.rolePrefix')}
+            roleLabel={t('receiver.role')}
+            bellSize={22}
+            containerStyle={styles.header}
+          />
 
           <View style={styles.statsCard}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>{t('receiver.ordersReceived')}</Text>
-              <Text style={styles.statValue}>{String(myPosts.length)}</Text>
+              <Text style={styles.statValue}>{String(stats?.mealsReceived ?? 0)}</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>{t('receiver.pointsEarned')}</Text>
-              <Text style={styles.statValue}>{String(points)}</Text>
+              <Text style={styles.statLabel}>{t('receiver.impact.ngosLabel')}</Text>
+              <Text style={styles.statValue}>{String(stats?.ngosConnected ?? 0)}</Text>
             </View>
           </View>
 
@@ -394,7 +381,7 @@ export default function HomeReceiverScreen() {
 
           <View style={styles.requestBox}>
             {loading ? (
-              <ActivityIndicator color="#008080" />
+              <ActivityIndicator color={c.primary} />
             ) : activeTab === 'my' ? (
               <View style={styles.myPostWrap}>
                 {myPosts.length > 0 ? (
@@ -639,9 +626,9 @@ function MyRequestCard({
           activeOpacity={0.85}
         >
           {deleting ? (
-            <ActivityIndicator size="small" color="#C62828" />
+            <ActivityIndicator size="small" color={c.dangerText} />
           ) : (
-            <Ionicons name="trash-outline" size={16} color="#C62828" />
+            <Ionicons name="trash-outline" size={16} color={c.dangerText} />
           )}
         </TouchableOpacity>
       </View>
@@ -668,14 +655,14 @@ function MyRequestCard({
 
       {isExpired ? (
         <View style={styles.expiredBadge}>
-          <Ionicons name="alert-circle-outline" size={14} color="#B71C1C" />
+          <Ionicons name="alert-circle-outline" size={14} color={c.dangerText} />
           <Text style={styles.expiredBadgeText}>{t('receiver.requestExpired')}</Text>
         </View>
       ) : null}
 
       {canContinueFlow ? (
         <TouchableOpacity style={styles.continuePickupBtn} onPress={onContinueFlow} activeOpacity={0.85}>
-          <Ionicons name={linkedDonation?.delivery_type ? 'navigate-outline' : 'cube-outline'} size={16} color="#006666" />
+          <Ionicons name={linkedDonation?.delivery_type ? 'navigate-outline' : 'cube-outline'} size={16} color={c.primaryStrong} />
           <Text style={styles.continuePickupBtnText}>
             {linkedDonation?.delivery_type ? t('receiver.openTracking') : t('receiver.choosePickupMethod')}
           </Text>
@@ -704,20 +691,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  langPill: {
-    borderWidth: 1,
-    borderColor: c.border,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: c.surface,
-  },
-  langPillText: { fontSize: 12, fontWeight: '700', color: c.textPrimary },
-  greeting: { fontSize: 16, color: c.textSecondary, fontWeight: '500' },
-  roleRow: { flexDirection: 'row', alignItems: 'center' },
-  roleText: { fontSize: 20, color: c.textPrimary, fontWeight: '400' },
-  roleBold: { fontSize: 20, color: c.textPrimary, fontWeight: '800' },
   statsCard: {
     backgroundColor: c.surface,
     flexDirection: 'row',
@@ -827,11 +800,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#FFEBEE',
+    backgroundColor: c.dangerSoft,
     borderWidth: 1,
     borderColor: '#EF9A9A',
   },
-  expiredBadgeText: { fontSize: 11, color: '#B71C1C', fontWeight: '700' },
+  expiredBadgeText: { fontSize: 11, color: c.dangerText, fontWeight: '700' },
   pendingBadgeCompact: {
     alignSelf: 'flex-start',
     borderRadius: 999,
@@ -842,7 +815,7 @@ const styles = StyleSheet.create({
   continuePickupBtn: {
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#D5E0EC',
     backgroundColor: c.primarySoft,
     borderRadius: r.md,
     paddingVertical: 10,
@@ -930,7 +903,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   connectButtonApproved: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: c.successText,
   },
   connectButtonMuted: {
     backgroundColor: '#546E7A',
@@ -949,11 +922,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   faqQuestion: { fontSize: 14, color: c.textPrimary, flex: 1, marginRight: 8 },
-  impactCard:    { backgroundColor: c.primarySoft, borderColor: c.primary + '40', borderWidth: 1, borderRadius: r.md, padding: 14, marginBottom: 12 },
-  impactRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', marginBottom: 8 },
-  impactMetric:  { flex: 1, alignItems: 'center' },
-  impactNumber:  { fontSize: 22, fontWeight: '800', color: c.primaryStrong },
-  impactLabel:   { fontSize: 11, color: c.textSecondary, marginTop: 2, textAlign: 'center' },
-  impactDivider: { width: 1, height: 32, backgroundColor: '#DDD', marginHorizontal: 8 },
-  impactMessage: { fontSize: 12, color: c.textSecondary, textAlign: 'center', fontStyle: 'italic' },
 });

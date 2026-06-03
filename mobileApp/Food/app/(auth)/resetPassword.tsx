@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { resetPassword } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -96,11 +97,11 @@ const styles = StyleSheet.create({
     borderRadius: 6, height: 50, paddingHorizontal: 14,
     fontSize: 15, color: '#111', marginBottom: 14,
   },
-  error:        { color: '#E53935', marginBottom: 12, fontSize: 13 },
-  btn:          { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center' },
+  error:        { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
+  btn:          { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center' },
   btnText:      { color: '#fff', fontWeight: '700', fontSize: 16, padding: 60 },
   successBox:   { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 28 },
-  circle:       { width: 90, height: 90, borderRadius: 45, backgroundColor: '#4CAF50', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+  circle:       { width: 90, height: 90, borderRadius: 45, backgroundColor: roleUi.colors.success, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
   check:        { color: '#fff', fontSize: 44, fontWeight: '700' },
   awesomeTitle: { fontSize: 24, fontWeight: '700', marginBottom: 12, color: '#111' },
   awesomeSub:   { textAlign: 'center', color: '#555', marginBottom: 32, lineHeight: 22 },

@@ -18,6 +18,7 @@ import { changePassword } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import type { AppLanguage } from '../../../src/store/languageStore';
 import { useAuthStore } from '../../../src/store/authStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function SettingsScreen() {
                   activeOpacity={0.7}
                 >
                   <Text style={styles.langLabel}>{label}</Text>
-                  {active && <Ionicons name="checkmark" size={20} color="#008080" />}
+                  {active && <Ionicons name="checkmark" size={20} color={roleUi.colors.primary} />}
                 </TouchableOpacity>
               );
             })}

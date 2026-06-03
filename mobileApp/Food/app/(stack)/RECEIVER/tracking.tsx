@@ -11,6 +11,7 @@ import { useI18n } from '../../../src/i18n/useI18n';
 import PickupCodeModal from '../../../src/components/PickupCodeModal';
 import { TimelineRow } from './_components/TimelineRow';
 import { TrackingMap } from './_components/TrackingMap';
+import { roleUi } from '@/src/theme/roleUi';
 
 type TrackingParams = {
   donationId?: string | string[];
@@ -386,7 +387,7 @@ export default function ReceiverTrackingScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
           <Text style={styles.loadingText}>{t('tracking.loading')}</Text>
         </View>
       </SafeAreaView>
@@ -421,7 +422,6 @@ export default function ReceiverTrackingScreen() {
     pickedUpAtMs != null &&
     Date.now() - pickedUpAtMs >= STALE_ON_THE_WAY_MS;
   const title = tracking.donation?.title || fallbackTitle;
-  const deliveryId = tracking.delivery?.id || '';
   const lastUpdatedText = lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
   const donorAddress = [tracking.donor?.address_line, tracking.donor?.city].filter(Boolean).join(', ');
   const donorLat = tracking.donor?.latitude;
@@ -512,15 +512,14 @@ export default function ReceiverTrackingScreen() {
                 : tracking.donor?.full_name || 'Donor'}
             </Text>
             <Text style={styles.agentSub}>{isViaAgent ? t('tracking.pickupVolunteer') : t('tracking.pickupAtDonor')}</Text>
-            <Text style={styles.agentSub}>{t('tracking.refPrefix')} {deliveryId || 'pending-id'}</Text>
             {!isViaAgent && donorAddress ? <Text style={styles.agentSub}>{t('tracking.addressPrefix')} {donorAddress}</Text> : null}
           </View>
-          <Ionicons name="chevron-down" size={18} color="#6B7280" />
+          <Ionicons name="chevron-down" size={18} color="#666666" />
         </View>
 
         <View style={styles.timelineWrap}>
           <TimelineRow
-            dotColor={isViaAgent && tracking.delivery.status !== 'WAITING_AGENT' ? '#22C55E' : '#BDBDBD'}
+            dotColor={isViaAgent && tracking.delivery.status !== 'WAITING_AGENT' ? roleUi.colors.success : '#BDBDBD'}
             label={isViaAgent ? t('tracking.tlAssigned') : t('tracking.tlPickupSelected')}
             time="--"
           />
@@ -528,21 +527,21 @@ export default function ReceiverTrackingScreen() {
             dotColor={
               isViaAgent
                 ? (tracking.delivery.status === 'AGENT_ASSIGNED' || tracking.delivery.status === 'ON_THE_WAY' || tracking.delivery.status === 'DELIVERED')
-                  ? '#22C55E'
+                  ? roleUi.colors.success
                   : '#BDBDBD'
                 : (isSelfPickupReady || isCompleted)
-                  ? '#22C55E'
+                  ? roleUi.colors.success
                   : '#BDBDBD'
             }
             label={isViaAgent ? t('tracking.tlPickUp') : t('tracking.tlGoPickup')}
             time="--"
           />
-          <TimelineRow dotColor={isCompleted ? '#22C55E' : '#BDBDBD'} label={t('tracking.tlComplete')} time="--" />
+          <TimelineRow dotColor={isCompleted ? roleUi.colors.success : '#BDBDBD'} label={t('tracking.tlComplete')} time="--" />
         </View>
 
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => void onCall()}>
-            <Ionicons name="call-outline" size={16} color="#008080" />
+            <Ionicons name="call-outline" size={16} color={roleUi.colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.msgBtn, chatLoading && { opacity: 0.7 }]} onPress={() => void onOpenChat()} disabled={chatLoading}>
             <Text style={styles.msgText}>{chatLoading ? t('volunteer.openingChat') : t('tracking.sendMessage')}</Text>
@@ -568,7 +567,7 @@ export default function ReceiverTrackingScreen() {
 
         {isStaleOnTheWay ? (
           <View style={styles.staleWarningBox}>
-            <Ionicons name="warning-outline" size={18} color="#E65100" />
+            <Ionicons name="warning-outline" size={18} color="#A9772E" />
             <View style={{ flex: 1 }}>
               <Text style={styles.staleWarningTitle}>{t('tracking.staleWarningTitle')}</Text>
               <Text style={styles.staleWarningBody}>{t('tracking.staleWarningBody')}</Text>
@@ -583,9 +582,9 @@ export default function ReceiverTrackingScreen() {
             disabled={reportingNoShow}
           >
             {reportingNoShow ? (
-              <ActivityIndicator size="small" color="#C62828" />
+              <ActivityIndicator size="small" color={roleUi.colors.dangerText} />
             ) : (
-              <Ionicons name="alert-circle-outline" size={16} color="#C62828" style={{ marginRight: 6 }} />
+              <Ionicons name="alert-circle-outline" size={16} color={roleUi.colors.dangerText} style={{ marginRight: 6 }} />
             )}
             <Text style={styles.disconnectBtnText}>
               {reportingNoShow ? t('tracking.reportingNoShow') : t('tracking.reportNoShowBtn')}
@@ -600,9 +599,9 @@ export default function ReceiverTrackingScreen() {
             disabled={disconnecting}
           >
             {disconnecting ? (
-              <ActivityIndicator size="small" color="#C62828" />
+              <ActivityIndicator size="small" color={roleUi.colors.dangerText} />
             ) : (
-              <Ionicons name="exit-outline" size={16} color="#C62828" style={{ marginRight: 6 }} />
+              <Ionicons name="exit-outline" size={16} color={roleUi.colors.dangerText} style={{ marginRight: 6 }} />
             )}
             <Text style={styles.disconnectBtnText}>
               {disconnecting ? t('tracking.disconnecting') : t('tracking.disconnectBtn')}
@@ -633,10 +632,10 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 13, color: '#666' },
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   errorText: { fontSize: 14, color: '#444', textAlign: 'center', marginBottom: 10 },
-  retryBtn: { backgroundColor: '#008080', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, marginBottom: 8 },
+  retryBtn: { backgroundColor: roleUi.colors.primary, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, marginBottom: 8 },
   retryText: { color: '#fff', fontWeight: '700' },
   backHomeBtn: { paddingHorizontal: 14, paddingVertical: 8 },
-  backHomeText: { color: '#008080', fontWeight: '600' },
+  backHomeText: { color: roleUi.colors.primary, fontWeight: '600' },
   headerRow: { paddingTop: 12, paddingBottom: 4 },
   title: { fontSize: 30, color: '#111', fontWeight: '700' },
   statusHead: {
@@ -649,8 +648,8 @@ const styles = StyleSheet.create({
   },
   mainStatus: { fontSize: 16, color: '#111', fontWeight: '600' },
   timeStatus: { marginTop: 4, fontSize: 14, color: '#444' },
-  donationTitle: { marginTop: 5, fontSize: 13, color: '#4B5563', fontWeight: '600' },
-  refreshText: { marginTop: 4, fontSize: 11, color: '#6B7280' },
+  donationTitle: { marginTop: 5, fontSize: 13, color: '#4A4A4A', fontWeight: '600' },
+  refreshText: { marginTop: 4, fontSize: 11, color: '#666666' },
   agentCard: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -664,10 +663,10 @@ const styles = StyleSheet.create({
   agentSub: { fontSize: 12, color: '#666', marginTop: 1 },
   timelineWrap: { paddingTop: 10, paddingBottom: 6 },
   actionRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  iconBtn: { width: 44, height: 34, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
-  msgBtn: { flex: 1, height: 34, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 44, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
+  msgBtn: { flex: 1, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
   msgText: { fontSize: 12, color: '#333', fontWeight: '500' },
-  tipBtn: { width: 70, height: 34, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  tipBtn: { width: 70, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
   tipText: { fontSize: 12, color: '#333', fontWeight: '500' },
   disconnectBtn: {
     marginTop: 12,
@@ -677,11 +676,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFF5F5',
+    borderColor: '#ECD7D4',
+    backgroundColor: '#F7EDEC',
   },
   disconnectBtnDisabled: { opacity: 0.55 },
-  disconnectBtnText: { color: '#C62828', fontSize: 13, fontWeight: '600' },
+  disconnectBtnText: { color: roleUi.colors.dangerText, fontSize: 13, fontWeight: '600' },
   staleWarningBox: {
     marginTop: 12,
     flexDirection: 'row',
@@ -690,10 +689,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#FFE0B2',
-    backgroundColor: '#FFF8E1',
+    borderColor: '#ECDCC0',
+    backgroundColor: roleUi.colors.warningSoft,
   },
-  staleWarningTitle: { fontSize: 13, fontWeight: '700', color: '#E65100' },
+  staleWarningTitle: { fontSize: 13, fontWeight: '700', color: '#A9772E' },
   staleWarningBody: { fontSize: 12, color: '#7C5300', marginTop: 4, lineHeight: 17 },
   reportNoShowBtn: {
     marginTop: 8,
@@ -703,7 +702,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFF5F5',
+    borderColor: '#ECD7D4',
+    backgroundColor: '#F7EDEC',
   },
 });

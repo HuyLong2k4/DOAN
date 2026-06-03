@@ -74,6 +74,14 @@ const runExpireSweep = () => {
       }
     })
     .catch((err) => console.error('[expire-cron] error:', err?.message || err));
+
+  FoodDonationService.expireStaleSelfPickups()
+    .then((res) => {
+      if (res?.expired_count > 0) {
+        console.log(`[expire-cron] expired ${res.expired_count} stale self-pickups`);
+      }
+    })
+    .catch((err) => console.error('[expire-cron] error:', err?.message || err));
 };
 
 const runAutoConfirmSweep = () => {

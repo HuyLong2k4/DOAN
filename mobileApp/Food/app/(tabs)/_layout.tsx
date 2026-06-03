@@ -7,6 +7,7 @@ import { useChatStore } from "../../src/store/chatStore";
 import { useI18n } from "../../src/i18n/useI18n";
 import { connectChatSocket } from "../../src/utils/chatSocket";
 import type { ChatMessage } from "../../src/types";
+import { roleUi } from '@/src/theme/roleUi';
 
 const ACTIVE_COLOR   = "#111";
 const INACTIVE_COLOR = "#999";
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     height: 17,
     paddingHorizontal: 4,
     borderRadius: 9,
-    backgroundColor: "#EF4444",
+    backgroundColor: roleUi.colors.danger,
     alignItems: "center",
     justifyContent: "center",
   },

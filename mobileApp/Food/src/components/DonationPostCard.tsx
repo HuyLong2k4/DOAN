@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useI18n } from '../i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 export type Donation = {
   _id: string;
@@ -31,22 +32,22 @@ export function useStatusConfig() {
   const { t } = useI18n();
 
   return {
-    PENDING:   { bg: '#FFF8E1', color: '#F9A825', label: t('receiver.pending'),         icon: 'time-outline'             },
-    ACCEPTED:  { bg: '#E0F2F1', color: '#006666', label: t('donation.status.volunteerOnWay'),        icon: 'bicycle-outline'          },
+    PENDING:   { bg: roleUi.colors.warningSoft, color: roleUi.colors.warning, label: t('receiver.pending'),         icon: 'time-outline'             },
+    ACCEPTED:  { bg: roleUi.colors.primarySoft, color: roleUi.colors.primaryStrong, label: t('donation.status.volunteerOnWay'),        icon: 'bicycle-outline'          },
     PICKED_UP: { bg: '#EDE7F6', color: '#4527A0', label: t('donation.status.inTransit'),     icon: 'car-outline'              },
-    COMPLETED: { bg: '#E8F5E9', color: '#2E7D32', label: t('donation.status.completed'),          icon: 'checkmark-circle-outline' },
-    EXPIRED:   { bg: '#F5F5F5', color: '#757575', label: t('donation.status.expired'),    icon: 'alert-circle-outline'     },
-    CANCELLED: { bg: '#FFEBEE', color: '#C62828', label: t('receiver.cancelled'),                       icon: 'close-circle-outline'     },
+    COMPLETED: { bg: roleUi.colors.successSoft, color: roleUi.colors.successText, label: t('donation.status.completed'),          icon: 'checkmark-circle-outline' },
+    EXPIRED:   { bg: '#F5F5F5', color: '#666666', label: t('donation.status.expired'),    icon: 'alert-circle-outline'     },
+    CANCELLED: { bg: roleUi.colors.dangerSoft, color: roleUi.colors.dangerText, label: t('receiver.cancelled'),                       icon: 'close-circle-outline'     },
   };
 }
 
 export const STATUS_CFG: Record<string, { bg: string; color: string; label: string; icon: string }> = {
-  PENDING:   { bg: '#FFF8E1', color: '#F9A825', label: 'Your request is pending',         icon: 'time-outline'             },
-  ACCEPTED:  { bg: '#E0F2F1', color: '#006666', label: 'Volunteer is on the way!',        icon: 'bicycle-outline'          },
+  PENDING:   { bg: roleUi.colors.warningSoft, color: roleUi.colors.warning, label: 'Your request is pending',         icon: 'time-outline'             },
+  ACCEPTED:  { bg: roleUi.colors.primarySoft, color: roleUi.colors.primaryStrong, label: 'Volunteer is on the way!',        icon: 'bicycle-outline'          },
   PICKED_UP: { bg: '#EDE7F6', color: '#4527A0', label: 'Food picked up — in transit',     icon: 'car-outline'              },
-  COMPLETED: { bg: '#E8F5E9', color: '#2E7D32', label: 'Completed — thank you!',          icon: 'checkmark-circle-outline' },
-  EXPIRED:   { bg: '#F5F5F5', color: '#757575', label: 'Expired — no one claimed it',    icon: 'alert-circle-outline'     },
-  CANCELLED: { bg: '#FFEBEE', color: '#C62828', label: 'Cancelled',                       icon: 'close-circle-outline'     },
+  COMPLETED: { bg: roleUi.colors.successSoft, color: roleUi.colors.successText, label: 'Completed — thank you!',          icon: 'checkmark-circle-outline' },
+  EXPIRED:   { bg: '#F5F5F5', color: '#666666', label: 'Expired — no one claimed it',    icon: 'alert-circle-outline'     },
+  CANCELLED: { bg: roleUi.colors.dangerSoft, color: roleUi.colors.dangerText, label: 'Cancelled',                       icon: 'close-circle-outline'     },
 };
 
 function getFoodTypeLabel(t: any, foodType: string): string {
@@ -155,7 +156,7 @@ export default function DonationPostCard({ d, onCancel, cancelling, onReleaseRec
 
       {showStaleHint ? (
         <View style={styles.staleHintBox}>
-          <Ionicons name="alert-circle" size={16} color="#C62828" />
+          <Ionicons name="alert-circle" size={16} color={roleUi.colors.dangerText} />
           <View style={{ flex: 1 }}>
             <Text style={styles.staleHintTitle}>{t('donor.releaseReceiver.staleTitle')}</Text>
             <Text style={styles.staleHintBody}>
@@ -174,12 +175,12 @@ export default function DonationPostCard({ d, onCancel, cancelling, onReleaseRec
           disabled={releasing}
         >
           {releasing ? (
-            <ActivityIndicator color="#E65100" size="small" />
+            <ActivityIndicator color="#A9772E" size="small" />
           ) : (
             <Ionicons
               name={d.from_food_request ? 'close-circle-outline' : 'person-remove-outline'}
               size={16}
-              color="#E65100"
+              color="#A9772E"
               style={{ marginRight: 6 }}
             />
           )}
@@ -200,9 +201,9 @@ export default function DonationPostCard({ d, onCancel, cancelling, onReleaseRec
           disabled={cancelling}
         >
           {cancelling ? (
-            <ActivityIndicator color="#C62828" size="small" />
+            <ActivityIndicator color={roleUi.colors.dangerText} size="small" />
           ) : (
-            <Ionicons name="close-circle-outline" size={16} color="#C62828" style={{ marginRight: 6 }} />
+            <Ionicons name="close-circle-outline" size={16} color={roleUi.colors.dangerText} style={{ marginRight: 6 }} />
           )}
           <Text style={styles.cancelBtnText}>
             {cancelling ? t('donor.cancel.cancelling') : t('donor.cancel.button')}
@@ -235,11 +236,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFF5F5',
+    borderColor: '#ECD7D4',
+    backgroundColor: '#F7EDEC',
   },
   cancelBtnDisabled: { opacity: 0.55 },
-  cancelBtnText:    { color: '#C62828', fontSize: 13, fontWeight: '600' },
+  cancelBtnText:    { color: roleUi.colors.dangerText, fontSize: 13, fontWeight: '600' },
   releaseBtn:       {
     flexDirection: 'row',
     alignItems: 'center',
@@ -248,31 +249,31 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFE0B2',
-    backgroundColor: '#FFF8E1',
+    borderColor: '#ECDCC0',
+    backgroundColor: roleUi.colors.warningSoft,
   },
-  releaseBtnText:   { color: '#E65100', fontSize: 13, fontWeight: '700' },
+  releaseBtnText:   { color: '#A9772E', fontSize: 13, fontWeight: '700' },
   pickupCodeBox: {
     marginTop: 10,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFE0B2',
-    backgroundColor: '#FFF8E1',
+    borderColor: '#ECDCC0',
+    backgroundColor: roleUi.colors.warningSoft,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  pickupCodeLabel: { fontSize: 12, fontWeight: '700', color: '#E65100', textTransform: 'uppercase', letterSpacing: 0.4 },
+  pickupCodeLabel: { fontSize: 12, fontWeight: '700', color: '#A9772E', textTransform: 'uppercase', letterSpacing: 0.4 },
   pickupCodeHint:  { fontSize: 11, color: '#7C5300', marginTop: 2 },
-  pickupCodeValue: { fontSize: 26, fontWeight: '800', color: '#E65100', letterSpacing: 4, fontVariant: ['tabular-nums'] },
+  pickupCodeValue: { fontSize: 26, fontWeight: '800', color: '#A9772E', letterSpacing: 4, fontVariant: ['tabular-nums'] },
 
   waitingHintBox: {
     marginTop: 10,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFE0B2',
-    backgroundColor: '#FFF8E1',
+    borderColor: '#ECDCC0',
+    backgroundColor: roleUi.colors.warningSoft,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
@@ -285,12 +286,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFF5F5',
+    borderColor: '#ECD7D4',
+    backgroundColor: '#F7EDEC',
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
   },
-  staleHintTitle: { fontSize: 12, fontWeight: '700', color: '#C62828' },
-  staleHintBody:  { fontSize: 11, color: '#C62828', marginTop: 2, lineHeight: 15 },
+  staleHintTitle: { fontSize: 12, fontWeight: '700', color: roleUi.colors.dangerText },
+  staleHintBody:  { fontSize: 11, color: roleUi.colors.dangerText, marginTop: 2, lineHeight: 15 },
 });

@@ -2,6 +2,7 @@ import * as Device from 'expo-device';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { http } from '../api/http';
+import { roleUi } from '@/src/theme/roleUi';
 
 // Expo Go (SDK 53+) đã bỏ hỗ trợ remote push.
 // Phải lazy-require expo-notifications: chỉ import top-level đã trigger side-effect
@@ -46,7 +47,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
         name: 'Default',
         importance: N.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#008080',
+        lightColor: roleUi.colors.primary,
       });
     }
 

@@ -176,6 +176,64 @@ async function getMyDonations(donorId) {
     });
 }
 
+// ── GET /api/food-donations/received ────────────────────────────────────────
+// Lịch sử các đơn receiver đã nhận thành công (status COMPLETED). Dùng cho phần
+// "Hoạt động của tôi" của receiver. limit > 0 để lấy N đơn gần nhất.
+async function getMyReceivedDonations(receiverId, limit = 0) {
+    let q = FoodDonation.find({ selected_receiver_id: receiverId, status: 'COMPLETED' })
+        .select('title quantity unit food_type images status donor_id createdAt updatedAt')
+        .populate('donor_id', 'full_name avatar_url')
+        .sort({ updatedAt: -1, createdAt: -1 });
+    if (limit > 0) q = q.limit(limit);
+    const donations = await q.lean();
+
+    return donations.map((d) => ({
+        _id: d._id,
+        title: d.title,
+        quantity: d.quantity,
+        unit: d.unit,
+        food_type: d.food_type,
+        images: d.images || [],
+        status: d.status,
+        donor_name: d.donor_id?.full_name ?? null,
+        donor_avatar_url: d.donor_id?.avatar_url ?? null,
+        received_at: d.updatedAt ?? d.createdAt,
+        createdAt: d.createdAt,
+    }));
+}
+
+// ── GET /api/food-donations/volunteer/delivered ─────────────────────────────
+// Lịch sử các đơn volunteer đã giao thành công (donation status COMPLETED ⇔
+// delivery DELIVERED). Đối xứng với getMyReceivedDonations của receiver.
+async function getMyVolunteerDeliveryHistory(volunteerId, limit = 0) {
+    let q = FoodDonation.find({
+        volunteer_id: volunteerId,
+        delivery_type: 'VIA_AGENT',
+        status: 'COMPLETED',
+    })
+        .select('title quantity unit food_type images status donor_id selected_receiver_id createdAt updatedAt')
+        .populate('donor_id', 'full_name avatar_url')
+        .populate('selected_receiver_id', 'full_name avatar_url')
+        .sort({ updatedAt: -1, createdAt: -1 });
+    if (limit > 0) q = q.limit(limit);
+    const donations = await q.lean();
+
+    return donations.map((d) => ({
+        _id: d._id,
+        title: d.title,
+        quantity: d.quantity,
+        unit: d.unit,
+        food_type: d.food_type,
+        images: d.images || [],
+        status: d.status,
+        donor_name: d.donor_id?.full_name ?? null,
+        receiver_name: d.selected_receiver_id?.full_name ?? null,
+        receiver_avatar_url: d.selected_receiver_id?.avatar_url ?? null,
+        delivered_at: d.updatedAt ?? d.createdAt,
+        createdAt: d.createdAt,
+    }));
+}
+
 // ── GET /api/food-donations/volunteer/summary ───────────────────────────────
 async function getVolunteerSummary(volunteerId) {
     const [delivered_count, feedback_count] = await Promise.all([
@@ -325,6 +383,75 @@ async function getReceiverTracking(donationId, receiverId) {
     };
 }
 
+// ── GET /api/food-donations/:id/volunteer-delivery ──────────────────────────
+// Chi tiết 1 đơn mà volunteer đã/đang phụ trách (dùng cho màn lịch sử giao hàng).
+// Trả về donor (kèm địa chỉ lấy hàng), receiver và mốc thời gian giao.
+async function getVolunteerDeliveryDetail(donationId, volunteerId) {
+    const donation = await FoodDonation.findById(donationId)
+        .populate('donor_id', 'full_name phone_number avatar_url')
+        .populate('selected_receiver_id', 'full_name phone_number avatar_url')
+        .lean();
+
+    if (!donation) {
+        throw _error('Không tìm thấy đơn quyên góp.', 404);
+    }
+
+    if (!donation.volunteer_id || donation.volunteer_id.toString() !== volunteerId.toString()) {
+        throw _error('Bạn không có quyền xem đơn này.', 403);
+    }
+
+    const delivery = donation.delivery_id
+        ? await Delivery.findById(donation.delivery_id)
+            .select('status assigned_at picked_up_at delivered_at')
+            .lean()
+        : null;
+
+    const donorObjectId = donation.donor_id?._id || donation.donor_id;
+    const donorProfile = donorObjectId
+        ? await DonorProfile.findOne({ user_id: donorObjectId })
+            .select('address_line city latitude longitude')
+            .lean()
+        : null;
+
+    return {
+        donation: {
+            id: donation._id,
+            title: donation.title,
+            status: donation.status,
+            quantity: donation.quantity,
+            unit: donation.unit,
+            food_type: donation.food_type,
+            images: donation.images || [],
+        },
+        delivery: delivery
+            ? {
+                status: delivery.status,
+                assigned_at: delivery.assigned_at,
+                picked_up_at: delivery.picked_up_at,
+                delivered_at: delivery.delivered_at,
+            }
+            : null,
+        donor: {
+            id: donorObjectId,
+            full_name: donation.donor_id?.full_name || 'Donor',
+            phone_number: donation.donor_id?.phone_number || null,
+            avatar_url: donation.donor_id?.avatar_url || null,
+            address_line: donorProfile?.address_line || null,
+            city: donorProfile?.city || null,
+            latitude: donorProfile?.latitude ?? null,
+            longitude: donorProfile?.longitude ?? null,
+        },
+        receiver: donation.selected_receiver_id
+            ? {
+                id: donation.selected_receiver_id?._id,
+                full_name: donation.selected_receiver_id?.full_name || 'Receiver',
+                phone_number: donation.selected_receiver_id?.phone_number || null,
+                avatar_url: donation.selected_receiver_id?.avatar_url || null,
+            }
+            : null,
+    };
+}
+
 // ── GET /api/food-donations/:id ─────────────────────────────────────────────
 // Lấy chi tiết 1 đơn (full images + description + donor info + pickup address).
 async function getDonationById(donationId, viewer = null) {
@@ -397,6 +524,9 @@ module.exports = {
     getDonations,
     getDonationById,
     getMyDonations,
+    getMyReceivedDonations,
+    getMyVolunteerDeliveryHistory,
+    getVolunteerDeliveryDetail,
     getVolunteerSummary,
     getMyVolunteerDeliveries,
     getReceiverTracking,

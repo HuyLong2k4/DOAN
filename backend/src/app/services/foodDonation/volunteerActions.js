@@ -185,15 +185,17 @@ async function startPickupByVolunteer(donationId, volunteerId, pickupCode = null
         throw _error('Đơn chưa ở trạng thái có thể bắt đầu giao.', 400);
     }
 
-    // Verify pickup_code (delivery cũ chưa có code sẽ được pass qua để giữ tương thích).
-    if (!pickupCodeUtil.verifyPickupCode(pickupCode, delivery.pickup_code)) {
-        throw _error('Mã pickup không khớp. Vui lòng nhờ donor đọc lại mã.', 400);
-    }
+    // Verify pickup_code kèm chống brute-force (throw nếu sai/đang khoá).
+    await pickupCodeUtil.assertPickupCode(delivery, pickupCode);
 
-    await Delivery.updateOne(
-        { _id: delivery._id },
+    // Atomic: AGENT_ASSIGNED → ON_THE_WAY. Chống double-tap ghi đè picked_up_at.
+    const pickupUpdate = await Delivery.updateOne(
+        { _id: delivery._id, status: 'AGENT_ASSIGNED' },
         { $set: { status: 'ON_THE_WAY', picked_up_at: new Date() } },
     );
+    if (pickupUpdate.modifiedCount === 0) {
+        return { message: 'Đơn đã được xác nhận đang giao.', already_started: true };
+    }
 
     await FoodDonation.updateOne(
         { _id: donation._id },

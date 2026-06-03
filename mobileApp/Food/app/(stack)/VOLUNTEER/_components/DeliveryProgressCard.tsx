@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { TFn, VolunteerDeliveryItem } from './types';
+import { roleUi } from '@/src/theme/roleUi';
 
 type Props = {
   item: VolunteerDeliveryItem;
@@ -57,7 +58,7 @@ export function DeliveryProgressCard({
         onPress={onChatDonor}
         disabled={busy || chatBusy}
       >
-        <Ionicons name="chatbubble-ellipses-outline" size={14} color="#006666" />
+        <Ionicons name="chatbubble-ellipses-outline" size={14} color={roleUi.colors.primaryStrong} />
         <Text style={styles.deliveryChatBtnText}>
           {chatBusy ? t('volunteer.openingChat') : t('volunteer.chatWithDonor')}
         </Text>
@@ -70,9 +71,9 @@ export function DeliveryProgressCard({
           disabled={busy || releasing}
         >
           {releasing ? (
-            <ActivityIndicator size="small" color="#C62828" />
+            <ActivityIndicator size="small" color={roleUi.colors.dangerText} />
           ) : (
-            <Ionicons name="return-up-back-outline" size={14} color="#C62828" />
+            <Ionicons name="return-up-back-outline" size={14} color={roleUi.colors.dangerText} />
           )}
           <Text style={styles.deliveryReleaseBtnText}>
             {releasing ? t('volunteer.release.releasing') : t('volunteer.release.button')}
@@ -95,26 +96,26 @@ const styles = StyleSheet.create({
   deliveryHeadRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   deliveryTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: '#111', marginRight: 8 },
   deliveryBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  deliveryBadgeBlue: { backgroundColor: '#E0F2F1' },
-  deliveryBadgeOrange: { backgroundColor: '#FFF3E0' },
-  deliveryBadgeText: { fontSize: 10, fontWeight: '700', color: '#006666' },
+  deliveryBadgeBlue: { backgroundColor: roleUi.colors.primarySoft },
+  deliveryBadgeOrange: { backgroundColor: roleUi.colors.warningSoft },
+  deliveryBadgeText: { fontSize: 10, fontWeight: '700', color: roleUi.colors.primaryStrong },
   deliveryMeta: { fontSize: 12, color: '#444', marginBottom: 3 },
   deliveryActionRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   deliveryMapBtn: {
     flex: 1,
     height: 34,
     borderWidth: 1,
-    borderColor: '#006666',
+    borderColor: roleUi.colors.primaryStrong,
     borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deliveryMapBtnText: { color: '#006666', fontSize: 12, fontWeight: '700' },
+  deliveryMapBtnText: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '700' },
   deliveryMainBtn: {
     flex: 1.2,
     height: 34,
     borderRadius: 7,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -124,26 +125,26 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
-    backgroundColor: '#E0F2F1',
+    borderColor: '#D5E0EC',
+    backgroundColor: roleUi.colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
   },
-  deliveryChatBtnText: { color: '#006666', fontSize: 12, fontWeight: '700' },
+  deliveryChatBtnText: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '700' },
   deliveryReleaseBtn: {
     marginTop: 6,
     height: 34,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFF5F5',
+    borderColor: '#ECD7D4',
+    backgroundColor: '#F7EDEC',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
   },
-  deliveryReleaseBtnText: { color: '#C62828', fontSize: 12, fontWeight: '700' },
+  deliveryReleaseBtnText: { color: roleUi.colors.dangerText, fontSize: 12, fontWeight: '700' },
   disabled: { opacity: 0.55 },
 });

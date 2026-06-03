@@ -30,6 +30,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { useChatStore } from '../../../src/store/chatStore';
 import type { ChatMessage } from '../../../src/types';
 import { connectChatSocket } from '../../../src/utils/chatSocket';
+import { roleUi } from '@/src/theme/roleUi';
 
 function firstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
@@ -394,7 +395,7 @@ export default function ChatRoomScreen() {
 
       {loading ? (
         <View style={styles.centerWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
         </View>
       ) : (
         <KeyboardAvoidingView
@@ -431,7 +432,7 @@ export default function ChatRoomScreen() {
                             <Image source={{ uri: attachment.url }} style={styles.attachmentImage} />
                           ) : (
                             <View style={styles.attachmentFileIconWrap}>
-                              <Ionicons name="document-outline" size={18} color={item.is_me ? '#DDEAFE' : '#374151'} />
+                              <Ionicons name="document-outline" size={18} color={item.is_me ? '#E0E7F0' : '#4A4A4A'} />
                             </View>
                           )}
 
@@ -443,7 +444,7 @@ export default function ChatRoomScreen() {
                               {attachment.name || 'Attachment'}
                             </Text>
                             <Text
-                              style={[styles.attachmentHint, item.is_me && { color: '#DDEAFE' }]}
+                              style={[styles.attachmentHint, item.is_me && { color: '#E0E7F0' }]}
                             >
                               {imageAttachment ? 'Ảnh' : 'Tệp'} - Nhấn để mở
                             </Text>
@@ -453,7 +454,7 @@ export default function ChatRoomScreen() {
                     })}
                   </View>
                 ) : null}
-                <Text style={[styles.messageTime, item.is_me && { color: '#DDEAFE' }]}>{formatMessageTime(item.created_at)}</Text>
+                <Text style={[styles.messageTime, item.is_me && { color: '#E0E7F0' }]}>{formatMessageTime(item.created_at)}</Text>
               </View>
             )}
             ListEmptyComponent={
@@ -474,7 +475,7 @@ export default function ChatRoomScreen() {
                         <Image source={{ uri: file.uri }} style={styles.pendingImage} />
                       ) : (
                         <View style={styles.pendingFileFallback}>
-                          <Ionicons name="document-outline" size={18} color="#374151" />
+                          <Ionicons name="document-outline" size={18} color="#4A4A4A" />
                         </View>
                       )}
                       <Text style={styles.pendingName} numberOfLines={1}>{file.name}</Text>
@@ -498,20 +499,20 @@ export default function ChatRoomScreen() {
               onPress={() => void pickImages()}
               disabled={sending || uploadingAttachment}
             >
-              <Ionicons name="image-outline" size={19} color="#008080" />
+              <Ionicons name="image-outline" size={19} color={roleUi.colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.attachBtn}
               onPress={() => void pickFiles()}
               disabled={sending || uploadingAttachment}
             >
-              <Ionicons name="document-outline" size={19} color="#008080" />
+              <Ionicons name="document-outline" size={19} color={roleUi.colors.primary} />
             </TouchableOpacity>
             <TextInput
               value={draft}
               onChangeText={onDraftChange}
               placeholder="Nhập tin nhắn..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#8A8A8A"
               style={styles.input}
               multiline
               maxLength={2000}
@@ -540,19 +541,19 @@ export default function ChatRoomScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#F5F5F5' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#E6E6E6',
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  typingText: { marginTop: 2, fontSize: 12, color: '#6B7280' },
+  headerTitle: { fontSize: 16, fontWeight: '700', color: '#111111' },
+  typingText: { marginTop: 2, fontSize: 12, color: '#666666' },
   messagesList: { paddingHorizontal: 12, paddingVertical: 14, paddingBottom: 26 },
   bubbleWrap: {
     maxWidth: '82%',
@@ -565,15 +566,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E6E6E6',
   },
   bubbleRight: {
     alignSelf: 'flex-end',
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
   },
-  senderName: { fontSize: 11, fontWeight: '700', color: '#374151', marginBottom: 2 },
-  messageText: { fontSize: 14, color: '#1F2937', lineHeight: 20 },
-  messageTime: { fontSize: 10, color: '#6B7280', marginTop: 4, textAlign: 'right' },
+  senderName: { fontSize: 11, fontWeight: '700', color: '#4A4A4A', marginBottom: 2 },
+  messageText: { fontSize: 14, color: '#111111', lineHeight: 20 },
+  messageTime: { fontSize: 10, color: '#666666', marginTop: 4, textAlign: 'right' },
   attachmentList: {
     marginTop: 6,
     gap: 6,
@@ -589,13 +590,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.16)',
   },
   attachmentItemOther: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F5F5F5',
   },
   attachmentImage: {
     width: 44,
     height: 44,
     borderRadius: 8,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#E0E0E0',
   },
   attachmentFileIconWrap: {
     width: 44,
@@ -603,21 +604,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#E6E6E6',
   },
   attachmentName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#111827',
+    color: '#111111',
   },
   attachmentHint: {
     marginTop: 2,
     fontSize: 11,
-    color: '#4B5563',
+    color: '#4A4A4A',
   },
   pendingWrap: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#E6E6E6',
     backgroundColor: '#fff',
     paddingTop: 8,
     paddingBottom: 4,
@@ -629,31 +630,31 @@ const styles = StyleSheet.create({
   pendingItem: {
     width: 90,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E6E6E6',
     borderRadius: 10,
     padding: 6,
     position: 'relative',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FAFAFA',
   },
   pendingImage: {
     width: '100%',
     height: 56,
     borderRadius: 8,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#E0E0E0',
     marginBottom: 5,
   },
   pendingFileFallback: {
     width: '100%',
     height: 56,
     borderRadius: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#E6E6E6',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 5,
   },
   pendingName: {
     fontSize: 10,
-    color: '#374151',
+    color: '#4A4A4A',
   },
   pendingRemoveBtn: {
     position: 'absolute',
@@ -662,7 +663,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#EF4444',
+    backgroundColor: roleUi.colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -671,7 +672,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#E6E6E6',
     backgroundColor: '#fff',
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -682,9 +683,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#EEF1F6',
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: '#E0E7F0',
     marginBottom: 4,
   },
   input: {
@@ -693,25 +694,25 @@ const styles = StyleSheet.create({
     minHeight: 42,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: '#E0E0E0',
     paddingHorizontal: 12,
     paddingVertical: 9,
-    color: '#111827',
+    color: '#111111',
     fontSize: 14,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FAFAFA',
   },
   sendBtn: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   centerWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
-  errorText: { fontSize: 14, color: '#4B5563', marginBottom: 10, textAlign: 'center' },
-  backBtn: { backgroundColor: '#008080', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
+  errorText: { fontSize: 14, color: '#4A4A4A', marginBottom: 10, textAlign: 'center' },
+  backBtn: { backgroundColor: roleUi.colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
   backBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   emptyWrap: { marginTop: 120, alignItems: 'center' },
-  emptyText: { fontSize: 14, color: '#6B7280' },
+  emptyText: { fontSize: 14, color: '#666666' },
 });

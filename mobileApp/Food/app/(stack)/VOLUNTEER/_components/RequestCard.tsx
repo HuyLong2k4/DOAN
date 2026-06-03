@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { DeliveryRequest, TFn } from './types';
+import { roleUi } from '@/src/theme/roleUi';
 
 type Props = {
   item: DeliveryRequest;
@@ -19,7 +20,7 @@ export function RequestCard({ item, busy, chatBusy, onAccept, onReject, onOpenMa
       <Text style={styles.requestTitle}>{item.title}</Text>
       {item.isPreferredForYou ? (
         <View style={styles.preferredBadge}>
-          <Ionicons name="sparkles" size={10} color="#008080" />
+          <Ionicons name="sparkles" size={10} color={roleUi.colors.primary} />
           <Text style={styles.preferredBadgeText}>{t('volunteer.preferredForYou')}</Text>
         </View>
       ) : null}
@@ -44,7 +45,7 @@ export function RequestCard({ item, busy, chatBusy, onAccept, onReject, onOpenMa
         onPress={onChatDonor}
         style={[styles.requestChatBtn, (chatBusy || busy) && styles.disabled]}
       >
-        <Ionicons name="chatbubble-ellipses-outline" size={14} color="#006666" />
+        <Ionicons name="chatbubble-ellipses-outline" size={14} color={roleUi.colors.primaryStrong} />
         <Text style={styles.requestChatBtnText}>
           {chatBusy ? t('volunteer.openingChat') : t('volunteer.chatWithDonor')}
         </Text>
@@ -86,33 +87,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#E7F1FF',
-    borderColor: '#B6D4FE',
+    backgroundColor: roleUi.colors.infoSoft,
+    borderColor: '#C6D3E3',
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
     marginBottom: 6,
   },
-  preferredBadgeText: { fontSize: 10, color: '#008080', fontWeight: '700' },
+  preferredBadgeText: { fontSize: 10, color: roleUi.colors.primary, fontWeight: '700' },
   requestDivider: { height: 1, backgroundColor: '#EFEFEF', marginVertical: 6 },
   requestMetaRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 },
   requestMetaText: { fontSize: 12, color: '#444' },
   requestAddress: { flex: 1, fontSize: 12, color: '#444' },
-  requestLink: { color: '#006666', fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 8 },
+  requestLink: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 8 },
   requestChatBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#E0F2F1',
+    backgroundColor: roleUi.colors.primarySoft,
     borderRadius: 8,
     paddingVertical: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
+    borderColor: '#D5E0EC',
   },
-  requestChatBtnText: { color: '#006666', fontSize: 12, fontWeight: '700' },
+  requestChatBtnText: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '700' },
   requestActionsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   requestActionBtn: {
     flex: 1,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rejectBtn: { backgroundColor: '#E53935' },
-  acceptBtn: { backgroundColor: '#43A047' },
+  rejectBtn: { backgroundColor: roleUi.colors.danger },
+  acceptBtn: { backgroundColor: roleUi.colors.success },
   disabled: { opacity: 0.55 },
 });

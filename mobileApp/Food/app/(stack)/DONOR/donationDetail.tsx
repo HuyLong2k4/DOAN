@@ -21,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 type DonationDetailParams = {
   donationId?: string | string[];
@@ -63,12 +64,12 @@ const FOOD_TYPE_KEY: Record<string, TranslationKey> = {
 };
 
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
-  PENDING:   { bg: '#FFF7E0', fg: '#9A6B00' },
-  ACCEPTED:  { bg: '#E0F2F1', fg: '#006666' },
-  PICKED_UP: { bg: '#E3F2FD', fg: '#1565C0' },
-  COMPLETED: { bg: '#E8F5E9', fg: '#2E7D32' },
-  EXPIRED:   { bg: '#F3F4F6', fg: '#616161' },
-  CANCELLED: { bg: '#FCE8E8', fg: '#B71C1C' },
+  PENDING:   { bg: roleUi.colors.warningSoft, fg: roleUi.colors.warningText },
+  ACCEPTED:  { bg: roleUi.colors.primarySoft, fg: roleUi.colors.primaryStrong },
+  PICKED_UP: { bg: roleUi.colors.infoSoft, fg: roleUi.colors.info },
+  COMPLETED: { bg: roleUi.colors.successSoft, fg: roleUi.colors.successText },
+  EXPIRED:   { bg: '#F5F5F5', fg: '#616161' },
+  CANCELLED: { bg: roleUi.colors.dangerSoft, fg: roleUi.colors.dangerText },
 };
 
 const screenWidth = Dimensions.get('window').width;
@@ -172,7 +173,7 @@ export default function DonorDonationDetailScreen() {
   }, [data?.expiration_datetime, t]);
 
   const statusKey = (data?.status || '').toUpperCase();
-  const statusStyle = STATUS_STYLES[statusKey] || { bg: '#F3F4F6', fg: '#374151' };
+  const statusStyle = STATUS_STYLES[statusKey] || { bg: '#F5F5F5', fg: '#4A4A4A' };
 
   const deliveryTypeLabel = data?.delivery_type === 'VIA_AGENT'
     ? t('donor.delivery.viaAgent')
@@ -196,7 +197,7 @@ export default function DonorDonationDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerWrap}>
-          <ActivityIndicator color="#008080" />
+          <ActivityIndicator color={roleUi.colors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -207,7 +208,7 @@ export default function DonorDonationDetailScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#008080" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} />}
       >
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -290,7 +291,7 @@ export default function DonorDonationDetailScreen() {
                   <Image source={{ uri: receiverAvatar }} style={styles.donorAvatar} />
                 ) : (
                   <View style={[styles.donorAvatar, styles.donorAvatarPlaceholder]}>
-                    <Ionicons name="person" size={22} color="#9CA3AF" />
+                    <Ionicons name="person" size={22} color="#8A8A8A" />
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
@@ -306,8 +307,8 @@ export default function DonorDonationDetailScreen() {
                   onPress={onCallReceiver}
                   disabled={!receiverPhone}
                 >
-                  <Ionicons name="call-outline" size={15} color={receiverPhone ? '#006666' : '#9CA3AF'} />
-                  <Text style={[styles.donorActionText, !receiverPhone && { color: '#9CA3AF' }]}>
+                  <Ionicons name="call-outline" size={15} color={receiverPhone ? roleUi.colors.primaryStrong : '#8A8A8A'} />
+                  <Text style={[styles.donorActionText, !receiverPhone && { color: '#8A8A8A' }]}>
                     {t('donationDetail.callReceiver')}
                   </Text>
                 </TouchableOpacity>
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderColor: '#E0E0E0',
     overflow: 'hidden',
     marginBottom: 12,
   },
@@ -493,9 +494,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: roleUi.colors.successSoft,
   },
-  badgeDistance: { backgroundColor: '#E0F2F1' },
+  badgeDistance: { backgroundColor: roleUi.colors.primarySoft },
   badgeText: { fontSize: 11, color: '#222', fontWeight: '600' },
 
   pagerDots: {
@@ -535,14 +536,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderColor: '#E0E0E0',
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
   },
   sectionLabel: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#666666',
     marginBottom: 8,
     fontWeight: '700',
     letterSpacing: 0.4,
@@ -557,14 +558,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#E6E6E6',
   },
   donorAvatarPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   donorName: { fontSize: 14, color: '#111', fontWeight: '700' },
-  donorPhone: { fontSize: 12, color: '#4B5563', marginTop: 2 },
+  donorPhone: { fontSize: 12, color: '#4A4A4A', marginTop: 2 },
   donorActions: {
     flexDirection: 'row',
     gap: 8,
@@ -580,21 +581,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#BBDEFB',
-    backgroundColor: '#E0F2F1',
+    borderColor: '#D5E0EC',
+    backgroundColor: roleUi.colors.primarySoft,
   },
   donorActionBtnDisabled: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#E5E7EB',
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E6E6E6',
   },
-  donorActionText: { fontSize: 12, color: '#006666', fontWeight: '700' },
-  emptyReceiverText: { fontSize: 13, color: '#6B7280' },
+  donorActionText: { fontSize: 12, color: roleUi.colors.primaryStrong, fontWeight: '700' },
+  emptyReceiverText: { fontSize: 13, color: '#666666' },
 
   descriptionCard: {
     borderRadius: 12,
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderColor: '#E0E0E0',
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
@@ -605,7 +606,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderColor: '#E0E0E0',
     paddingHorizontal: 12,
     paddingVertical: 4,
     marginBottom: 12,
@@ -630,9 +631,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   timeRemainingText: { fontSize: 11, fontWeight: '700' },
-  normalPill: { backgroundColor: '#E8F5E9' },
-  soonPill: { backgroundColor: '#FFF3E0' },
-  expiredPill: { backgroundColor: '#9CA3AF' },
+  normalPill: { backgroundColor: roleUi.colors.successSoft },
+  soonPill: { backgroundColor: roleUi.colors.warningSoft },
+  expiredPill: { backgroundColor: '#8A8A8A' },
 
   fullscreenBackdrop: {
     flex: 1,

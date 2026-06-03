@@ -9,6 +9,7 @@ import { verifyOtp, resendOtp } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
 import type { OtpPurpose } from '../../src/types';
+import { roleUi } from '@/src/theme/roleUi';
 
 const OTP_LENGTH = 4;
 const RESEND_SECONDS = 60;
@@ -143,11 +144,11 @@ const styles = StyleSheet.create({
     width: 58, height: 58, borderRadius: 8,
     backgroundColor: '#E5E5E5', fontSize: 22, fontWeight: '700', color: '#111',
   },
-  boxFilled: { backgroundColor: '#DBEAFE', borderColor: '#008080', borderWidth: 1.5 },
-  error:     { color: '#E53935', textAlign: 'center', marginBottom: 8, fontSize: 13 },
+  boxFilled: { backgroundColor: '#E0E7F0', borderColor: roleUi.colors.primary, borderWidth: 1.5 },
+  error:     { color: roleUi.colors.danger, textAlign: 'center', marginBottom: 8, fontSize: 13 },
   resendInfo: { textAlign: 'center', color: '#888', marginBottom: 24, fontSize: 13 },
-  btn:       { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  btn:       { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   btnText:   { color: '#fff', fontWeight: '700', fontSize: 16 },
-  resendLink: { textAlign: 'center', color: '#008080', fontSize: 14 },
+  resendLink: { textAlign: 'center', color: roleUi.colors.primary, fontSize: 14 },
   resendDisabled: { color: '#AAA' },
 });

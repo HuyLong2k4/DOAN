@@ -1,8 +1,6 @@
 export type RewardsKey =
   | 'rewards.title'
   | 'rewards.leaderboard'
-  | 'rewards.week'
-  | 'rewards.yearly'
   | 'rewards.viewFull'
   | 'rewards.titleLevels'
   | 'rewards.progressTo'
@@ -23,11 +21,10 @@ export type RewardsKey =
   | 'rewards.mealsReceived'
   | 'rewards.ngosConnected'
   | 'rewards.feedbackSent'
+  | 'rewards.recentMealsTitle'
+  | 'rewards.noMealsYet'
+  | 'rewards.fromDonor'
   | 'leaderboard.title'
-  | 'leaderboard.today'
-  | 'leaderboard.week'
-  | 'leaderboard.month'
-  | 'leaderboard.yearly'
   | 'leaderboard.donors'
   | 'leaderboard.volunteers'
   | 'leaderboard.emptyDonors'
@@ -36,8 +33,6 @@ export type RewardsKey =
 export const rewardsEn: Record<RewardsKey, string> = {
   'rewards.title': 'Achievement',
   'rewards.leaderboard': 'Leader-board',
-  'rewards.week': 'Week',
-  'rewards.yearly': 'Yearly',
   'rewards.viewFull': 'View Full Leaderboard →',
   'rewards.titleLevels': 'Title Levels',
   'rewards.progressTo': 'Progress to',
@@ -58,11 +53,10 @@ export const rewardsEn: Record<RewardsKey, string> = {
   'rewards.mealsReceived': 'Meals received',
   'rewards.ngosConnected': 'NGOs connected',
   'rewards.feedbackSent': 'Feedback sent',
+  'rewards.recentMealsTitle': 'Recently received meals',
+  'rewards.noMealsYet': "You haven't received any meals yet.",
+  'rewards.fromDonor': 'From',
   'leaderboard.title': 'Leaderboard',
-  'leaderboard.today': 'Today',
-  'leaderboard.week': 'Week',
-  'leaderboard.month': 'Month',
-  'leaderboard.yearly': 'Yearly',
   'leaderboard.donors': 'Donors',
   'leaderboard.volunteers': 'Volunteers',
   'leaderboard.emptyDonors': 'No donors on the leaderboard yet.',
@@ -72,8 +66,6 @@ export const rewardsEn: Record<RewardsKey, string> = {
 export const rewardsVi: Record<RewardsKey, string> = {
   'rewards.title': 'Thành tích',
   'rewards.leaderboard': 'Bảng xếp hạng',
-  'rewards.week': 'Tuần',
-  'rewards.yearly': 'Hàng năm',
   'rewards.viewFull': 'Xem toàn bộ bảng xếp hạng →',
   'rewards.titleLevels': 'Cấp độ danh hiệu',
   'rewards.progressTo': 'Tiến đến',
@@ -94,11 +86,10 @@ export const rewardsVi: Record<RewardsKey, string> = {
   'rewards.mealsReceived': 'Bữa đã nhận',
   'rewards.ngosConnected': 'NGO đã kết nối',
   'rewards.feedbackSent': 'Phản hồi đã gửi',
+  'rewards.recentMealsTitle': 'Bữa ăn đã nhận gần đây',
+  'rewards.noMealsYet': 'Bạn chưa nhận bữa ăn nào.',
+  'rewards.fromDonor': 'Từ',
   'leaderboard.title': 'Bảng xếp hạng',
-  'leaderboard.today': 'Hôm nay',
-  'leaderboard.week': 'Tuần',
-  'leaderboard.month': 'Tháng',
-  'leaderboard.yearly': 'Hàng năm',
   'leaderboard.donors': 'Người ủng hộ',
   'leaderboard.volunteers': 'Tình nguyện viên',
   'leaderboard.emptyDonors': 'Chưa có người ủng hộ nào trên bảng xếp hạng.',

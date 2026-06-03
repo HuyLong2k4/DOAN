@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useChatStore } from '../../src/store/chatStore';
 import { useI18n } from '../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 function timeAgo(dateStr?: string | null): string {
   if (!dateStr) return '';
@@ -51,7 +52,7 @@ export default function MessageInboxScreen() {
         ) : null}
       </View>
 
-      {loading && <ActivityIndicator color="#008080" style={{ marginTop: 40 }} />}
+      {loading && <ActivityIndicator color={roleUi.colors.primary} style={{ marginTop: 40 }} />}
 
       {!loading && conversations.length === 0 && (
         <View style={styles.empty}>
@@ -64,7 +65,7 @@ export default function MessageInboxScreen() {
         data={conversations}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#008080']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[roleUi.colors.primary]} />}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -80,7 +81,7 @@ export default function MessageInboxScreen() {
             }}
           >
             <View style={styles.cardHeader}>
-              <View style={[styles.avatar, { backgroundColor: item.unread_count ? '#008080' : '#9CA3AF' }]}>
+              <View style={[styles.avatar, { backgroundColor: item.unread_count ? roleUi.colors.primary : '#8A8A8A' }]}>
                 <Text style={styles.avatarLetter}>{item.counterpart?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
               </View>
               <View style={{ flex: 1 }}>
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     paddingHorizontal: 7,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -122,18 +123,18 @@ const styles = StyleSheet.create({
   emptyText:  { color: '#888', fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
   card:       { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  avatar:     { width: 38, height: 38, borderRadius: 19, backgroundColor: '#008080', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  avatar:     { width: 38, height: 38, borderRadius: 19, backgroundColor: roleUi.colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   avatarLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
   author:     { fontWeight: '700', color: '#111', fontSize: 14, marginBottom: 2 },
-  preview:    { color: '#6B7280', fontSize: 13 },
-  time:       { color: '#9CA3AF', fontSize: 10, marginTop: 1 },
+  preview:    { color: '#666666', fontSize: 13 },
+  time:       { color: '#8A8A8A', fontSize: 10, marginTop: 1 },
   unreadBadge: {
     marginTop: 6,
     minWidth: 20,
     height: 20,
     borderRadius: 10,
     paddingHorizontal: 6,
-    backgroundColor: '#EF4444',
+    backgroundColor: roleUi.colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },

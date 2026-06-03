@@ -82,6 +82,14 @@ async function createDonation(donorId, data) {
         throw _error(`food_type không hợp lệ. Các giá trị hợp lệ: ${VALID_FOOD_TYPE.join(', ')}`);
     }
 
+    const expirationDate = new Date(expiration_datetime);
+    if (Number.isNaN(expirationDate.getTime())) {
+        throw _error('expiration_datetime không hợp lệ.');
+    }
+    if (expirationDate.getTime() <= Date.now()) {
+        throw _error('Hạn sử dụng phải ở thời điểm trong tương lai.');
+    }
+
     let normalizedImages = [];
     if (Array.isArray(images)) {
         normalizedImages = images
@@ -97,7 +105,7 @@ async function createDonation(donorId, data) {
         food_type,
         quantity,
         unit:               unit || 'portion',
-        expiration_datetime: new Date(expiration_datetime),
+        expiration_datetime: expirationDate,
         images:             normalizedImages,
     });
 

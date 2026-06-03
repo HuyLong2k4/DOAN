@@ -5,6 +5,7 @@ import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useI18n } from '../../../src/i18n/useI18n';
 import type { TranslationKey } from '../../../src/i18n/translations';
+import { roleUi } from '@/src/theme/roleUi';
 
 const FAQS: { q: TranslationKey; a: TranslationKey }[] = [
   { q: 'help.q1', a: 'help.a1' },
@@ -77,7 +78,7 @@ export default function HelpScreen() {
             onPress={() => Linking.openURL(`tel:${t('help.phone').replace(/\s+/g, '')}`)}
             activeOpacity={0.7}
           >
-            <View style={[styles.contactIconWrap, { backgroundColor: '#4CAF50' }]}>
+            <View style={[styles.contactIconWrap, { backgroundColor: roleUi.colors.success }]}>
               <Ionicons name="call-outline" size={18} color="#fff" />
             </View>
             <View style={{ flex: 1 }}>
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
   faqQ:             { flex: 1, fontSize: 14, color: '#111', fontWeight: '600' },
   faqA:             { fontSize: 13, color: '#555', lineHeight: 19, marginTop: 8 },
   contactRow:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 14, gap: 12 },
-  contactIconWrap:  { width: 36, height: 36, borderRadius: 18, backgroundColor: '#008080', justifyContent: 'center', alignItems: 'center' },
+  contactIconWrap:  { width: 36, height: 36, borderRadius: 18, backgroundColor: roleUi.colors.primary, justifyContent: 'center', alignItems: 'center' },
   contactValue:     { fontSize: 14, color: '#111', fontWeight: '600' },
   contactHint:      { fontSize: 12, color: '#888', marginTop: 2 },
   contactDivider:   { height: 1, backgroundColor: '#F0F0F0', marginHorizontal: 14 },

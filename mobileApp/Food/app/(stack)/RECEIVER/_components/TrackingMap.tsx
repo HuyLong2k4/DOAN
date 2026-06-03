@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useI18n } from '../../../../src/i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 type LatLng = { latitude: number; longitude: number };
 
@@ -25,7 +26,7 @@ export function TrackingMap({ region, donor, myLocation, onOpenExternalMap }: Pr
               coordinate={{ latitude: donor.latitude, longitude: donor.longitude }}
               title={donor.name}
               description={donor.address || t('tracking.donorLocation')}
-              pinColor="#E53935"
+              pinColor={roleUi.colors.danger}
             />
           ) : null}
           {myLocation ? (
@@ -33,7 +34,7 @@ export function TrackingMap({ region, donor, myLocation, onOpenExternalMap }: Pr
               coordinate={{ latitude: myLocation.latitude, longitude: myLocation.longitude }}
               title={t('tracking.yourLocation')}
               description={t('tracking.currentLocation')}
-              pinColor="#008080"
+              pinColor={roleUi.colors.primary}
             />
           ) : null}
           {donor && myLocation ? (
@@ -42,7 +43,7 @@ export function TrackingMap({ region, donor, myLocation, onOpenExternalMap }: Pr
                 { latitude: myLocation.latitude, longitude: myLocation.longitude },
                 { latitude: donor.latitude, longitude: donor.longitude },
               ]}
-              strokeColor="#FF7043"
+              strokeColor="#C07A53"
               strokeWidth={3}
             />
           ) : null}
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#E6E6E6',
     marginVertical: 12,
     position: 'relative',
   },
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     right: 10,
-    backgroundColor: '#008080',
+    backgroundColor: roleUi.colors.primary,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 8,

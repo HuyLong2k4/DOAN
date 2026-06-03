@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { login } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 const REMEMBER_KEY  = 'remember_me';
 const IDENTIFIER_KEY = 'saved_identifier';
@@ -136,12 +137,12 @@ const styles = StyleSheet.create({
   row:          { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   rememberRow:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   checkbox:     { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, borderColor: '#BDBDBD', backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
-  checkboxActive: { backgroundColor: '#008080', borderColor: '#008080' },
+  checkboxActive: { backgroundColor: roleUi.colors.primary, borderColor: roleUi.colors.primary },
   checkmark:    { color: '#fff', fontSize: 11, fontWeight: '700', lineHeight: 14 },
   hint:         { color: '#555', fontSize: 13 },
-  forgot:       { color: '#008080', fontSize: 13 },
-  error:       { color: '#E53935', marginBottom: 12, fontSize: 13 },
-  btn:         { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center' },
+  forgot:       { color: roleUi.colors.primary, fontSize: 13 },
+  error:       { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
+  btn:         { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center' },
   btnText:     { color: '#fff', fontWeight: '700', fontSize: 16 },
   divider:     { flexDirection: 'row', alignItems: 'center', marginVertical: 22 },
   line:        { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
@@ -151,5 +152,5 @@ const styles = StyleSheet.create({
   socialBtn:   { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: '#E0E0E0', backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   socialIcon:  { fontSize: 18, fontWeight: '700', color: '#333' },
   link:        { textAlign: 'center', color: '#555', fontSize: 14 },
-  linkBold:    { color: '#008080', fontWeight: '700' },
+  linkBold:    { color: roleUi.colors.primary, fontWeight: '700' },
 });

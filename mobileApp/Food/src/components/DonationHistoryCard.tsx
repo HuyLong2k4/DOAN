@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Donation } from './DonationPostCard';
-import { useStatusConfig } from './DonationPostCard';
+import { Donation, useStatusConfig } from './DonationPostCard';
 import { useI18n } from '../i18n/useI18n';
+import { roleUi } from '@/src/theme/roleUi';
 
 function timeAgo(iso: string, t: any) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   historyTags: { flexDirection: 'row', justifyContent:'space-between', marginTop: 6, borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 6 },
   historyTag: { fontSize: 11, backgroundColor: '#F5F5F5', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, color: '#555' },
   historyBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  completedBadge: { backgroundColor: '#E8F5E9', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
-  completedText: { fontSize: 11, color: '#388E3C', fontWeight: '600' },
+  completedBadge: { backgroundColor: roleUi.colors.successSoft, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
+  completedText: { fontSize: 11, color: roleUi.colors.successText, fontWeight: '600' },
   historyActions: { flexDirection: 'row' },
 });

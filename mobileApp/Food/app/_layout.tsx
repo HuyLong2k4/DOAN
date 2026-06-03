@@ -5,6 +5,7 @@ import { getMyProfile } from '../src/api/profile.api';
 import { useAuthStore } from '../src/store/authStore';
 import { useNotificationStore } from '../src/store/notificationStore';
 import { loadNotifications, registerForPushNotifications } from '../src/utils/pushNotifications';
+import { roleUi } from '@/src/theme/roleUi';
 
 type AuthUser = { role?: string; onboarding_step?: number; profile_completed?: boolean };
 
@@ -96,27 +97,30 @@ export default function RootLayout() {
       const role = useAuthStore.getState().user?.role;
       if (!type) return;
 
+      // navigate (không phải push) để không stack thêm 1 instance tab mới trống rỗng
+      // đè lên màn hình hiện có — push tab đang mở sẽ mount lại tab với state rỗng,
+      // khiến dữ liệu "biến mất" cho tới khi reload app.
       switch (type) {
         case 'NEW_MESSAGE': {
           const chatId = data?.chat_id;
-          if (chatId) router.push(`/(stack)/chat/${chatId}` as any);
-          else router.push('/(tabs)/message' as any);
+          if (chatId) router.navigate(`/(stack)/chat/${chatId}` as any);
+          else router.navigate('/(tabs)/message' as any);
           break;
         }
         case 'NEW_FOOD':
         case 'ORDER_REJECTED':
-          if (role === 'RECEIVER') router.push('/(tabs)/RECEIVER/home' as any);
+          if (role === 'RECEIVER') router.navigate('/(tabs)/RECEIVER/home' as any);
           break;
         case 'NEW_ORDER':
         case 'FOOD_EXPIRING':
-          if (role === 'DONOR') router.push('/(tabs)/DONOR/home' as any);
+          if (role === 'DONOR') router.navigate('/(tabs)/DONOR/home' as any);
           break;
         case 'ORDER_CONFIRMED':
         case 'PICKUP_REMINDER':
-          if (role === 'RECEIVER') router.push('/(tabs)/RECEIVER/home' as any);
+          if (role === 'RECEIVER') router.navigate('/(tabs)/RECEIVER/home' as any);
           break;
         default:
-          router.push('/(tabs)/notifications' as any);
+          router.navigate('/(tabs)/notifications' as any);
       }
     });
     return () => sub.remove();
@@ -167,7 +171,7 @@ export default function RootLayout() {
       }
       const roleNamespaces = ['DONOR', 'RECEIVER', 'VOLUNTEER'];
       if (inStackGroup && roleNamespaces.includes(stackNamespace) && stackNamespace !== user.role) {
-        router.replace('(tabs)/RECEIVER/home' as any);
+        router.replace(homeRouteByRole(user.role) as any);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,7 +180,7 @@ export default function RootLayout() {
   if (!isReady) {
     return (
       <View style={styles.loaderWrap}>
-        <ActivityIndicator size="large" color="#008080" />
+        <ActivityIndicator size="large" color={roleUi.colors.primary} />
       </View>
     );
   }
@@ -208,7 +212,7 @@ export default function RootLayout() {
   if (token && !user) {
     return (
       <View style={styles.loaderWrap}>
-        <ActivityIndicator size="large" color="#008080" />
+        <ActivityIndicator size="large" color={roleUi.colors.primary} />
       </View>
     );
   }
@@ -234,7 +238,7 @@ const styles = StyleSheet.create({
   errorMsg: { fontSize: 14, color: '#666', marginBottom: 20, textAlign: 'center' },
   errorActions: { flexDirection: 'row', gap: 12 },
   btn: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 8 },
-  btnPrimary: { backgroundColor: '#008080' },
+  btnPrimary: { backgroundColor: roleUi.colors.primary },
   btnGhost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#999' },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   btnGhostText: { color: '#333' },

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNotificationStore } from '../store/notificationStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 interface Props {
   size?: number;
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     height: 17,
     paddingHorizontal: 4,
     borderRadius: 9,
-    backgroundColor: '#EF4444',
+    backgroundColor: roleUi.colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },

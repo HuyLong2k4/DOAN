@@ -84,6 +84,72 @@ async function expireOverdueDonations() {
     return { expired_count: overdue.length };
 }
 
+// ── Cron: hết hạn các đơn SELF_PICKUP bị kẹt ──────────────────────────────
+// Receiver chọn tự lấy (donation ACCEPTED, delivery SELF_PICKUP_READY) nhưng
+// không bao giờ xác nhận đã lấy → đơn kẹt mãi (expire-cron chỉ bắt PENDING).
+// Quá expiration_datetime thì coi như hết hạn: EXPIRED donation + CANCELLED
+// delivery, mở lại food request (nếu đơn tạo từ request).
+async function expireStaleSelfPickups() {
+    const now = new Date();
+
+    const stale = await FoodDonation.find({
+        status: 'ACCEPTED',
+        delivery_type: 'SELF_PICKUP',
+        expiration_datetime: { $lt: now },
+    })
+        .select('_id donor_id selected_receiver_id title delivery_id')
+        .lean();
+
+    if (stale.length === 0) return { expired_count: 0 };
+
+    let expiredCount = 0;
+    for (const donation of stale) {
+        // Atomic guard.
+        const donationUpdate = await FoodDonation.updateOne(
+            { _id: donation._id, status: 'ACCEPTED', delivery_type: 'SELF_PICKUP' },
+            { $set: { status: 'EXPIRED' } },
+        );
+        if (donationUpdate.modifiedCount === 0) continue;
+
+        if (donation.delivery_id) {
+            await Delivery.updateOne(
+                { _id: donation.delivery_id, status: 'SELF_PICKUP_READY' },
+                { $set: { status: 'CANCELLED', cancelled_at: now } },
+            );
+        }
+
+        await FoodRequest.updateOne(
+            { linked_donation_id: donation._id },
+            { $set: { linked_donation_id: null, status: 'PENDING', accepted_by_donor_id: null } },
+        );
+
+        const targets = [String(donation.donor_id)];
+        if (donation.selected_receiver_id) targets.push(String(donation.selected_receiver_id));
+
+        await Notification.insertMany(
+            targets.map((userId) => ({
+                user_id: userId,
+                title: 'Don tu lay da het han',
+                message: `Don "${donation.title}" het han do chua duoc lay trong thoi gian quy dinh.`,
+                type: 'DONATION_EXPIRED',
+                related_entity_type: 'FoodDonation',
+                related_entity_id: donation._id,
+            })),
+        ).catch(() => {});
+
+        await NotificationService.sendToMultipleUsers(targets, {
+            title: 'Don da het han',
+            body: `Don "${donation.title}" het han do chua duoc lay.`,
+            data: { type: 'DONATION_EXPIRED', donation_id: String(donation._id) },
+        }).catch(() => {});
+
+        await archiveDonationConversations(donation._id);
+        expiredCount += 1;
+    }
+
+    return { expired_count: expiredCount };
+}
+
 // ── Cron: cancel các delivery đã ở ON_THE_WAY quá X giờ ────────────────────
 // Khi volunteer pickup-start nhưng không bao giờ markDelivered, đơn kẹt ở
 // ON_THE_WAY vĩnh viễn. Sau timeout, coi như volunteer no-show → cancel cả
@@ -152,6 +218,7 @@ async function cancelStaleOnTheWayDeliveries(timeoutHours = 6) {
 
 module.exports = {
     expireOverdueDonations,
+    expireStaleSelfPickups,
     autoConfirmStaleDeliveries,
     cancelStaleOnTheWayDeliveries,
 };

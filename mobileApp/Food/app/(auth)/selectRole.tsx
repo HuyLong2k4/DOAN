@@ -8,6 +8,7 @@ import { selectRole } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
 import type { UserRole } from '../../src/types';
+import { roleUi } from '@/src/theme/roleUi';
 
 export default function SelectRole() {
   const router   = useRouter();
@@ -89,14 +90,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderRadius: 8, padding: 16,
     borderWidth: 1.5, borderColor: '#E0E0E0', marginBottom: 12,
   },
-  cardSelected:    { borderColor: '#008080', backgroundColor: '#EFF6FF' },
+  cardSelected:    { borderColor: roleUi.colors.primary, backgroundColor: '#EEF1F6' },
   radio:           { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#CCC', justifyContent: 'center', alignItems: 'center' },
-  radioSelected:   { borderColor: '#008080' },
-  radioDot:        { width: 10, height: 10, borderRadius: 5, backgroundColor: '#008080' },
+  radioSelected:   { borderColor: roleUi.colors.primary },
+  radioDot:        { width: 10, height: 10, borderRadius: 5, backgroundColor: roleUi.colors.primary },
   roleLabel:       { fontSize: 15, fontWeight: '600', color: '#333', marginBottom: 2 },
-  roleLabelSelected: { color: '#008080' },
+  roleLabelSelected: { color: roleUi.colors.primary },
   roleDesc:        { fontSize: 12, color: '#888' },
-  error:           { color: '#E53935', marginBottom: 12, fontSize: 13 },
-  btn:             { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
+  error:           { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
+  btn:             { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
   btnText:         { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

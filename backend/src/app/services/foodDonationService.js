@@ -64,6 +64,15 @@ class FoodDonationService {
     static getMyDonations(donorId) {
         return queries.getMyDonations(donorId);
     }
+    static getMyReceivedDonations(receiverId, limit) {
+        return queries.getMyReceivedDonations(receiverId, limit);
+    }
+    static getMyVolunteerDeliveryHistory(volunteerId, limit) {
+        return queries.getMyVolunteerDeliveryHistory(volunteerId, limit);
+    }
+    static getVolunteerDeliveryDetail(donationId, volunteerId) {
+        return queries.getVolunteerDeliveryDetail(donationId, volunteerId);
+    }
     static getVolunteerSummary(volunteerId) {
         return queries.getVolunteerSummary(volunteerId);
     }
@@ -77,6 +86,9 @@ class FoodDonationService {
     // ── Cron tasks ────────────────────────────────────────────────────────
     static expireOverdueDonations() {
         return maintenance.expireOverdueDonations();
+    }
+    static expireStaleSelfPickups() {
+        return maintenance.expireStaleSelfPickups();
     }
     static autoConfirmStaleDeliveries(timeoutHours) {
         return maintenance.autoConfirmStaleDeliveries(timeoutHours);

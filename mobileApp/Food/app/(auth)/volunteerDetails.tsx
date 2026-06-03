@@ -9,6 +9,7 @@ import { completeVolunteerProfile } from '../../src/api/profile.api';
 import LocationPickerModal, { PickedLocation } from '../../src/components/LocationPickerModal';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -99,7 +100,7 @@ export default function VolunteerDetails() {
         longitude,
       });
       setUser(res.data.user);
-      router.replace('/(stack)/DONOR/home');
+      router.replace('/(tabs)/VOLUNTEER/home');
     } catch (e: any) {
       setErr(e?.response?.data?.message || t('auth.details.errorGeneric'));
     } finally {
@@ -222,23 +223,23 @@ const styles = StyleSheet.create({
     borderRadius: 6, height: 50, paddingHorizontal: 14,
     fontSize: 15, color: '#111',
   },
-  inputDisabled: { backgroundColor: '#F0F4F8', color: '#666' },
+  inputDisabled: { backgroundColor: '#F5F5F5', color: '#666' },
   dayRow:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
   dayChip:       { width: 44, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 6, borderWidth: 1.5, borderColor: '#E0E0E0', backgroundColor: '#fff' },
-  dayChipActive: { backgroundColor: '#008080', borderColor: '#008080' },
+  dayChipActive: { backgroundColor: roleUi.colors.primary, borderColor: roleUi.colors.primary },
   dayText:       { fontSize: 12, fontWeight: '600', color: '#555' },
   dayTextActive: { color: '#fff' },
   timeChip:      { height: 44, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 6, borderWidth: 1.5, borderColor: '#E0E0E0', backgroundColor: '#fff', marginBottom: 8 },
-  timeChipActive:{ backgroundColor: '#008080', borderColor: '#008080' },
+  timeChipActive:{ backgroundColor: roleUi.colors.primary, borderColor: roleUi.colors.primary },
   timeText:      { fontSize: 14, color: '#555', fontWeight: '500' },
   timeTextActive:{ color: '#fff', fontWeight: '600' },
-  error:         { color: '#E53935', marginTop: 12, fontSize: 13 },
+  error:         { color: roleUi.colors.danger, marginTop: 12, fontSize: 13 },
   orRow:         { flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 4 },
   orLine:        { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
   orText:        { marginHorizontal: 12, color: '#999', fontSize: 13 },
-  mapLink:       { textAlign: 'center', color: '#008080', fontWeight: '600', fontSize: 14, paddingVertical: 8 },
-  editManuallyLink: { textAlign: 'right', color: '#008080', fontSize: 12, marginTop: 6 },
-  pinnedNote:    { textAlign: 'center', color: '#4CAF50', fontSize: 12, marginTop: 4 },
-  btn:           { backgroundColor: '#008080', borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 24 },
+  mapLink:       { textAlign: 'center', color: roleUi.colors.primary, fontWeight: '600', fontSize: 14, paddingVertical: 8 },
+  editManuallyLink: { textAlign: 'right', color: roleUi.colors.primary, fontSize: 12, marginTop: 6 },
+  pinnedNote:    { textAlign: 'center', color: roleUi.colors.success, fontSize: 12, marginTop: 4 },
+  btn:           { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 24 },
   btnText:       { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

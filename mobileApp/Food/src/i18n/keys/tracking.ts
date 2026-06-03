@@ -23,7 +23,6 @@ export type TrackingKey =
   | 'tracking.waitingForVolunteer'
   | 'tracking.pickupVolunteer'
   | 'tracking.pickupAtDonor'
-  | 'tracking.refPrefix'
   | 'tracking.addressPrefix'
   | 'tracking.tlAssigned'
   | 'tracking.tlPickupSelected'
@@ -92,7 +91,6 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.waitingForVolunteer': 'Waiting for volunteer',
   'tracking.pickupVolunteer': 'Pickup volunteer',
   'tracking.pickupAtDonor': 'Pickup at donor location',
-  'tracking.refPrefix': 'Ref:',
   'tracking.addressPrefix': 'Address:',
   'tracking.tlAssigned': 'Assigned',
   'tracking.tlPickupSelected': 'Pickup selected',
@@ -162,7 +160,6 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.waitingForVolunteer': 'Đang chờ tình nguyện viên',
   'tracking.pickupVolunteer': 'Tình nguyện viên lấy hàng',
   'tracking.pickupAtDonor': 'Nhận tại địa điểm người tặng',
-  'tracking.refPrefix': 'Mã:',
   'tracking.addressPrefix': 'Địa chỉ:',
   'tracking.tlAssigned': 'Đã phân công',
   'tracking.tlPickupSelected': 'Đã chọn nhận',

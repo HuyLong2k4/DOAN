@@ -15,6 +15,7 @@ import { http } from '../../src/api/http';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
 import { useNotificationStore } from '../../src/store/notificationStore';
+import { roleUi } from '@/src/theme/roleUi';
 
 interface Notification {
   _id: string;
@@ -108,7 +109,8 @@ export default function NotificationsScreen() {
     // Deep-link nếu có route phù hợp.
     const role = useAuthStore.getState().user?.role;
     const target = routeForNotification(item.type, role);
-    if (target) router.push(target as any);
+    // navigate thay vì push: tránh mount lại tab đích với state rỗng (mất dữ liệu).
+    if (target) router.navigate(target as any);
   };
 
   return (
@@ -121,7 +123,7 @@ export default function NotificationsScreen() {
           <Text style={styles.panelTitle}>{t('notifications.title')}</Text>
         </View>
 
-        {loading && <ActivityIndicator color="#008080" style={{ marginTop: 28 }} />}
+        {loading && <ActivityIndicator color={roleUi.colors.primary} style={{ marginTop: 28 }} />}
         {err ? <Text style={styles.err}>{err}</Text> : null}
 
         {!loading && !err && items.length === 0 && (
@@ -134,7 +136,7 @@ export default function NotificationsScreen() {
         <FlatList
           data={items}
           keyExtractor={(n) => n._id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#008080']} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[roleUi.colors.primary]} />}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           renderItem={({ item }) => (
@@ -181,19 +183,19 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
   panelTitle: { fontSize: 20, fontWeight: '700', color: '#111' },
-  err: { color: '#E53935', textAlign: 'center', marginTop: 20 },
+  err: { color: roleUi.colors.danger, textAlign: 'center', marginTop: 20 },
   empty: { paddingVertical: 60, alignItems: 'center', gap: 8 },
   emptyText: { color: '#888', fontSize: 15 },
   listContent: { paddingHorizontal: 12, paddingVertical: 8 },
   itemWrap: { paddingVertical: 12 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   metaLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#008080' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: roleUi.colors.primary },
   dotRead: { backgroundColor: '#B8BCC5' },
   titleText: { fontSize: 15, color: '#111', fontWeight: '700', flex: 1 },
-  titleRead: { color: '#43464D', fontWeight: '500' },
-  timeText: { fontSize: 12, color: '#9CA3AF', marginLeft: 8 },
+  titleRead: { color: '#4A4A4A', fontWeight: '500' },
+  timeText: { fontSize: 12, color: '#8A8A8A', marginLeft: 8 },
   messageText: { marginTop: 6, marginLeft: 18, color: '#23252A', fontSize: 14, lineHeight: 20 },
-  messageRead: { color: '#6A6E76' },
+  messageRead: { color: '#666666' },
   separator: { height: 1, backgroundColor: '#E9E9ED' },
 });
