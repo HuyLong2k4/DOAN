@@ -3,6 +3,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import { http } from '../api/http';
 import { roleUi } from '@/src/theme/roleUi';
+import { useLanguageStore } from '../store/languageStore';
 
 // Expo Go (SDK 53+) đã bỏ hỗ trợ remote push.
 // Phải lazy-require expo-notifications: chỉ import top-level đã trigger side-effect
@@ -72,9 +73,11 @@ export async function registerForPushNotifications(): Promise<string | null> {
     );
     const token = tokenData.data;
 
-    // Gửi lên backend. Lỗi không quan trọng — user vẫn dùng app bình thường.
+    // Gửi lên backend kèm ngôn ngữ hiện tại để render thông báo đúng ngôn ngữ.
+    // Lỗi không quan trọng — user vẫn dùng app bình thường.
     try {
-      await http.post('/users/me/push-token', { token });
+      const language = useLanguageStore.getState().language;
+      await http.post('/users/me/push-token', { token, language });
     } catch (err) {
       console.warn('[push] failed to register token with backend:', err);
     }

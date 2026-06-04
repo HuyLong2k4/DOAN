@@ -11,7 +11,6 @@
 const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
-const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
 const { archiveDonationConversations } = require('./archiveConversations');
 
@@ -159,27 +158,15 @@ async function cancelDonationByDonor(donationId, donorId) {
     if (donation.selected_receiver_id) targets.push(String(donation.selected_receiver_id));
     if (donation.volunteer_id) targets.push(String(donation.volunteer_id));
 
-    if (targets.length > 0) {
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: 'Donor da huy don',
-                message: `Donor da huy don "${donation.title}".`,
-                type: 'DONATION_CANCELLED',
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: 'Don da bi huy',
-            body: `Donor da huy don "${donation.title}".`,
-            data: {
-                type: 'DONATION_CANCELLED',
-                donation_id: donation._id.toString(),
-            },
-        }).catch(() => {});
-    }
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: 'donation.cancelledByDonor',
+        params: { title: donation.title },
+        type: 'DONATION_CANCELLED',
+        data: { donation_id: donation._id.toString() },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     await archiveDonationConversations(donation._id);
     return { message: 'Đã huỷ đơn quyên góp.' };
@@ -292,34 +279,18 @@ async function releaseReceiverByDonor(donationId, donorId) {
 
     // Notify receiver + volunteer (nếu có).
     const targets = [previousReceiverId, previousVolunteerId].filter(Boolean);
-    if (targets.length > 0) {
-        const notifTitle = isFromRequest ? 'Donor da huy don' : 'Donor da giai phong don';
-        const notifBody = isFromRequest
-            ? `Donor huy don "${donation.title}" vi qua 30 phut chua duoc lay. Request cua ban da duoc mo lai.`
-            : `Donor huy ket noi voi don "${donation.title}" vi qua 30 phut chua duoc lay.`;
-        const notifType = isFromRequest ? 'FOOD_REQUEST_REOPENED' : 'DONATION_RECEIVER_RELEASED';
-
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: notifTitle,
-                message: notifBody,
-                type: notifType,
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: notifTitle,
-            body: notifBody,
-            data: {
-                type: notifType,
-                donation_id: donation._id.toString(),
-                ...(isFromRequest && linkedRequest ? { request_id: String(linkedRequest._id) } : {}),
-            },
-        }).catch(() => {});
-    }
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: isFromRequest ? 'donation.releasedByDonor.request' : 'donation.releasedByDonor.public',
+        params: { title: donation.title },
+        type: isFromRequest ? 'FOOD_REQUEST_REOPENED' : 'DONATION_RECEIVER_RELEASED',
+        data: {
+            donation_id: donation._id.toString(),
+            ...(isFromRequest && linkedRequest ? { request_id: String(linkedRequest._id) } : {}),
+        },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     // Archive conversations chỉ khi donation thật sự kết thúc (từ food request).
     // Nhánh B: donation về PENDING — chat vẫn nên còn cho receiver tiếp theo,

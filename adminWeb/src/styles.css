@@ -8,9 +8,9 @@
   --text-soft: #475569;
   --text-muted: #94a3b8;
 
-  --primary: #1e88e5;
-  --primary-strong: #1565c0;
-  --primary-soft: #e3f2fd;
+  --primary: #008080;
+  --primary-strong: #006666;
+  --primary-soft: #e0f2f1;
 
   --success: #16a34a;
   --success-soft: #dcfce7;
@@ -125,7 +125,7 @@ textarea {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, #1e88e5, #0ea5e9);
+  background: linear-gradient(135deg, #008080, #14b8a6);
   color: #fff;
   font-weight: 800;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -648,7 +648,7 @@ textarea {
 }
 
 .avatar-fallback {
-  background: linear-gradient(135deg, #93c5fd, #60a5fa);
+  background: linear-gradient(135deg, #2dd4bf, #0d9488);
   color: #fff;
 }
 
@@ -867,6 +867,28 @@ textarea {
 }
 
 /* ───────────── Detail grid ───────────── */
+
+.detail-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin: 0 0 10px;
+}
+
+.detail-section-title svg {
+  color: var(--primary);
+}
 
 .detail-grid {
   display: grid;
@@ -1094,7 +1116,7 @@ textarea {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: linear-gradient(135deg, #e0f2fe, #f0fdf4);
+  background: linear-gradient(135deg, #e0f2f1, #f0fdf4);
   position: relative;
   overflow: hidden;
 }
@@ -1110,7 +1132,7 @@ textarea {
 .login-orb-a {
   width: 420px;
   height: 420px;
-  background: radial-gradient(circle, #60a5fa, #1e40af);
+  background: radial-gradient(circle, #2dd4bf, #0f766e);
   top: -120px;
   right: -100px;
 }
@@ -1138,7 +1160,7 @@ textarea {
 
 .login-side {
   padding: 36px;
-  background: linear-gradient(160deg, #1e3a8a, #0f172a);
+  background: linear-gradient(160deg, #0f766e, #064e3b);
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -1180,7 +1202,7 @@ textarea {
 
 .login-bullets li::before {
   content: '✦';
-  color: #60a5fa;
+  color: #2dd4bf;
 }
 
 .login-form {

@@ -8,7 +8,6 @@ const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
-const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
 const { archiveDonationConversations } = require('./archiveConversations');
 const DonorProfile = require('../../models/donorProfileModel');
@@ -74,29 +73,25 @@ async function connectDonationByReceiver(donationId, receiverId) {
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Một receiver';
 
-    await Notification.create({
-        user_id: donorId,
-        title: 'Receiver da ket noi don cua ban',
-        message: `${receiverName} da ket noi va duoc chot ngay cho don "${donation.title}"`,
+    await NotificationService.dispatch({
+        userIds: donorId,
+        key: 'donation.connectedToDonor',
+        params: { receiverName, title: donation.title },
         type: 'DONATION_CONNECTED_AUTO',
+        data: { donation_id: donation._id.toString() },
         related_entity_type: 'FoodDonation',
         related_entity_id: donation._id,
     });
 
-    await Notification.create({
-        user_id: receiverId,
-        title: 'Connect thanh cong',
-        message: `Ban da duoc chot cho don "${donation.title}". Hay chon cach nhan hang.`,
+    await NotificationService.dispatch({
+        userIds: receiverId,
+        key: 'donation.connectApproved',
+        params: { title: donation.title },
         type: 'DONATION_CONNECT_APPROVED',
+        data: { donation_id: donation._id.toString() },
         related_entity_type: 'FoodDonation',
         related_entity_id: donation._id,
     });
-
-    await NotificationService.notifyDonorNewOrder(donorId, {
-        receiver_name: receiverName,
-        quantity: donation.quantity,
-        order_id: donation._id.toString(),
-    }).catch(() => {});
 
     return {
         message: 'Kết nối thành công. Bạn có thể chọn phương thức nhận ngay.',
@@ -193,20 +188,15 @@ async function chooseDeliveryByReceiver(donationId, receiverId, deliveryType /* 
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Receiver';
 
-    await Notification.create({
-        user_id: donation.donor_id,
-        title: 'Receiver da chon cach nhan hang',
-        message: `${receiverName} chon ${deliveryType === 'VIA_AGENT' ? 'uy thac volunteer' : 'tu lay hang'} cho don "${donation.title}"`,
+    await NotificationService.dispatch({
+        userIds: donation.donor_id,
+        key: deliveryType === 'VIA_AGENT' ? 'delivery.choiceViaAgent' : 'delivery.choiceSelfPickup',
+        params: { receiverName, title: donation.title },
         type: 'DELIVERY_CHOICE_SELECTED',
+        data: { donation_id: donation._id.toString(), delivery_id: delivery._id.toString() },
         related_entity_type: 'Delivery',
         related_entity_id: delivery._id,
     });
-
-    await NotificationService.notifyDonorNewOrder(donation.donor_id, {
-        receiver_name: receiverName,
-        quantity: donation.quantity,
-        order_id: delivery._id.toString(),
-    }).catch(() => {});
 
     // Broadcast push tới volunteer trong bán kính — fire-and-forget, không
     // block response. Volunteer offline cũng nhận được push khi mở lại app.
@@ -259,28 +249,15 @@ async function broadcastDonationToNearbyVolunteers(donation, deliveryId) {
 
     if (nearbyVolunteerIds.length === 0) return;
 
-    // In-app notifications.
-    await Notification.insertMany(
-        nearbyVolunteerIds.map((volunteerId) => ({
-            user_id: volunteerId,
-            title: 'Co don can volunteer',
-            message: `Don "${donation.title}" gan ban dang can volunteer giao.`,
-            type: 'VOLUNTEER_DONATION_BROADCAST',
-            related_entity_type: 'Delivery',
-            related_entity_id: deliveryId,
-        })),
-    ).catch(() => {});
-
-    // Push notifications (chunked 100/lần bên trong sendToMultipleUsers).
-    await NotificationService.sendToMultipleUsers(nearbyVolunteerIds, {
-        title: 'Co don can volunteer gan ban',
-        body: `Don "${donation.title}" dang doi nguoi giao.`,
-        data: {
-            type: 'VOLUNTEER_DONATION_BROADCAST',
-            donation_id: String(donation._id),
-            delivery_id: String(deliveryId),
-        },
-    }).catch(() => {});
+    await NotificationService.dispatch({
+        userIds: nearbyVolunteerIds,
+        key: 'volunteer.broadcast',
+        params: { title: donation.title },
+        type: 'VOLUNTEER_DONATION_BROADCAST',
+        data: { donation_id: String(donation._id), delivery_id: String(deliveryId) },
+        related_entity_type: 'Delivery',
+        related_entity_id: deliveryId,
+    });
 }
 
 // ── PATCH /api/food-donations/:id/receiver-disconnect ───────────────────────
@@ -378,34 +355,18 @@ async function disconnectDonationByReceiver(donationId, receiverId) {
 
     // Notify donor + volunteer (nếu đã assigned).
     const targets = [donorId, previousVolunteerId].filter(Boolean);
-    if (targets.length > 0) {
-        const notifTitle = isFromRequest ? 'Receiver da rut request' : 'Receiver da rut khoi don';
-        const notifBody = isFromRequest
-            ? `Receiver da rut khoi request "${donation.title}". Request da duoc mo lai.`
-            : `Receiver da rut khoi don "${donation.title}". Don san sang cho receiver khac.`;
-        const notifType = isFromRequest ? 'FOOD_REQUEST_REOPENED' : 'DONATION_RECEIVER_DISCONNECTED';
-
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: notifTitle,
-                message: notifBody,
-                type: notifType,
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: notifTitle,
-            body: notifBody,
-            data: {
-                type: notifType,
-                donation_id: donation._id.toString(),
-                ...(isFromRequest && linkedRequest ? { request_id: String(linkedRequest._id) } : {}),
-            },
-        }).catch(() => {});
-    }
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: isFromRequest ? 'donation.receiverDisconnected.request' : 'donation.receiverDisconnected.public',
+        params: { title: donation.title },
+        type: isFromRequest ? 'FOOD_REQUEST_REOPENED' : 'DONATION_RECEIVER_DISCONNECTED',
+        data: {
+            donation_id: donation._id.toString(),
+            ...(isFromRequest && linkedRequest ? { request_id: String(linkedRequest._id) } : {}),
+        },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     await archiveDonationConversations(donation._id);
 
@@ -418,13 +379,11 @@ async function disconnectDonationByReceiver(donationId, receiverId) {
 }
 
 // ── PATCH /api/food-donations/:id/report-no-show ───────────────────────────
-// Receiver báo volunteer không đến giao sau khi đã pickup. Chỉ cho phép khi
-// delivery đã ON_THE_WAY quá MIN_NOSHOW_AGE_HOURS giờ tính từ `picked_up_at`.
+// Receiver báo volunteer không đến giao sau khi volunteer đã pickup. Cho phép
+// ngay khi delivery ở ON_THE_WAY — không bắt đợi mốc thời gian nào. Receiver là
+// người trực tiếp biết hàng đã tới hay chưa nên được chủ động báo bất cứ lúc nào.
 // Hành động: cancel delivery + cancel donation, notify volunteer + donor.
 // Food coi như đã mất (volunteer đã cầm đi nhưng không giao tới).
-const MIN_NOSHOW_AGE_HOURS = 2;
-const MIN_NOSHOW_AGE_MS = MIN_NOSHOW_AGE_HOURS * 60 * 60 * 1000;
-
 async function reportVolunteerNoShow(donationId, receiverId) {
     const donation = await FoodDonation.findById(donationId).lean();
     if (!donation) throw _error('Không tìm thấy đơn quyên góp.', 404);
@@ -442,17 +401,6 @@ async function reportVolunteerNoShow(donationId, receiverId) {
 
     if (delivery.status !== 'ON_THE_WAY') {
         throw _error('Chỉ được báo no-show khi đơn đang giao.', 400);
-    }
-
-    const pickedUpAt = delivery.picked_up_at ? new Date(delivery.picked_up_at).getTime() : null;
-    if (!pickedUpAt) {
-        throw _error('Đơn chưa có thông tin pickup hợp lệ.', 400);
-    }
-
-    const ageMs = Date.now() - pickedUpAt;
-    if (ageMs < MIN_NOSHOW_AGE_MS) {
-        const remainingMin = Math.ceil((MIN_NOSHOW_AGE_MS - ageMs) / 60000);
-        throw _error(`Vui lòng đợi thêm ${remainingMin} phút trước khi báo volunteer không đến.`, 400);
     }
 
     // Atomic cancel delivery (ON_THE_WAY → CANCELLED) + cancel donation.
@@ -473,28 +421,15 @@ async function reportVolunteerNoShow(donationId, receiverId) {
     const donorId = String(donation.donor_id);
 
     const targets = [donorId, volunteerId].filter(Boolean);
-    if (targets.length > 0) {
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: 'Bao cao volunteer khong den',
-                message: `Receiver bao volunteer khong den giao don "${donation.title}" sau hon ${MIN_NOSHOW_AGE_HOURS}h. Don da bi huy.`,
-                type: 'VOLUNTEER_NO_SHOW',
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: 'Volunteer khong giao den',
-            body: `Don "${donation.title}" da bi huy do volunteer khong giao.`,
-            data: {
-                type: 'VOLUNTEER_NO_SHOW',
-                donation_id: donation._id.toString(),
-                delivery_id: String(delivery._id),
-            },
-        }).catch(() => {});
-    }
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: 'volunteer.noShowReported',
+        params: { title: donation.title },
+        type: 'VOLUNTEER_NO_SHOW',
+        data: { donation_id: donation._id.toString(), delivery_id: String(delivery._id) },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     await archiveDonationConversations(donation._id);
     return { message: 'Đã ghi nhận báo cáo. Đơn đã được huỷ.' };
@@ -555,23 +490,15 @@ async function completeSelfPickupByReceiver(donationId, receiverId, pickupCode =
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Receiver';
 
-    await Notification.create({
-        user_id: donation.donor_id,
-        title: 'Receiver da tu lay hang thanh cong',
-        message: `${receiverName} da xac nhan hoan tat tu lay hang cho don "${donation.title}"`,
+    await NotificationService.dispatch({
+        userIds: donation.donor_id,
+        key: 'selfPickup.completed',
+        params: { receiverName, title: donation.title },
         type: 'SELF_PICKUP_COMPLETED',
+        data: { donation_id: donation._id.toString() },
         related_entity_type: 'FoodDonation',
         related_entity_id: donation._id,
     });
-
-    await NotificationService.sendToUser(donation.donor_id, {
-        title: 'Self pickup completed',
-        body: `${receiverName} has confirmed pickup for "${donation.title}"`,
-        data: {
-            type: 'SELF_PICKUP_COMPLETED',
-            donation_id: donation._id.toString(),
-        },
-    }).catch(() => {});
 
     await archiveDonationConversations(donation._id);
 
@@ -588,5 +515,4 @@ module.exports = {
     disconnectDonationByReceiver,
     reportVolunteerNoShow,
     completeSelfPickupByReceiver,
-    MIN_NOSHOW_AGE_HOURS,
 };

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -22,6 +22,7 @@ import { http } from '../../../src/api/http';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type DonationDetailParams = {
   donationId?: string | string[];
@@ -76,7 +77,6 @@ const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
 export default function DonorDonationDetailScreen() {
-  const router = useRouter();
   const { t } = useI18n();
   const params = useLocalSearchParams<DonationDetailParams>();
 
@@ -205,19 +205,12 @@ export default function DonorDonationDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={t('donationDetail.title')} />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} />}
       >
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#111" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('donationDetail.title')}</Text>
-          <View style={{ width: 24 }} />
-        </View>
-
         <View style={styles.heroCard}>
           {images.length > 0 ? (
             <View>
@@ -455,15 +448,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F2F2' },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 28 },
   centerWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  headerRow: {
-    paddingTop: 8,
-    paddingBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: { fontSize: 16, color: '#111', fontWeight: '700' },
 
   heroCard: {
     borderRadius: 12,

@@ -1,0 +1,68 @@
+@startuml UC_TongQuan
+left to right direction
+skinparam dpi 130
+skinparam defaultFontName "DejaVu Sans"
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+skinparam usecaseFontStyle bold
+skinparam actorFontStyle bold
+skinparam packageFontStyle bold
+skinparam usecase {
+  BackgroundColor #FFF8DC
+  BorderColor #B8860B
+}
+
+' ===== Tác nhân (3 vai trò mobile kế thừa Người dùng) =====
+actor "Người dùng"                     as User
+actor "Người quyên góp\n(Donor)"        as Donor
+actor "Người nhận\n(Receiver)"          as Receiver
+actor "Tình nguyện viên\n(Volunteer)"   as Volunteer
+Donor     --|> User
+Receiver  --|> User
+Volunteer --|> User
+
+actor "Quản trị viên\n(Admin)" as Admin
+
+rectangle "Hệ thống Kết nối Chia sẻ Thực phẩm" {
+
+  ' --- Tài khoản & dùng chung ---
+  usecase "Quản lý tài khoản"               as UC_Account
+  usecase "Quản lý hồ sơ cá nhân"           as UC_Profile
+  usecase "Trao đổi, nhắn tin"              as UC_Chat
+  usecase "Xem bảng xếp hạng\n& điểm thưởng" as UC_Rank
+
+  ' --- Người quyên góp (Donor) ---
+  usecase "Quản lý bài quyên góp\nthực phẩm" as UC_Donation
+  usecase "Đáp ứng yêu cầu\nnhận thực phẩm"  as UC_Fulfill
+
+  ' --- Người nhận (Receiver) ---
+  usecase "Tìm kiếm & Tiếp nhận\nthực phẩm" as UC_Receive
+  usecase "Quản lý yêu cầu\nnhận thực phẩm"  as UC_Request
+
+  ' --- Tình nguyện viên (Volunteer) ---
+  usecase "Thực hiện giao nhận"             as UC_Deliver
+
+  ' --- Quản trị viên (Admin) ---
+  usecase "Quản lý người dùng"              as UC_MngUser
+  usecase "Theo dõi & thống kê\nhệ thống"   as UC_Dash
+}
+
+' ===== Liên kết tác nhân – use case =====
+User --> UC_Account
+User --> UC_Profile
+User --> UC_Chat
+User --> UC_Rank
+
+Donor --> UC_Donation
+Donor --> UC_Fulfill
+
+Receiver --> UC_Receive
+Receiver --> UC_Request
+
+Volunteer --> UC_Deliver
+
+Admin --> UC_Account
+Admin --> UC_MngUser
+Admin --> UC_Dash
+@enduml

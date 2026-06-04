@@ -13,11 +13,7 @@ export type TrackingKey =
   | 'tracking.deliveryStatus'
   | 'tracking.selfPickupCompleted'
   | 'tracking.selfPickupReady'
-  | 'tracking.deliveryTimeline'
-  | 'tracking.pickupSlotActive'
   | 'tracking.forPrefix'
-  | 'tracking.updatingStatus'
-  | 'tracking.updatedPrefix'
   | 'tracking.donorCoordsUnavailable'
   | 'tracking.openGoogleMaps'
   | 'tracking.waitingForVolunteer'
@@ -56,15 +52,18 @@ export type TrackingKey =
   | 'tracking.disconnectConfirmNo'
   | 'tracking.disconnectSuccessTitle'
   | 'tracking.disconnectFailedTitle'
-  | 'tracking.staleWarningTitle'
-  | 'tracking.staleWarningBody'
   | 'tracking.reportNoShowBtn'
   | 'tracking.reportingNoShow'
   | 'tracking.reportNoShowConfirmTitle'
   | 'tracking.reportNoShowConfirmBody'
   | 'tracking.reportNoShowConfirmYes'
   | 'tracking.reportNoShowSuccessTitle'
-  | 'tracking.reportNoShowFailedTitle';
+  | 'tracking.reportNoShowFailedTitle'
+  | 'tracking.contactChooseTitle'
+  | 'tracking.contactChooseBody'
+  | 'tracking.contactVolunteer'
+  | 'tracking.contactDonor'
+  | 'tracking.contactCancel';
 
 export const trackingEn: Record<TrackingKey, string> = {
   'tracking.title': 'Live tracking',
@@ -81,11 +80,7 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.deliveryStatus': 'delivery status update',
   'tracking.selfPickupCompleted': 'self pickup completed',
   'tracking.selfPickupReady': 'self pickup is ready',
-  'tracking.deliveryTimeline': 'Delivery timeline is updating',
-  'tracking.pickupSlotActive': 'Pickup slot is active',
   'tracking.forPrefix': 'For:',
-  'tracking.updatingStatus': 'Updating status...',
-  'tracking.updatedPrefix': 'Updated:',
   'tracking.donorCoordsUnavailable': 'Donor coordinates are not available.',
   'tracking.openGoogleMaps': 'Open in Google Maps',
   'tracking.waitingForVolunteer': 'Waiting for volunteer',
@@ -124,8 +119,6 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.disconnectConfirmNo': 'Stay',
   'tracking.disconnectSuccessTitle': 'Withdrawn',
   'tracking.disconnectFailedTitle': 'Cannot withdraw',
-  'tracking.staleWarningTitle': 'Delivery is taking longer than expected',
-  'tracking.staleWarningBody': 'Volunteer picked up over 2 hours ago. If they never arrive, you can report no-show below.',
   'tracking.reportNoShowBtn': 'Report volunteer no-show',
   'tracking.reportingNoShow': 'Reporting...',
   'tracking.reportNoShowConfirmTitle': 'Report volunteer no-show?',
@@ -133,6 +126,11 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.reportNoShowConfirmYes': 'Report',
   'tracking.reportNoShowSuccessTitle': 'Reported',
   'tracking.reportNoShowFailedTitle': 'Cannot report',
+  'tracking.contactChooseTitle': 'Who do you want to contact?',
+  'tracking.contactChooseBody': 'Reach the volunteer who is delivering, or contact the donor directly.',
+  'tracking.contactVolunteer': 'Volunteer',
+  'tracking.contactDonor': 'Donor',
+  'tracking.contactCancel': 'Cancel',
 };
 
 export const trackingVi: Record<TrackingKey, string> = {
@@ -150,11 +148,7 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.deliveryStatus': 'cập nhật trạng thái',
   'tracking.selfPickupCompleted': 'đã tự nhận xong',
   'tracking.selfPickupReady': 'sẵn sàng tự nhận',
-  'tracking.deliveryTimeline': 'Đang cập nhật tiến trình giao hàng',
-  'tracking.pickupSlotActive': 'Khung giờ nhận đang hoạt động',
   'tracking.forPrefix': 'Cho:',
-  'tracking.updatingStatus': 'Đang cập nhật...',
-  'tracking.updatedPrefix': 'Cập nhật:',
   'tracking.donorCoordsUnavailable': 'Tọa độ người tặng không khả dụng.',
   'tracking.openGoogleMaps': 'Mở trong Google Maps',
   'tracking.waitingForVolunteer': 'Đang chờ tình nguyện viên',
@@ -193,8 +187,6 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.disconnectConfirmNo': 'Ở lại',
   'tracking.disconnectSuccessTitle': 'Đã rút',
   'tracking.disconnectFailedTitle': 'Không rút được',
-  'tracking.staleWarningTitle': 'Đơn giao đang chậm hơn dự kiến',
-  'tracking.staleWarningBody': 'Volunteer đã lấy hàng hơn 2 giờ. Nếu volunteer không đến, bạn có thể báo no-show dưới đây.',
   'tracking.reportNoShowBtn': 'Báo volunteer không đến',
   'tracking.reportingNoShow': 'Đang báo cáo...',
   'tracking.reportNoShowConfirmTitle': 'Báo volunteer không đến?',
@@ -202,4 +194,9 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.reportNoShowConfirmYes': 'Báo cáo',
   'tracking.reportNoShowSuccessTitle': 'Đã báo cáo',
   'tracking.reportNoShowFailedTitle': 'Không báo được',
+  'tracking.contactChooseTitle': 'Bạn muốn liên hệ ai?',
+  'tracking.contactChooseBody': 'Liên hệ tình nguyện viên đang giao, hoặc liên hệ trực tiếp người tặng.',
+  'tracking.contactVolunteer': 'Tình nguyện viên',
+  'tracking.contactDonor': 'Người tặng',
+  'tracking.contactCancel': 'Huỷ',
 };

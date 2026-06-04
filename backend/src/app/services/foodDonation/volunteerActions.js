@@ -8,7 +8,6 @@
 const FoodDonation = require('../../models/foodDonationModel');
 const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
-const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
 const pickupCodeUtil = require('./pickupCode');
 
@@ -128,25 +127,15 @@ async function releaseDonationByVolunteer(donationId, volunteerId) {
     if (donation.selected_receiver_id) targets.push(String(donation.selected_receiver_id));
     targets.push(String(donation.donor_id));
 
-    await Notification.insertMany(
-        targets.map((userId) => ({
-            user_id: userId,
-            title: 'Volunteer da tra lai don',
-            message: `Volunteer khong the giao "${donation.title}". Don dang tim volunteer khac.`,
-            type: 'VOLUNTEER_RELEASED',
-            related_entity_type: 'FoodDonation',
-            related_entity_id: donation._id,
-        })),
-    ).catch(() => {});
-
-    await NotificationService.sendToMultipleUsers(targets, {
-        title: 'Volunteer tra lai don',
-        body: `Don "${donation.title}" dang tim volunteer khac.`,
-        data: {
-            type: 'VOLUNTEER_RELEASED',
-            donation_id: donation._id.toString(),
-        },
-    }).catch(() => {});
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: 'volunteer.releasedDonation',
+        params: { title: donation.title },
+        type: 'VOLUNTEER_RELEASED',
+        data: { donation_id: donation._id.toString() },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     return { message: 'Đã trả lại đơn. Đơn sẽ tìm volunteer khác.' };
 }
@@ -205,24 +194,15 @@ async function startPickupByVolunteer(donationId, volunteerId, pickupCode = null
     const volunteer = await User.findById(volunteerId).select('full_name').lean();
     const volunteerName = volunteer?.full_name || 'Volunteer';
 
-    await Notification.create({
-        user_id: donation.selected_receiver_id,
-        title: 'Don hang dang tren duong giao',
-        message: `${volunteerName} da lay hang va dang giao don "${donation.title}"`,
+    await NotificationService.dispatch({
+        userIds: donation.selected_receiver_id,
+        key: 'volunteer.pickupStarted',
+        params: { volunteerName, title: donation.title },
         type: 'VOLUNTEER_PICKUP_STARTED',
+        data: { donation_id: donation._id.toString(), delivery_id: delivery._id.toString() },
         related_entity_type: 'Delivery',
         related_entity_id: delivery._id,
     });
-
-    await NotificationService.sendToUser(donation.selected_receiver_id, {
-        title: 'Delivery on the way',
-        body: `${volunteerName} has picked up your food and is on the way.`,
-        data: {
-            type: 'VOLUNTEER_PICKUP_STARTED',
-            donation_id: donation._id.toString(),
-            delivery_id: delivery._id.toString(),
-        },
-    }).catch(() => {});
 
     return { message: 'Đã xác nhận lấy hàng. Đơn đang được giao.', already_started: false };
 }
@@ -276,24 +256,15 @@ async function completeDeliveryByVolunteer(donationId, volunteerId) {
     const volunteer = await User.findById(volunteerId).select('full_name').lean();
     const volunteerName = volunteer?.full_name || 'Volunteer';
 
-    await Notification.create({
-        user_id: donation.selected_receiver_id,
-        title: 'Volunteer da giao hang',
-        message: `${volunteerName} bao da giao xong don "${donation.title}". Vui long xac nhan da nhan hang.`,
+    await NotificationService.dispatch({
+        userIds: donation.selected_receiver_id,
+        key: 'volunteer.delivered',
+        params: { volunteerName, title: donation.title },
         type: 'VOLUNTEER_DELIVERY_AWAITING_CONFIRM',
+        data: { donation_id: donation._id.toString(), delivery_id: delivery._id.toString() },
         related_entity_type: 'Delivery',
         related_entity_id: delivery._id,
-    }).catch(() => {});
-
-    await NotificationService.sendToUser(donation.selected_receiver_id, {
-        title: 'Da giao hang',
-        body: `Volunteer bao da giao "${donation.title}". Vui long xac nhan.`,
-        data: {
-            type: 'VOLUNTEER_DELIVERY_AWAITING_CONFIRM',
-            donation_id: donation._id.toString(),
-            delivery_id: delivery._id.toString(),
-        },
-    }).catch(() => {});
+    });
 
     return {
         message: 'Đã ghi nhận giao hàng. Đợi receiver xác nhận để hoàn tất + nhận điểm.',

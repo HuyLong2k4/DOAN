@@ -6,7 +6,7 @@ class FeedbackController {
     static async getReceiverFeedbackContext(req, res) {
         try {
             if (req.user.role !== 'RECEIVER') {
-                return res.status(403).json({ success: false, message: 'Chi Receiver moi co the feedback.' });
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể feedback.' });
             }
 
             const data = await FeedbackService.getReceiverFeedbackContext(req.params.donationId, req.user.id);
@@ -34,7 +34,7 @@ class FeedbackController {
     static async submitReceiverFeedback(req, res) {
         try {
             if (req.user.role !== 'RECEIVER') {
-                return res.status(403).json({ success: false, message: 'Chi Receiver moi co the feedback.' });
+                return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể feedback.' });
             }
 
             const result = await FeedbackService.submitReceiverFeedback(req.params.donationId, req.user.id, req.body);

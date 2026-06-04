@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type DeliveryType = 'VIA_AGENT' | 'SELF_PICKUP';
 
@@ -68,13 +69,8 @@ export default function ReceiverAddPickupScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={t('addPickup.title')} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#111" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.headerTitle}>{t('addPickup.title')}</Text>
 
         <Text style={styles.sectionTitle}>{t('addPickup.selectDeliveryType')}</Text>
         <View style={styles.optionRow}>
@@ -146,13 +142,6 @@ export default function ReceiverAddPickupScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#EFEFEF' },
   scrollContent: { paddingHorizontal: 14, paddingBottom: 20 },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 14,
-    marginBottom: 2,
-  },
-  headerTitle: { fontSize: 29, color: '#111', fontWeight: '700', marginBottom: 12 },
   sectionTitle: { fontSize: 22, color: '#111', fontWeight: '400', marginBottom: 10 },
   optionRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   optionBtn: {

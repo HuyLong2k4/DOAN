@@ -1,7 +1,6 @@
 const FoodRequest = require('../models/foodRequestModel');
 const FoodDonation = require('../models/foodDonationModel');
 const User = require('../models/userModel');
-const Notification = require('../models/notificationModel');
 const NotificationService = require('./notificationService');
 const { findNearbyDonorIds } = require('./foodDonation/locationFilter');
 
@@ -75,27 +74,19 @@ class FoodRequestService {
         const receiverName = receiver?.full_name || 'Receiver';
         const qtyText = `${requested_quantity} ${unit || 'portion'}`;
 
-        await Notification.insertMany(
-          donorIds.map((donorId) => ({
-            user_id: donorId,
-            title: 'Yeu cau moi tu receiver',
-            message: `${receiverName} vua tao request "${title}" (${qtyText}).`,
-            type: 'NEW_FOOD_REQUEST',
-            related_entity_type: 'FoodRequest',
-            related_entity_id: request._id,
-          })),
-        );
-
-        await NotificationService.sendToMultipleUsers(donorIds, {
-          title: 'Co request moi',
-          body: `${receiverName} can ${qtyText}`,
+        await NotificationService.dispatch({
+          userIds: donorIds,
+          key: 'request.new',
+          params: { receiverName, qty: qtyText },
+          type: 'NEW_FOOD_REQUEST',
           data: {
-            type: 'NEW_FOOD_REQUEST',
             request_id: String(request._id),
             receiver_id: String(receiverId),
             click_action: 'NOTIFICATIONS_SCREEN',
           },
-        }).catch(() => {});
+          related_entity_type: 'FoodRequest',
+          related_entity_id: request._id,
+        });
       }
     } catch (notifyErr) {
       console.error('Create request notification failed:', notifyErr?.message || notifyErr);
@@ -205,26 +196,20 @@ class FoodRequestService {
       const donor = await User.findById(donorId).select('full_name').lean();
       const donorName = donor?.full_name || 'Donor';
 
-      await Notification.create({
-        user_id: updated.receiver_id,
-        title: 'Yeu cau da duoc tiep nhan',
-        message: `${donorName} da tiep nhan request "${updated.title}" cua ban. Ban co the chon cach nhan ngay.`,
+      await NotificationService.dispatch({
+        userIds: updated.receiver_id,
+        key: 'request.accepted',
+        params: { donorName },
         type: 'FOOD_REQUEST_ACCEPTED',
-        related_entity_type: 'FoodDonation',
-        related_entity_id: createdDonation._id,
-      });
-
-      await NotificationService.sendToUser(updated.receiver_id, {
-        title: 'Request da duoc tiep nhan',
-        body: `${donorName} da tiep nhan yeu cau cua ban. Hay chon cach nhan hang.`,
         data: {
-          type: 'FOOD_REQUEST_ACCEPTED',
           request_id: String(updated._id),
           donation_id: String(createdDonation._id),
           donor_id: String(donorId),
           click_action: 'NOTIFICATIONS_SCREEN',
         },
-      }).catch(() => {});
+        related_entity_type: 'FoodDonation',
+        related_entity_id: createdDonation._id,
+      });
     } catch (notifyErr) {
       console.error('Accept request notification failed:', notifyErr?.message || notifyErr);
     }

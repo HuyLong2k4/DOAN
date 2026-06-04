@@ -161,14 +161,17 @@ class UserController {
         }
     }
 
-    // POST /api/users/me/push-token
+    // POST /api/users/me/push-token  — body: { token?, language? }
     static async updatePushToken(req, res) {
         try {
-            const { token } = req.body;
-            if (typeof token !== 'string') {
-                return res.status(400).json({ success: false, message: 'token là bắt buộc (string).' });
+            const { token, language } = req.body;
+            if (token !== undefined && typeof token !== 'string') {
+                return res.status(400).json({ success: false, message: 'token phải là chuỗi.' });
             }
-            await UserService.updatePushToken(req.user.id, token.trim());
+            await UserService.updatePushToken(req.user.id, {
+                token: typeof token === 'string' ? token.trim() : undefined,
+                language,
+            });
             return res.status(200).json({ success: true });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

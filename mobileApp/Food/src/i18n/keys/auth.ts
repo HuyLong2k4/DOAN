@@ -1,5 +1,6 @@
 export type AuthKey =
   | 'auth.login.title'
+  | 'auth.login.subtitle'
   | 'auth.login.phonePlaceholder'
   | 'auth.login.passwordPlaceholder'
   | 'auth.login.rememberMe'
@@ -10,6 +11,7 @@ export type AuthKey =
   | 'auth.login.errorEmpty'
   | 'auth.login.errorFailed'
   | 'auth.register.title'
+  | 'auth.register.subtitle'
   | 'auth.register.fullNamePlaceholder'
   | 'auth.register.phonePlaceholder'
   | 'auth.register.passwordPlaceholder'
@@ -110,6 +112,7 @@ export type AuthKey =
 
 export const authEn: Record<AuthKey, string> = {
   'auth.login.title': 'Login',
+  'auth.login.subtitle': 'Sign in to continue',
   'auth.login.phonePlaceholder': 'Enter Your Mobile Number',
   'auth.login.passwordPlaceholder': 'Enter Your Password',
   'auth.login.rememberMe': 'Remember me',
@@ -120,6 +123,7 @@ export const authEn: Record<AuthKey, string> = {
   'auth.login.errorEmpty': 'Please fill in all fields.',
   'auth.login.errorFailed': 'Login failed.',
   'auth.register.title': 'Sign Up',
+  'auth.register.subtitle': 'Create your account',
   'auth.register.fullNamePlaceholder': 'Full Name',
   'auth.register.phonePlaceholder': 'Mobile Number',
   'auth.register.passwordPlaceholder': 'Password',
@@ -221,6 +225,7 @@ export const authEn: Record<AuthKey, string> = {
 
 export const authVi: Record<AuthKey, string> = {
   'auth.login.title': 'Đăng nhập',
+  'auth.login.subtitle': 'Đăng nhập để tiếp tục',
   'auth.login.phonePlaceholder': 'Nhập số điện thoại',
   'auth.login.passwordPlaceholder': 'Nhập mật khẩu',
   'auth.login.rememberMe': 'Ghi nhớ đăng nhập',
@@ -231,6 +236,7 @@ export const authVi: Record<AuthKey, string> = {
   'auth.login.errorEmpty': 'Vui lòng nhập đầy đủ thông tin.',
   'auth.login.errorFailed': 'Đăng nhập thất bại.',
   'auth.register.title': 'Đăng ký',
+  'auth.register.subtitle': 'Tạo tài khoản mới',
   'auth.register.fullNamePlaceholder': 'Họ và tên',
   'auth.register.phonePlaceholder': 'Số điện thoại',
   'auth.register.passwordPlaceholder': 'Mật khẩu',

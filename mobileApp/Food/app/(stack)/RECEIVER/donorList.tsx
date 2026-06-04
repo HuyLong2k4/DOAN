@@ -19,6 +19,7 @@ import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type TFn = (key: TranslationKey) => string;
 
@@ -144,13 +145,7 @@ export default function ReceiverDonorListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={26} color="#111" />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.title}>{t('donorList.title')}</Text>
+      <ScreenHeader title={t('donorList.title')} />
 
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
@@ -429,8 +424,6 @@ function DonorListCard({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F2F2', paddingHorizontal: 16 },
-  headerRow: { paddingTop: 8, paddingBottom: 4 },
-  title: { fontSize: 16, fontWeight: '600', color: '#111', marginBottom: 12 },
 
   searchRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   searchBox: {

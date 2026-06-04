@@ -1,0 +1,44 @@
+@startuml UC_PhanRa_QuanLyTaiKhoan
+left to right direction
+skinparam dpi 130
+skinparam defaultFontName "DejaVu Sans"
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+skinparam usecaseFontStyle bold
+skinparam actorFontStyle bold
+skinparam packageFontStyle bold
+skinparam usecase {
+  BackgroundColor #FFF8DC
+  BorderColor #B8860B
+}
+
+actor "Người dùng"             as User
+actor "Quản trị viên\n(Admin)" as Admin
+
+rectangle "Quản lý tài khoản" {
+  usecase "Đăng ký tài khoản"  as Signup
+  usecase "Xác thực OTP"       as Otp
+  usecase "Chọn vai trò"       as Role
+  usecase "Đăng nhập"          as Login
+  usecase "Quên mật khẩu"      as Forgot
+  usecase "Đặt lại mật khẩu"   as Reset
+  usecase "Đổi mật khẩu"       as Change
+  usecase "Đăng xuất"          as Logout
+}
+
+User --> Signup
+User --> Login
+User --> Forgot
+User --> Change
+User --> Logout
+
+Admin --> Login
+Admin --> Change
+Admin --> Logout
+
+Signup ..> Otp   : <<include>>
+Signup ..> Role  : <<include>>
+Forgot ..> Otp   : <<include>>
+Forgot ..> Reset : <<include>>
+@enduml

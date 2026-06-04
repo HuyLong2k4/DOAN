@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
+import { http } from '../api/http';
 
 const LANGUAGE_KEY = 'appLanguage';
 
@@ -28,5 +29,8 @@ export const useLanguageStore = create<LanguageState>((set) => ({
   setLanguage: async (language) => {
     await SecureStore.setItemAsync(LANGUAGE_KEY, language);
     set({ language });
+    // Đồng bộ ngôn ngữ lên backend để thông báo render đúng ngôn ngữ.
+    // Fire-and-forget; bỏ qua nếu chưa đăng nhập (401).
+    http.post('/users/me/push-token', { language }).catch(() => {});
   },
 }));

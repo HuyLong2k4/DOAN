@@ -1,13 +1,15 @@
-﻿import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator, KeyboardAvoidingView, Platform,
-  StyleSheet, Text, TextInput, TouchableOpacity,
+  ActivityIndicator, Image, KeyboardAvoidingView, Platform,
+  StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { forgotPassword } from '../../src/api/auth.api';
 import { useI18n } from '../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { AuthBlobs } from './_components/AuthBlobs';
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -36,23 +38,47 @@ export default function ForgotPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <AuthBlobs />
+
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
 
-        <Text style={styles.title}>{t('auth.forgot.title')}</Text>
-        <Text style={styles.sub}>{t('auth.forgot.subtitle')}</Text>
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/avatarApp.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>{t('auth.forgot.title')}</Text>
+          <Text style={styles.sub}>{t('auth.forgot.subtitle')}</Text>
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder={t('auth.forgot.placeholder')}
-          placeholderTextColor="#999"
-          autoCapitalize="none"
-          value={identifier}
-          onChangeText={setIdentifier}
-        />
+        <View style={styles.inputWrap}>
+          <Ionicons name="person-outline" size={18} color={roleUi.colors.textMuted} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder={t('auth.forgot.placeholder')}
+            placeholderTextColor={roleUi.colors.textMuted}
+            autoCapitalize="none"
+            returnKeyType="done"
+            value={identifier}
+            onChangeText={setIdentifier}
+            onSubmitEditing={() => void onSendOtp()}
+          />
+        </View>
 
-        {err ? <Text style={styles.error}>{err}</Text> : null}
+        {err ? (
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle-outline" size={16} color={roleUi.colors.dangerText} />
+            <Text style={styles.error}>{err}</Text>
+          </View>
+        ) : null}
 
-        <TouchableOpacity style={styles.btn} onPress={onSendOtp} disabled={loading}>
+        <TouchableOpacity
+          style={[styles.btn, loading && styles.btnDisabled]}
+          onPress={onSendOtp}
+          disabled={loading}
+          activeOpacity={0.85}
+        >
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.forgot.sendOtp')}</Text>}
         </TouchableOpacity>
 
@@ -66,17 +92,33 @@ export default function ForgotPassword() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
-  inner:     { flex: 1, padding: 28, justifyContent: 'center' },
-  title:     { fontSize: 26, fontWeight: '700', color: '#111', marginBottom: 12 },
-  sub:       { color: '#666', marginBottom: 28, lineHeight: 22 },
-  input:     {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#E0E0E0',
-    borderRadius: 6, height: 50, paddingHorizontal: 14,
-    fontSize: 15, color: '#111', marginBottom: 14,
+  container:   { flex: 1, backgroundColor: roleUi.colors.pageBg, overflow: 'hidden' },
+  inner:       { flex: 1, padding: 28, justifyContent: 'center' },
+  header:      { alignItems: 'center', marginBottom: 28 },
+  logo:        { width: 84, height: 84, borderRadius: 20, marginBottom: 14 },
+  title:       { fontSize: 26, fontWeight: '700', color: roleUi.colors.textPrimary },
+  sub:         { fontSize: 14, color: roleUi.colors.textSecondary, marginTop: 6, textAlign: 'center', lineHeight: 22 },
+  inputWrap:   {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: roleUi.colors.surface,
+    borderWidth: 1, borderColor: roleUi.colors.border,
+    borderRadius: roleUi.radius.md, height: 52, paddingHorizontal: 14, marginBottom: 14,
   },
-  error:   { color: roleUi.colors.danger, marginBottom: 12, fontSize: 13 },
-  btn:     { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  back:    { textAlign: 'center', color: roleUi.colors.primary, fontSize: 14 },
+  inputIcon:   { marginRight: 10 },
+  input:       { flex: 1, height: '100%', fontSize: 15, color: roleUi.colors.textPrimary },
+  errorBox:    {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: roleUi.colors.dangerSoft,
+    borderRadius: roleUi.radius.sm, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 14,
+  },
+  error:       { color: roleUi.colors.dangerText, fontSize: 13, flex: 1 },
+  btn:         {
+    backgroundColor: roleUi.colors.primary, borderRadius: roleUi.radius.md,
+    height: 52, justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+    shadowColor: roleUi.colors.primary, shadowOpacity: 0.25, shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 }, elevation: 3,
+  },
+  btnDisabled: { opacity: 0.6 },
+  btnText:     { color: '#fff', fontWeight: '700', fontSize: 16, paddingHorizontal: 6, includeFontPadding: false },
+  back:        { textAlign: 'center', color: roleUi.colors.primary, fontSize: 14, fontWeight: '600' },
 });

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { getLeaderboard } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type RoleTab = 'DONOR' | 'VOLUNTEER';
 
@@ -18,7 +19,6 @@ interface LeaderEntry {
 }
 
 export default function LeaderboardScreen() {
-  const router  = useRouter();
   const { t }   = useI18n();
   const me      = useAuthStore((s) => s.user);
 
@@ -56,14 +56,7 @@ export default function LeaderboardScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#111" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('leaderboard.title')}</Text>
-        <View style={{ width: 22 }} />
-      </View>
+      <ScreenHeader title={t('leaderboard.title')} />
 
       {/* Role tabs */}
       <View style={styles.roleTabs}>
@@ -145,8 +138,6 @@ export default function LeaderboardScreen() {
 
 const styles = StyleSheet.create({
   container:      { flex: 1, backgroundColor: '#F5F5F5' },
-  header:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 10 },
-  headerTitle:    { fontSize: 18, fontWeight: '700', color: '#111' },
   roleTabs:       { flexDirection: 'row', alignSelf: 'center', backgroundColor: '#EEE', borderRadius: 24, padding: 4, marginBottom: 20 },
   roleTab:        { paddingHorizontal: 24, paddingVertical: 8, borderRadius: 20 },
   roleTabActive:  { backgroundColor: '#111' },

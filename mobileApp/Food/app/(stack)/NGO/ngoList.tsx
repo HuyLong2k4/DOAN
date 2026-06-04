@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
@@ -8,11 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getNearbyNgos, NearbyNgoItem } from '../../../src/api/profile.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type Tab = 'near' | 'popular';
 
 export default function NgoListScreen() {
-  const router = useRouter();
   const { t }  = useI18n();
   const [tab, setTab]       = useState<Tab>('near');
   const [search, setSearch] = useState('');
@@ -63,13 +63,7 @@ export default function NgoListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ── Header ── */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#111" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('ngoList.title')}</Text>
-      </View>
+      <ScreenHeader title={t('ngoList.title')} />
 
       {/* ── Search Bar ── */}
       <View style={styles.searchWrapper}>
@@ -155,9 +149,6 @@ export default function NgoListScreen() {
 
 const styles = StyleSheet.create({
   container:      { flex: 1, backgroundColor: '#fff' },
-  header:         { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, gap: 12 },
-  backBtn:        { padding: 2 },
-  headerTitle:    { fontSize: 22, fontWeight: '800', color: '#111' },
   searchWrapper:  { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: '#E0E0E0', borderRadius: 8, paddingHorizontal: 14, height: 44 },
   searchInput:    { flex: 1, fontSize: 14, color: '#111' },
   tabs:           { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E0E0E0', marginHorizontal: 16, marginBottom: 12 },

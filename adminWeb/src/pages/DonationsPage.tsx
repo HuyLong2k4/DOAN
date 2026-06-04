@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Eye, HandHeart, RefreshCcw, Search } from 'lucide-react';
+import { Clock, Eye, HandHeart, MapPin, RefreshCcw, Search, Utensils } from 'lucide-react';
 import { listDonations } from '../api/endpoints';
 import { getErrorMessage, resolveAssetUrl } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -171,39 +171,63 @@ export function DonationsPage() {
         size="lg"
       >
         {detail ? (
-          <div className="detail-grid">
-            <DetailRow label="Donor">{detail.donor_id?.full_name || '—'}</DetailRow>
-            <DetailRow label="Trạng thái">
-              <DonationStatusPill status={detail.status} />
-            </DetailRow>
-            <DetailRow label="Số lượng">
-              {formatNumber(detail.quantity)} {detail.unit || 'phần'}
-            </DetailRow>
-            <DetailRow label="Loại thực phẩm">{foodTypeLabel(detail.food_type)}</DetailRow>
-            <DetailRow label="Địa chỉ pickup">
-              {detail.pickup_address_line || '—'}
-              {detail.pickup_city ? `, ${detail.pickup_city}` : ''}
-            </DetailRow>
-            <DetailRow label="Hình thức giao">{detail.delivery_type || '—'}</DetailRow>
-            <DetailRow label="Hết hạn">{formatDateTime(detail.expiration_datetime)}</DetailRow>
-            <DetailRow label="Tạo lúc">{formatDateTime(detail.createdAt)}</DetailRow>
-            <DetailRow label="Cập nhật">{formatDateTime(detail.updatedAt)}</DetailRow>
+          <div className="detail-sections">
+            {/* Thực phẩm */}
+            <section>
+              <p className="detail-section-title">
+                <Utensils size={14} /> Thông tin thực phẩm
+              </p>
+              <div className="detail-grid">
+                <DetailRow label="Số lượng">
+                  {formatNumber(detail.quantity)} {detail.unit || 'phần'}
+                </DetailRow>
+                <DetailRow label="Loại thực phẩm">{foodTypeLabel(detail.food_type)}</DetailRow>
+                {detail.description ? (
+                  <DetailRow label="Mô tả" full>
+                    {detail.description}
+                  </DetailRow>
+                ) : null}
+                {detail.images?.length ? (
+                  <DetailRow label="Hình ảnh" full>
+                    <div className="image-row">
+                      {detail.images.map((url) => (
+                        <img key={url} src={resolveAssetUrl(url)} alt="Donation" className="image-thumb" />
+                      ))}
+                    </div>
+                  </DetailRow>
+                ) : null}
+              </div>
+            </section>
 
-            {detail.description ? (
-              <DetailRow label="Mô tả" full>
-                {detail.description}
-              </DetailRow>
-            ) : null}
+            {/* Người tặng & Giao nhận */}
+            <section>
+              <p className="detail-section-title">
+                <MapPin size={14} /> Người tặng & Giao nhận
+              </p>
+              <div className="detail-grid">
+                <DetailRow label="Donor">{detail.donor_id?.full_name || '—'}</DetailRow>
+                <DetailRow label="Hình thức giao">{detail.delivery_type || '—'}</DetailRow>
+                <DetailRow label="Địa chỉ pickup" full>
+                  {detail.pickup_address_line || '—'}
+                  {detail.pickup_city ? `, ${detail.pickup_city}` : ''}
+                </DetailRow>
+              </div>
+            </section>
 
-            {detail.images?.length ? (
-              <DetailRow label="Hình ảnh" full>
-                <div className="image-row">
-                  {detail.images.map((url) => (
-                    <img key={url} src={resolveAssetUrl(url)} alt="Donation" className="image-thumb" />
-                  ))}
-                </div>
-              </DetailRow>
-            ) : null}
+            {/* Trạng thái & Thời gian */}
+            <section>
+              <p className="detail-section-title">
+                <Clock size={14} /> Trạng thái & Thời gian
+              </p>
+              <div className="detail-grid">
+                <DetailRow label="Trạng thái">
+                  <DonationStatusPill status={detail.status} />
+                </DetailRow>
+                <DetailRow label="Hết hạn">{formatDateTime(detail.expiration_datetime)}</DetailRow>
+                <DetailRow label="Tạo lúc">{formatDateTime(detail.createdAt)}</DetailRow>
+                <DetailRow label="Cập nhật">{formatDateTime(detail.updatedAt)}</DetailRow>
+              </div>
+            </section>
           </div>
         ) : null}
       </Modal>

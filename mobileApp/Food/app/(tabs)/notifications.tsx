@@ -57,6 +57,9 @@ function routeForNotification(type?: string | null, role?: string): string | nul
       return null;
     case 'NEW_MESSAGE':
       return '/(tabs)/message';
+    case 'FEEDBACK_RECEIVED':
+      // Donor/volunteer xem đánh giá → màn Achievement (có mục "Feedback received").
+      return '/(stack)/REWARD/rewards';
     default:
       return null;
   }

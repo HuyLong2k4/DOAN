@@ -1,6 +1,8 @@
 const Feedback = require('../models/feedbackModel');
 const FoodDonation = require('../models/foodDonationModel');
 const Delivery = require('../models/deliveryModel');
+const NotificationService = require('./notificationService');
+const User = require('../models/userModel');
 
 class FeedbackService {
     static _error(message, statusCode = 400) {
@@ -25,15 +27,15 @@ class FeedbackService {
             .lean();
 
         if (!donation) {
-            throw this._error('Khong tim thay don quyen gop.', 404);
+            throw this._error('Không tìm thấy đơn quyên góp.', 404);
         }
 
         if (!donation.selected_receiver_id || String(donation.selected_receiver_id) !== String(receiverId)) {
-            throw this._error('Ban khong co quyen feedback don nay.', 403);
+            throw this._error('Bạn không có quyền feedback đơn này.', 403);
         }
 
         if (!donation.delivery_id) {
-            throw this._error('Don nay chua co thong tin van chuyen.', 400);
+            throw this._error('Đơn này chưa có thông tin vận chuyển.', 400);
         }
 
         const delivery = await Delivery.findById(donation.delivery_id)
@@ -42,11 +44,11 @@ class FeedbackService {
             .lean();
 
         if (!delivery) {
-            throw this._error('Khong tim thay delivery cua don nay.', 404);
+            throw this._error('Không tìm thấy delivery của đơn này.', 404);
         }
 
         if (!delivery.receiver_id || String(delivery.receiver_id) !== String(receiverId)) {
-            throw this._error('Ban khong co quyen feedback delivery nay.', 403);
+            throw this._error('Bạn không có quyền feedback delivery này.', 403);
         }
 
         const isCompleted = delivery.status === 'DELIVERED' && donation.status === 'COMPLETED';
@@ -112,7 +114,7 @@ class FeedbackService {
         const context = await this._loadReceiverDonationContext(donationId, receiverId);
 
         if (!context.isCompleted) {
-            throw this._error('Chi duoc feedback sau khi da nhan hang thanh cong.', 400);
+            throw this._error('Chỉ được feedback sau khi đã nhận hàng thành công.', 400);
         }
 
         const donorRating = Number(payload?.donor_rating);
@@ -121,11 +123,11 @@ class FeedbackService {
         const volunteerComment = payload?.volunteer_comment ? String(payload.volunteer_comment).trim() : '';
 
         if (!this._isValidRating(donorRating)) {
-            throw this._error('donor_rating phai trong khoang 1 den 5.', 400);
+            throw this._error('donor_rating phải trong khoảng 1 đến 5.', 400);
         }
 
         if (context.volunteer && !this._isValidRating(volunteerRating)) {
-            throw this._error('volunteer_rating phai trong khoang 1 den 5.', 400);
+            throw this._error('volunteer_rating phải trong khoảng 1 đến 5.', 400);
         }
 
         const upsertOps = [];
@@ -172,11 +174,54 @@ class FeedbackService {
 
         await Promise.all(upsertOps);
 
+        await this._notifyReviewTargets(context, receiverId, {
+            donorRating,
+            donorComment,
+            volunteerRating,
+            volunteerComment,
+        });
+
         return {
-            message: 'Gui feedback thanh cong.',
+            message: 'Gửi feedback thành công.',
             donation_id: String(context.donation._id),
             delivery_id: String(context.delivery._id),
         };
+    }
+
+    /**
+     * Báo cho donor/volunteer khi LẦN ĐẦU nhận đánh giá từ receiver. Bỏ qua khi
+     * receiver sửa lại đánh giá cũ (existing_feedback đã có rating) để tránh spam.
+     * Nội dung nhúng luôn số sao + bình luận để xem ngay trong thông báo, không
+     * cần màn riêng. Fire-and-forget — lỗi notify không làm hỏng việc gửi feedback.
+     */
+    static async _notifyReviewTargets(context, receiverId, ratings) {
+        const targets = [];
+        if (context.donor.id && context.existing_feedback.donor_rating == null) {
+            targets.push({ userId: context.donor.id, rating: ratings.donorRating, comment: ratings.donorComment });
+        }
+        if (context.volunteer?.id && context.existing_feedback.volunteer_rating == null) {
+            targets.push({ userId: context.volunteer.id, rating: Number(ratings.volunteerRating), comment: ratings.volunteerComment });
+        }
+        if (targets.length === 0) return;
+
+        const donationTitle = context.donation.title || 'đơn quyên góp';
+        const receiver = await User.findById(receiverId).select('full_name').lean().catch(() => null);
+        const receiverName = receiver?.full_name || 'Receiver';
+
+        // Dispatch riêng từng người vì rating/comment (cho donor vs volunteer) khác nhau.
+        await Promise.all(
+            targets.map((t) =>
+                NotificationService.dispatch({
+                    userIds: t.userId,
+                    key: t.comment ? 'feedback.receivedWithComment' : 'feedback.received',
+                    params: { receiverName, rating: t.rating, title: donationTitle, comment: t.comment },
+                    type: 'FEEDBACK_RECEIVED',
+                    data: { donation_id: String(context.donation._id) },
+                    related_entity_type: 'FoodDonation',
+                    related_entity_id: context.donation._id,
+                }),
+            ),
+        );
     }
 }
 

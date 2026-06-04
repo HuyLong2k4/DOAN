@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { roleUi } from '../../../src/theme/roleUi';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useI18n } from '@/src/i18n/useI18n';
 
 const FOOD_TYPES = [
@@ -147,17 +148,9 @@ export default function DonateScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={t('donor.donate.header')} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
-
-          {/* ── Header ── */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={22} color="#111" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('donor.donate.header')}</Text>
-          </View>
-          <View style={styles.divider} />
 
           {/* ── Title ── */}
           <Text style={styles.label}>{t('donor.donate.addTitle')}</Text>
@@ -306,9 +299,6 @@ const r = roleUi.radius;
 const styles = StyleSheet.create({
   container:             { flex: 1, backgroundColor: c.surface },
   inner:                 { paddingHorizontal: 18, paddingBottom: 16 },
-  header:                { flexDirection: 'row', alignItems: 'center', paddingTop: 14, paddingBottom: 12, gap: 12 },
-  headerTitle:           { fontSize: 18, fontWeight: '700', color: c.textPrimary },
-  divider:               { height: 1, backgroundColor: c.divider, marginBottom: 4 },
   label:                 { fontSize: 14, fontWeight: '600', color: c.textPrimary, marginTop: 16, marginBottom: 8 },
   subLabel:              { fontSize: 13, color: c.textSecondary, marginBottom: 10, marginTop: -4 },
   input:                 { borderWidth: 1, borderColor: c.divider, borderRadius: r.sm, height: 48, paddingHorizontal: 14, fontSize: 14, color: c.textPrimary },

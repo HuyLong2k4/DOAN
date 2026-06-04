@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { roleUi } from '../../../src/theme/roleUi';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 
 type FoodType = 'COOKED' | 'RAW' | 'FROZEN' | 'PACKAGED';
 
@@ -156,15 +157,9 @@ export default function ReceiverRequestScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={t('request.listingType')} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={22} color="#111" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('request.listingType')}</Text>
-          </View>
-          <View style={styles.divider} />
 
           {prefillDonorName ? (
             <View style={styles.prefillNote}>
@@ -322,9 +317,6 @@ const r = roleUi.radius;
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   inner: { paddingHorizontal: 18, paddingBottom: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingTop: 14, paddingBottom: 12, gap: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: c.textPrimary },
-  divider: { height: 1, backgroundColor: c.divider, marginBottom: 4 },
   prefillNote: {
     marginTop: 12,
     marginBottom: 4,

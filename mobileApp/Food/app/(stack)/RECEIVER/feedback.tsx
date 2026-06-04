@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getReceiverFeedbackContext, submitReceiverFeedback } from '../../../src/api/feedback.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type FeedbackParams = {
   donationId?: string | string[];
@@ -164,13 +165,9 @@ export default function ReceiverFeedbackScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={t('feedback.title')} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#111" />
-          </TouchableOpacity>
-
-          <Text style={styles.title}>{t('feedback.title')}</Text>
 
           <View style={styles.successBox}>
             <Ionicons name="checkmark-circle" size={32} color={roleUi.colors.successText} />
@@ -258,8 +255,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F2F2' },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: 18, paddingBottom: 32 },
-  backBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  title: { fontSize: 34, fontWeight: '700', color: '#111', marginBottom: 14 },
   successBox: {
     borderRadius: 10,
     borderWidth: 1,

@@ -1,5 +1,5 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -17,9 +17,9 @@ import { Donation } from '../../../src/components/DonationPostCard';
 import { http } from '../../../src/api/http';
 import { useI18n } from '@/src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 export default function DonationHistoryScreen() {
-    const router = useRouter();
     const { t } = useI18n();
     const [search, setSearch] = useState('');
     const [donations, setDonations] = useState<Donation[]>([]);
@@ -74,12 +74,7 @@ export default function DonationHistoryScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={22} color="#111" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('donor.history.title')}</Text>
-            </View>
+            <ScreenHeader title={t('donor.history.title')} />
 
             <View style={styles.searchWrap}>
                 <Ionicons name="search-outline" size={18} color="#777" style={styles.searchIcon} />
@@ -139,29 +134,6 @@ export default function DonationHistoryScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FAFAFA' },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 18,
-        paddingTop: 8,
-        paddingBottom: 14,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 8,
-    },
-    headerTitle: {
-        fontSize: 19,
-        fontWeight: '700',
-        color: '#111',
-    },
     searchWrap: {
         flexDirection: 'row',
         alignItems: 'center',

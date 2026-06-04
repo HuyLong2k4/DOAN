@@ -1,11 +1,11 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useI18n } from '../../../src/i18n/useI18n';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 const FAQS: { q: TranslationKey; a: TranslationKey }[] = [
   { q: 'help.q1', a: 'help.a1' },
@@ -14,19 +14,12 @@ const FAQS: { q: TranslationKey; a: TranslationKey }[] = [
 ];
 
 export default function HelpScreen() {
-  const router = useRouter();
   const { t } = useI18n();
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#111" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('help.title')}</Text>
-        <View style={{ width: 22 }} />
-      </View>
+      <ScreenHeader title={t('help.title')} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>{t('help.faqTitle')}</Text>
@@ -95,8 +88,6 @@ export default function HelpScreen() {
 
 const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: '#F5F5F5' },
-  header:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 10 },
-  headerTitle:      { fontSize: 16, fontWeight: '700', color: '#111' },
   scroll:           { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 32 },
   sectionTitle:     { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   card:             { backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#EEE', overflow: 'hidden' },

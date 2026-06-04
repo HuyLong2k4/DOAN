@@ -24,12 +24,12 @@ import type { AdminUser, DonationRecord, RequestRecord, UserRole } from '../type
 const ROLE_PALETTE: Record<UserRole, string> = {
   ADMIN: '#8b5cf6',
   DONOR: '#10b981',
-  RECEIVER: '#3b82f6',
+  RECEIVER: '#0d9488',
   VOLUNTEER: '#f59e0b',
   UNSET: '#94a3b8',
 };
 
-const DONATION_PALETTE = ['#f59e0b', '#3b82f6', '#06b6d4', '#10b981', '#94a3b8', '#ef4444'];
+const DONATION_PALETTE = ['#f59e0b', '#0d9488', '#06b6d4', '#10b981', '#94a3b8', '#ef4444'];
 
 interface KpiCardProps {
   label: string;
@@ -257,7 +257,7 @@ export function DashboardPage() {
               <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
               <YAxis dataKey="label" type="category" tick={{ fontSize: 12 }} width={120} />
               <Tooltip />
-              <Bar dataKey="count" fill="#3b82f6" radius={[0, 8, 8, 0]} />
+              <Bar dataKey="count" fill="#008080" radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

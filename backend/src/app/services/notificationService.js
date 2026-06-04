@@ -1,4 +1,6 @@
 const User = require('../models/userModel');
+const Notification = require('../models/notificationModel');
+const { renderNotification } = require('../i18n/notifications');
 
 const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
 const EXPO_TOKEN_PREFIX = ['ExponentPushToken[', 'ExpoPushToken['];
@@ -119,15 +121,88 @@ class NotificationService {
         }
     }
 
-    // ============ USE CASES ============
+    /**
+     * Gửi 1 sự kiện thông báo tới nhiều người nhận, render theo NGÔN NGỮ của từng
+     * người (User.language). Tạo cả thông báo in-app (lưu DB) lẫn push (nếu có
+     * token). Thay thế pattern cũ: Notification.insertMany + sendToMultipleUsers.
+     *
+     * @param {object} opts
+     * @param {string|string[]} opts.userIds  Người nhận
+     * @param {string} opts.key               Key trong i18n/notifications
+     * @param {object} [opts.params]          Tham số thay vào template
+     * @param {string} [opts.type]            Loại thông báo (cho deep-link client)
+     * @param {object} [opts.data]            Payload kèm push (vd. donation_id)
+     * @param {string} [opts.related_entity_type]
+     * @param {*}      [opts.related_entity_id]
+     * @param {boolean}[opts.push]            Có gửi push không (default true)
+     */
+    static async dispatch({
+        userIds,
+        key,
+        params = {},
+        type = null,
+        data = {},
+        related_entity_type = null,
+        related_entity_id = null,
+        push = true,
+    }) {
+        try {
+            const ids = (Array.isArray(userIds) ? userIds : [userIds])
+                .filter(Boolean)
+                .map(String);
+            const uniqueIds = [...new Set(ids)];
+            if (uniqueIds.length === 0) return;
 
-    static notifyDonorNewOrder(donorId, orderData) {
-        return this.sendToUser(donorId, {
-            title: 'Có người đặt đồ ăn của bạn',
-            body: `${orderData.receiver_name} muốn nhận ${orderData.quantity} suất`,
-            data: { type: 'NEW_ORDER', order_id: String(orderData.order_id || '') },
-        });
+            const users = await User.find({ _id: { $in: uniqueIds } })
+                .select('language push_token')
+                .lean();
+
+            // In-app notifications — render theo ngôn ngữ từng người.
+            const docs = users.map((user) => {
+                const { title, body } = renderNotification(key, user.language || 'vi', params);
+                return {
+                    user_id: user._id,
+                    title,
+                    message: body,
+                    type,
+                    related_entity_type,
+                    related_entity_id,
+                };
+            });
+            if (docs.length > 0) {
+                await Notification.insertMany(docs).catch(() => {});
+            }
+
+            // Push — chỉ user có token hợp lệ, render riêng theo ngôn ngữ.
+            if (push) {
+                const messages = users
+                    .filter((user) => isExpoToken(user.push_token))
+                    .map((user) => {
+                        const { title, body } = renderNotification(key, user.language || 'vi', params);
+                        return {
+                            to: user.push_token,
+                            title,
+                            body,
+                            sound: 'default',
+                            priority: 'high',
+                            data: { ...(type ? { type } : {}), ...data },
+                        };
+                    });
+
+                const allInvalid = [];
+                for (let i = 0; i < messages.length; i += 100) {
+                    const { invalidTokens } = await postToExpo(messages.slice(i, i + 100));
+                    allInvalid.push(...invalidTokens);
+                }
+                await clearTokens(allInvalid);
+            }
+        } catch (error) {
+            console.error('[push] dispatch error:', error.message);
+        }
     }
+
+    // ============ USE CASES ============
+    // Tin nhắn chat — nội dung do người dùng tạo nên KHÔNG i18n (hiển thị nguyên văn).
 
     static notifyNewMessage(userId, messageData) {
         return this.sendToUser(userId, {

@@ -9,6 +9,7 @@ import { getRewardLevel } from '../../../src/constants/rewardLevels';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 interface LeaderEntry { _id: string; full_name: string; points: number; role?: string; }
 
@@ -91,20 +92,12 @@ export default function RewardsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title={showLeaderboard ? t('rewards.title') : t('profile.myActivity')} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={roleUi.colors.primary} colors={[roleUi.colors.primary]} />}
       >
-
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={22} color="#111" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{showLeaderboard ? t('rewards.title') : t('profile.myActivity')}</Text>
-          <View style={{ width: 22 }} />
-        </View>
 
         {/* Stats */}
         <View style={styles.statsRow}>
@@ -314,8 +307,6 @@ function StatItem({ value, label }: { value: string; label: string }) {
 
 const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: '#F5F5F5' },
-  header:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 10 },
-  headerTitle:      { fontSize: 16, fontWeight: '700', color: '#111' },
   statsRow:         { flexDirection: 'row', backgroundColor: '#fff', marginHorizontal: 18, borderRadius: 8, padding: 14, marginBottom: 16 },
   statItem:         { flex: 1, alignItems: 'center' },
   statLabel:        { fontSize: 10, color: '#888', marginBottom: 4, textAlign: 'center' },

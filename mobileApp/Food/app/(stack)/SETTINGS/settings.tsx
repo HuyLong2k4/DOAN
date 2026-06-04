@@ -19,6 +19,7 @@ import { useI18n } from '../../../src/i18n/useI18n';
 import type { AppLanguage } from '../../../src/store/languageStore';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -66,13 +67,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#111" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('settings.title')}</Text>
-        <View style={{ width: 22 }} />
-      </View>
+      <ScreenHeader title={t('settings.title')} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -154,8 +149,6 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: '#F5F5F5' },
-  header:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 10 },
-  headerTitle:      { fontSize: 16, fontWeight: '700', color: '#111' },
   scroll:           { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 32 },
   sectionTitle:     { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   card:             { backgroundColor: '#fff', borderRadius: 8, padding: 14, borderWidth: 1, borderColor: '#EEE' },

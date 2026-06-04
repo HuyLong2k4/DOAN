@@ -14,7 +14,6 @@
 const FoodDonation = require('../../models/foodDonationModel');
 const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
-const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
 const { archiveDonationConversations } = require('./archiveConversations');
 
@@ -72,31 +71,15 @@ async function finalizeDelivery(donation, delivery, { auto = false } = {}) {
     const targets = [String(donation.donor_id)];
     if (delivery.volunteer_id) targets.push(String(delivery.volunteer_id));
 
-    const title = auto ? 'Don da auto-confirm' : 'Receiver da xac nhan da nhan hang';
-    const message = auto
-        ? `Don "${donation.title}" duoc auto-confirm sau 24h khong phan hoi.`
-        : `Don "${donation.title}" da hoan tat.`;
-
-    await Notification.insertMany(
-        targets.map((userId) => ({
-            user_id: userId,
-            title,
-            message,
-            type: 'DELIVERY_CONFIRMED',
-            related_entity_type: 'FoodDonation',
-            related_entity_id: donation._id,
-        })),
-    ).catch(() => {});
-
-    await NotificationService.sendToMultipleUsers(targets, {
-        title,
-        body: message,
-        data: {
-            type: 'DELIVERY_CONFIRMED',
-            donation_id: donation._id.toString(),
-            auto: auto ? '1' : '0',
-        },
-    }).catch(() => {});
+    await NotificationService.dispatch({
+        userIds: targets,
+        key: auto ? 'delivery.confirmed.auto' : 'delivery.confirmed.manual',
+        params: { title: donation.title },
+        type: 'DELIVERY_CONFIRMED',
+        data: { donation_id: donation._id.toString(), auto: auto ? '1' : '0' },
+        related_entity_type: 'FoodDonation',
+        related_entity_id: donation._id,
+    });
 
     await archiveDonationConversations(donation._id);
 

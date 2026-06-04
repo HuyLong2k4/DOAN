@@ -9,7 +9,6 @@
 const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
-const Notification = require('../../models/notificationModel');
 const NotificationService = require('../notificationService');
 const { autoConfirmStaleDeliveries } = require('./receiverConfirm');
 const { archiveDonationConversations } = require('./archiveConversations');
@@ -54,29 +53,27 @@ async function expireOverdueDonations() {
         },
     );
 
-    const notifications = [];
     for (const donation of overdue) {
-        notifications.push({
-            user_id: donation.donor_id,
-            title: 'Don quyen gop da het han',
-            message: `Don "${donation.title}" da het han va chuyen sang trang thai EXPIRED.`,
+        await NotificationService.dispatch({
+            userIds: donation.donor_id,
+            key: 'donation.expired.donor',
+            params: { title: donation.title },
             type: 'DONATION_EXPIRED',
+            data: { donation_id: String(donation._id) },
             related_entity_type: 'FoodDonation',
             related_entity_id: donation._id,
         });
         if (donation.selected_receiver_id) {
-            notifications.push({
-                user_id: donation.selected_receiver_id,
-                title: 'Don da het han',
-                message: `Don "${donation.title}" da het han.`,
+            await NotificationService.dispatch({
+                userIds: donation.selected_receiver_id,
+                key: 'donation.expired.receiver',
+                params: { title: donation.title },
                 type: 'DONATION_EXPIRED',
+                data: { donation_id: String(donation._id) },
                 related_entity_type: 'FoodDonation',
                 related_entity_id: donation._id,
             });
         }
-    }
-    if (notifications.length > 0) {
-        await Notification.insertMany(notifications).catch(() => {});
     }
 
     await Promise.all(ids.map((id) => archiveDonationConversations(id)));
@@ -126,22 +123,15 @@ async function expireStaleSelfPickups() {
         const targets = [String(donation.donor_id)];
         if (donation.selected_receiver_id) targets.push(String(donation.selected_receiver_id));
 
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: 'Don tu lay da het han',
-                message: `Don "${donation.title}" het han do chua duoc lay trong thoi gian quy dinh.`,
-                type: 'DONATION_EXPIRED',
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: 'Don da het han',
-            body: `Don "${donation.title}" het han do chua duoc lay.`,
-            data: { type: 'DONATION_EXPIRED', donation_id: String(donation._id) },
-        }).catch(() => {});
+        await NotificationService.dispatch({
+            userIds: targets,
+            key: 'donation.expiredSelfPickup',
+            params: { title: donation.title },
+            type: 'DONATION_EXPIRED',
+            data: { donation_id: String(donation._id) },
+            related_entity_type: 'FoodDonation',
+            related_entity_id: donation._id,
+        });
 
         await archiveDonationConversations(donation._id);
         expiredCount += 1;
@@ -188,26 +178,15 @@ async function cancelStaleOnTheWayDeliveries(timeoutHours = 6) {
         const targets = [String(donation.donor_id)];
         if (delivery.volunteer_id) targets.push(String(delivery.volunteer_id));
 
-        await Notification.insertMany(
-            targets.map((userId) => ({
-                user_id: userId,
-                title: 'Don bi huy do qua thoi gian giao',
-                message: `Don "${donation.title}" da bi huy do volunteer khong giao trong ${timeoutHours}h.`,
-                type: 'DELIVERY_AUTO_CANCELLED_NO_SHOW',
-                related_entity_type: 'FoodDonation',
-                related_entity_id: donation._id,
-            })),
-        ).catch(() => {});
-
-        await NotificationService.sendToMultipleUsers(targets, {
-            title: 'Don da bi huy',
-            body: `Don "${donation.title}" qua ${timeoutHours}h chua giao, da auto-huy.`,
-            data: {
-                type: 'DELIVERY_AUTO_CANCELLED_NO_SHOW',
-                donation_id: String(donation._id),
-                delivery_id: String(delivery._id),
-            },
-        }).catch(() => {});
+        await NotificationService.dispatch({
+            userIds: targets,
+            key: 'delivery.autoCancelledNoShow',
+            params: { title: donation.title, hours: timeoutHours },
+            type: 'DELIVERY_AUTO_CANCELLED_NO_SHOW',
+            data: { donation_id: String(donation._id), delivery_id: String(delivery._id) },
+            related_entity_type: 'FoodDonation',
+            related_entity_id: donation._id,
+        });
 
         await archiveDonationConversations(donation._id);
         cancelledCount += 1;

@@ -12,6 +12,7 @@ import PickupCodeModal from '../../../src/components/PickupCodeModal';
 import { TimelineRow } from './_components/TimelineRow';
 import { TrackingMap } from './_components/TrackingMap';
 import { roleUi } from '@/src/theme/roleUi';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 
 type TrackingParams = {
   donationId?: string | string[];
@@ -36,7 +37,6 @@ type TrackingData = {
     id: string;
     status: 'WAITING_AGENT' | 'SELF_PICKUP_READY' | 'AGENT_ASSIGNED' | 'ON_THE_WAY' | 'AWAITING_CONFIRMATION' | 'DELIVERED' | 'CANCELLED';
     delivery_type: 'VIA_AGENT' | 'SELF_PICKUP';
-    picked_up_at?: string | null;
   };
   donor: {
     full_name: string;
@@ -61,7 +61,6 @@ export default function ReceiverTrackingScreen() {
   const fallbackTitle = firstParam(params.title) || 'Donation';
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
   const [pickupCodeModalOpen, setPickupCodeModalOpen] = useState(false);
@@ -70,7 +69,6 @@ export default function ReceiverTrackingScreen() {
   const [reportingNoShow, setReportingNoShow] = useState(false);
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [error, setError] = useState('');
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [myLocation, setMyLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const fetchTracking = useCallback(async (silent = false) => {
@@ -81,15 +79,12 @@ export default function ReceiverTrackingScreen() {
     }
 
     try {
-      if (silent) {
-        setRefreshing(true);
-      } else {
+      if (!silent) {
         setLoading(true);
         setError('');
       }
       const res = await http.get(`/food-donations/${donationId}/tracking`);
       setTracking(res.data?.data ?? null);
-      setLastUpdatedAt(Date.now());
       setError('');
     } catch (err: any) {
       if (!silent) {
@@ -97,9 +92,7 @@ export default function ReceiverTrackingScreen() {
         setError(err?.response?.data?.message || t('tracking.cannotLoad'));
       }
     } finally {
-      if (silent) {
-        setRefreshing(false);
-      } else {
+      if (!silent) {
         setLoading(false);
       }
     }
@@ -148,11 +141,7 @@ export default function ReceiverTrackingScreen() {
     }, [])
   );
 
-  const onCall = async () => {
-    const phone = tracking?.delivery?.delivery_type === 'SELF_PICKUP'
-      ? tracking?.donor?.phone_number
-      : tracking?.volunteer?.phone_number;
-
+  const placeCall = async (phone?: string | null) => {
     if (!phone) {
       Alert.alert(t('tracking.noPhone'), t('tracking.noPhoneMsg'));
       return;
@@ -163,6 +152,26 @@ export default function ReceiverTrackingScreen() {
     } catch {
       Alert.alert(t('tracking.cannotCallTitle'), t('tracking.cannotCallMsg'));
     }
+  };
+
+  const onCall = () => {
+    // VIA_AGENT: receiver có thể gọi volunteer (người đang giao) hoặc donor làm
+    // phương án dự phòng khi không liên lạc được volunteer → cho chọn.
+    // SELF_PICKUP: chỉ có donor.
+    if (tracking?.delivery?.delivery_type === 'VIA_AGENT') {
+      Alert.alert(
+        t('tracking.contactChooseTitle'),
+        t('tracking.contactChooseBody'),
+        [
+          { text: t('tracking.contactVolunteer'), onPress: () => void placeCall(tracking?.volunteer?.phone_number) },
+          { text: t('tracking.contactDonor'), onPress: () => void placeCall(tracking?.donor?.phone_number) },
+          { text: t('tracking.contactCancel'), style: 'cancel' },
+        ],
+      );
+      return;
+    }
+
+    void placeCall(tracking?.donor?.phone_number);
   };
 
   const onDisconnect = () => {
@@ -322,15 +331,13 @@ export default function ReceiverTrackingScreen() {
     }
   };
 
-  const onOpenChat = async () => {
+  const openChatWith = async (targetRole: 'VOLUNTEER' | 'DONOR') => {
     if (!donationId) return;
 
     try {
       setChatLoading(true);
-      // Chat đối tác đúng với context: VIA_AGENT → volunteer (người đang giao),
-      // SELF_PICKUP → donor. Truyền target_role tường minh để khỏi phụ thuộc
-      // vào fallback ở backend (an toàn hơn khi delivery_type thay đổi).
-      const targetRole = tracking?.delivery?.delivery_type === 'VIA_AGENT' ? 'VOLUNTEER' : 'DONOR';
+      // Truyền target_role tường minh để khỏi phụ thuộc vào fallback ở backend
+      // (an toàn hơn khi delivery_type thay đổi).
       const res = await getOrCreateDonationConversation(donationId, targetRole);
       const conversation = res.data?.data;
 
@@ -350,6 +357,27 @@ export default function ReceiverTrackingScreen() {
     } finally {
       setChatLoading(false);
     }
+  };
+
+  const onOpenChat = () => {
+    if (!donationId) return;
+
+    // VIA_AGENT: cho chọn nhắn tin volunteer hoặc donor (dự phòng khi không liên
+    // lạc được volunteer). SELF_PICKUP: chỉ có donor.
+    if (tracking?.delivery?.delivery_type === 'VIA_AGENT') {
+      Alert.alert(
+        t('tracking.contactChooseTitle'),
+        t('tracking.contactChooseBody'),
+        [
+          { text: t('tracking.contactVolunteer'), onPress: () => void openChatWith('VOLUNTEER') },
+          { text: t('tracking.contactDonor'), onPress: () => void openChatWith('DONOR') },
+          { text: t('tracking.contactCancel'), style: 'cancel' },
+        ],
+      );
+      return;
+    }
+
+    void openChatWith('DONOR');
   };
 
   const onOpenGoogleMaps = async () => {
@@ -415,14 +443,10 @@ export default function ReceiverTrackingScreen() {
   const isAwaitingConfirmation = tracking.delivery.status === 'AWAITING_CONFIRMATION';
   const isCompleted = tracking.delivery.status === 'DELIVERED';
   const canDisconnect = ['WAITING_AGENT', 'SELF_PICKUP_READY', 'AGENT_ASSIGNED'].includes(tracking.delivery.status);
-  const STALE_ON_THE_WAY_MS = 2 * 60 * 60 * 1000;
-  const pickedUpAtMs = tracking.delivery.picked_up_at ? new Date(tracking.delivery.picked_up_at).getTime() : null;
-  const isStaleOnTheWay =
-    tracking.delivery.status === 'ON_THE_WAY' &&
-    pickedUpAtMs != null &&
-    Date.now() - pickedUpAtMs >= STALE_ON_THE_WAY_MS;
+  // Receiver có thể báo no-show ngay khi đơn đang giao (volunteer đã lấy hàng),
+  // không phải đợi mốc thời gian nào.
+  const isOnTheWay = tracking.delivery.status === 'ON_THE_WAY';
   const title = tracking.donation?.title || fallbackTitle;
-  const lastUpdatedText = lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
   const donorAddress = [tracking.donor?.address_line, tracking.donor?.city].filter(Boolean).join(', ');
   const donorLat = tracking.donor?.latitude;
   const donorLng = tracking.donor?.longitude;
@@ -461,27 +485,12 @@ export default function ReceiverTrackingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.replace('/(tabs)/RECEIVER/home' as any)}>
-          <Ionicons name="arrow-back" size={24} color="#111" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title={t('tracking.title')} onBack={() => router.replace('/(tabs)/RECEIVER/home' as any)} />
 
-      <Text style={styles.title}>{t('tracking.title')}</Text>
-
-      <View style={styles.statusHead}>
+      <View style={styles.body}>
+        <View style={styles.statusHead}>
         <Text style={styles.mainStatus}>{mainStatus}</Text>
-        <Text style={styles.timeStatus}>
-          {isViaAgent ? t('tracking.deliveryTimeline') : t('tracking.pickupSlotActive')}
-        </Text>
         <Text style={styles.donationTitle}>{t('tracking.forPrefix')} {title}</Text>
-        <Text style={styles.refreshText}>
-          {refreshing
-            ? t('tracking.updatingStatus')
-            : lastUpdatedText
-              ? `${t('tracking.updatedPrefix')} ${lastUpdatedText}`
-              : ''}
-        </Text>
       </View>
 
       <TrackingMap
@@ -565,17 +574,7 @@ export default function ReceiverTrackingScreen() {
           )}
         </View>
 
-        {isStaleOnTheWay ? (
-          <View style={styles.staleWarningBox}>
-            <Ionicons name="warning-outline" size={18} color="#A9772E" />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.staleWarningTitle}>{t('tracking.staleWarningTitle')}</Text>
-              <Text style={styles.staleWarningBody}>{t('tracking.staleWarningBody')}</Text>
-            </View>
-          </View>
-        ) : null}
-
-        {isStaleOnTheWay ? (
+        {isOnTheWay ? (
           <TouchableOpacity
             style={[styles.reportNoShowBtn, reportingNoShow && styles.disconnectBtnDisabled]}
             onPress={onReportNoShow}
@@ -609,6 +608,7 @@ export default function ReceiverTrackingScreen() {
           </TouchableOpacity>
         ) : null}
       </View>
+      </View>
 
       <PickupCodeModal
         visible={pickupCodeModalOpen}
@@ -627,7 +627,8 @@ export default function ReceiverTrackingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F2', paddingHorizontal: 16, paddingBottom: 14 },
+  container: { flex: 1, backgroundColor: '#F2F2F2', paddingBottom: 14 },
+  body: { flex: 1, paddingHorizontal: 16 },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loadingText: { fontSize: 13, color: '#666' },
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
@@ -636,8 +637,6 @@ const styles = StyleSheet.create({
   retryText: { color: '#fff', fontWeight: '700' },
   backHomeBtn: { paddingHorizontal: 14, paddingVertical: 8 },
   backHomeText: { color: roleUi.colors.primary, fontWeight: '600' },
-  headerRow: { paddingTop: 12, paddingBottom: 4 },
-  title: { fontSize: 30, color: '#111', fontWeight: '700' },
   statusHead: {
     marginTop: 8,
     borderTopWidth: 1,
@@ -647,9 +646,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mainStatus: { fontSize: 16, color: '#111', fontWeight: '600' },
-  timeStatus: { marginTop: 4, fontSize: 14, color: '#444' },
   donationTitle: { marginTop: 5, fontSize: 13, color: '#4A4A4A', fontWeight: '600' },
-  refreshText: { marginTop: 4, fontSize: 11, color: '#666666' },
   agentCard: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -681,19 +678,6 @@ const styles = StyleSheet.create({
   },
   disconnectBtnDisabled: { opacity: 0.55 },
   disconnectBtnText: { color: roleUi.colors.dangerText, fontSize: 13, fontWeight: '600' },
-  staleWarningBox: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ECDCC0',
-    backgroundColor: roleUi.colors.warningSoft,
-  },
-  staleWarningTitle: { fontSize: 13, fontWeight: '700', color: '#A9772E' },
-  staleWarningBody: { fontSize: 12, color: '#7C5300', marginTop: 4, lineHeight: 17 },
   reportNoShowBtn: {
     marginTop: 8,
     flexDirection: 'row',

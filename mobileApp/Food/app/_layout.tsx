@@ -119,6 +119,10 @@ export default function RootLayout() {
         case 'PICKUP_REMINDER':
           if (role === 'RECEIVER') router.navigate('/(tabs)/RECEIVER/home' as any);
           break;
+        case 'FEEDBACK_RECEIVED':
+          // Donor/volunteer xem đánh giá → màn Achievement.
+          router.navigate('/(stack)/REWARD/rewards' as any);
+          break;
         default:
           router.navigate('/(tabs)/notifications' as any);
       }

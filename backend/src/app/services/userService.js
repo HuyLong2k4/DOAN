@@ -36,9 +36,14 @@ class UserService {
         });
     }
     
-    // Cập nhật push token (gọi sau khi login + cấp quyền notification)
-    static async updatePushToken(userId, token) {
-        await User.findByIdAndUpdate(userId, { push_token: token || '' });
+    // Cập nhật push token và/hoặc ngôn ngữ. Chỉ set field được truyền vào để gọi
+    // riêng lẻ (vd. đổi ngôn ngữ ở Settings) không vô tình xoá mất push token.
+    static async updatePushToken(userId, { token, language } = {}) {
+        const update = {};
+        if (token !== undefined) update.push_token = token || '';
+        if (language === 'vi' || language === 'en') update.language = language;
+        if (Object.keys(update).length === 0) return;
+        await User.findByIdAndUpdate(userId, update);
     }
 
     static async updateUser(id, updateData) {
