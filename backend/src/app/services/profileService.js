@@ -23,40 +23,6 @@ class ProfileService {
         };
     }
 
-    static _toRad(value) {
-        return (value * Math.PI) / 180;
-    }
-
-    static _distanceKm(lat1, lon1, lat2, lon2) {
-        const earthRadiusKm = 6371;
-        const dLat = this._toRad(lat2 - lat1);
-        const dLon = this._toRad(lon2 - lon1);
-        const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(this._toRad(lat1)) * Math.cos(this._toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthRadiusKm * c;
-    }
-
-    static async _getProfileLocation(userId, role) {
-        if (role === 'DONOR') {
-            const donor = await DonorProfile.findOne({ user_id: userId }).select('latitude longitude');
-            return donor ? { latitude: donor.latitude, longitude: donor.longitude } : { latitude: null, longitude: null };
-        }
-
-        if (role === 'RECEIVER') {
-            const receiver = await ReceiverProfile.findOne({ user_id: userId }).select('latitude longitude');
-            return receiver ? { latitude: receiver.latitude, longitude: receiver.longitude } : { latitude: null, longitude: null };
-        }
-
-        if (role === 'VOLUNTEER') {
-            const volunteer = await VolunteerProfile.findOne({ user_id: userId }).select('latitude longitude');
-            return volunteer ? { latitude: volunteer.latitude, longitude: volunteer.longitude } : { latitude: null, longitude: null };
-        }
-
-        return { latitude: null, longitude: null };
-    }
-
     // ──────────────────────────────────────────────────────────────────────
     // UI: Donor Details — Restaurant / Bakery / Individual tab
     // POST /api/profile/donor
@@ -226,68 +192,6 @@ class ProfileService {
         profile.is_active = !profile.is_active;
         await profile.save();
         return { is_active: profile.is_active };
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // GET /api/profile/ngos-nearby — danh sách Receiver loại NGO
-    // ──────────────────────────────────────────────────────────────────────
-    static async getNearbyNgos(userId, role, limit = 8) {
-        const safeLimit = Math.max(1, Math.min(limit, 50));
-
-        const requesterLocation = await this._getProfileLocation(userId, role);
-        const canMeasureDistance =
-            requesterLocation.latitude != null && requesterLocation.longitude != null;
-
-        const receiverProfiles = await ReceiverProfile.find({ receiver_type: 'NGO' })
-            .select('user_id contact_name address_line pin_code city latitude longitude')
-            .populate({
-                path: 'user_id',
-                select: 'full_name avatar_url points role profile_completed',
-                match: { role: 'RECEIVER', profile_completed: true },
-            })
-            .lean();
-
-        const ngoList = receiverProfiles
-            .filter((item) => item.user_id)
-            .map((item) => {
-                const user = item.user_id;
-                const hasNgoLocation = item.latitude != null && item.longitude != null;
-
-                let distance_km = null;
-                if (canMeasureDistance && hasNgoLocation) {
-                    distance_km = this._distanceKm(
-                        requesterLocation.latitude,
-                        requesterLocation.longitude,
-                        item.latitude,
-                        item.longitude
-                    );
-                }
-
-                return {
-                    id: user._id,
-                    name: item.contact_name || user.full_name || 'NGO',
-                    address_line: item.address_line,
-                    pin_code: item.pin_code || null,
-                    city: item.city,
-                    avatar_url: user.avatar_url || null,
-                    points: user.points || 0,
-                    latitude: item.latitude,
-                    longitude: item.longitude,
-                    distance_km,
-                };
-            });
-
-        ngoList.sort((a, b) => {
-            if (a.distance_km == null && b.distance_km == null) return a.name.localeCompare(b.name);
-            if (a.distance_km == null) return 1;
-            if (b.distance_km == null) return -1;
-            return a.distance_km - b.distance_km;
-        });
-
-        return {
-            ngos: ngoList.slice(0, safeLimit),
-            requester_has_location: canMeasureDistance,
-        };
     }
 }
 

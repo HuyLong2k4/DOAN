@@ -7,7 +7,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
-import { getNearbyNgos, NearbyNgoItem } from '../../../src/api/profile.api';
 import { getMyStats } from '../../../src/api/user.api';
 import { useAuthStore } from '../../../src/store/authStore';
 import DonationPostCard from '../../../src/components/DonationPostCard';
@@ -39,9 +38,7 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab]         = useState<'my' | 'requests'>('my');
   const [openFaq, setOpenFaq]             = useState<number | null>(null);
   const [donations, setDonations]         = useState<DonorDonation[]>([]);
-  const [nearbyNgos, setNearbyNgos]       = useState<NearbyNgoItem[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(false);
-  const [loadingNgos, setLoadingNgos]     = useState(false);
   const [openingChatDonationId, setOpeningChatDonationId] = useState<string | null>(null);
   const [receiverFoodRequests, setReceiverFoodRequests] = useState<ReceiverFoodRequest[]>([]);
   const [acceptingFoodRequestId, setAcceptingFoodRequestId] = useState<string | null>(null);
@@ -249,11 +246,9 @@ export default function HomeScreen() {
       (async () => {
         try {
           setLoadingDonations(true);
-          setLoadingNgos(true);
 
-          const [donationRes, ngoRes, requestRes, statsRes] = await Promise.all([
+          const [donationRes, requestRes, statsRes] = await Promise.all([
             http.get('/food-donations/my'),
-            getNearbyNgos(4),
             http.get('/food-requests'),
             getMyStats().catch(() => null),
           ]);
@@ -261,7 +256,6 @@ export default function HomeScreen() {
           if (!active) return;
 
           setDonations(donationRes.data.data ?? []);
-          setNearbyNgos(ngoRes.data.data.ngos ?? []);
           setReceiverFoodRequests(requestRes.data?.data ?? []);
 
           // Server cộng điểm cho donor khi receiver xác nhận đơn. user.points chỉ
@@ -275,7 +269,6 @@ export default function HomeScreen() {
         finally {
           if (active) {
             setLoadingDonations(false);
-            setLoadingNgos(false);
           }
         }
       })();
@@ -544,37 +537,6 @@ export default function HomeScreen() {
           ))
         )}
 
-        {/* ── NGOs Near You ── */}
-        <View style={styles.containTitle}>
-          <Text style={styles.title}>{t('donor.ngo.title')}</Text>
-          <TouchableOpacity onPress={() => router.push('/(stack)/NGO/ngoList')}>
-            <Text style={styles.detailView}>
-              {t('donor.seeMore')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {loadingNgos ? (
-          <View style={styles.emptyCard}><ActivityIndicator color={c.primary} /></View>
-        ) : nearbyNgos.length === 0 ? (
-          <View style={[styles.emptyCard, { marginTop: 0 }]}>
-            <Text style={styles.emptyGray}>{t('donor.noNgosYet')}</Text>
-          </View>
-        ) : (
-          <View style={styles.grid}>
-            {nearbyNgos.map((ngo) => (
-              <View key={ngo.id} style={styles.ngoCard}>
-                <View style={styles.ngoImg} />
-                <Text style={styles.ngoName} numberOfLines={2}>{ngo.name}</Text>
-                <Text style={styles.ngoDist}>
-                  {ngo.distance_km != null
-                    ? `${ngo.distance_km.toFixed(1)} km`
-                    : ngo.city}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
         {/* ── FAQs ── */}
         <Text style={styles.sectionTitle}>{t('donor.faq.title')}</Text>
         {FAQS.map((_faq, i) => (
@@ -735,11 +697,6 @@ const styles = StyleSheet.create({
   title:           { fontSize: 16, fontWeight: 600},
   detailView:      { fontSize: 16, color: c.primary},
   sectionTitle:    { fontSize: 15, fontWeight: '700', color: '#111', paddingHorizontal: 18, marginTop: 8 },
-  grid:            { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 10, marginBottom: 20, justifyContent: 'space-between' },
-  ngoCard:         { width: '47%', backgroundColor: c.surface, borderRadius: r.md, overflow: 'hidden', borderWidth: 1, borderColor: c.border },
-  ngoImg:          { width: '100%', height: 80, backgroundColor: '#E0E0E0' },
-  ngoName:         { fontSize: 12, color: '#111', padding: 6, paddingBottom: 0 },
-  ngoDist:         { fontSize: 11, color: '#888', paddingHorizontal: 6, paddingBottom: 8 },
   faqItem:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.surface, marginHorizontal: 18, marginBottom: 8, borderRadius: r.md, paddingHorizontal: 14, paddingVertical: 16, borderWidth: 1, borderColor: c.border },
   faqQ:            { fontSize: 14, color: '#111', flex: 1, marginRight: 8 },
 });

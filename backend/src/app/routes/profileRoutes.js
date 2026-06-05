@@ -9,9 +9,6 @@ router.use(authMiddleware);
 // GET  /api/profile/me          → Lấy thông tin user + profile (dùng trên Home)
 router.get('/me',                ProfileController.getMyProfile);
 
-// GET  /api/profile/ngos-nearby  → Danh sách NGO (Receiver type NGO)
-router.get('/ngos-nearby',       ProfileController.getNearbyNgos);
-
 // POST /api/profile/donor       → Hoàn thành Donor profile (Donor Details form)
 router.post('/donor',            ProfileController.completeDonorProfile);
 

@@ -2,17 +2,6 @@ const ProfileService = require('../services/profileService');
 
 class ProfileController {
 
-    // ── GET /api/profile/ngos-nearby ───────────────────────────────────────
-    static async getNearbyNgos(req, res) {
-        try {
-            const limit = Number.parseInt(req.query.limit, 10) || 8;
-            const data = await ProfileService.getNearbyNgos(req.user.id, req.user.role, limit);
-            return res.status(200).json({ success: true, data });
-        } catch (err) {
-            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
-        }
-    }
-
     // ── GET /api/profile/me ────────────────────────────────────────────────
     static async getMyProfile(req, res) {
         try {

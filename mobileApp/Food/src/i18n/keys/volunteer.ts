@@ -8,10 +8,6 @@ export type VolunteerKey =
   | 'volunteer.myDeliveryProgress'
   | 'volunteer.noPendingRequests'
   | 'volunteer.noActiveDeliveries'
-  | 'volunteer.noNearbyNgos'
-  | 'volunteer.nearMe'
-  | 'volunteer.byPopularity'
-  | 'volunteer.seeMore'
   | 'volunteer.faqs'
   | 'volunteer.onTheWay'
   | 'volunteer.assigned'
@@ -22,9 +18,6 @@ export type VolunteerKey =
   | 'volunteer.viewMore'
   | 'volunteer.yes'
   | 'volunteer.no'
-  | 'volunteer.distanceUnavailable'
-  | 'volunteer.viewDetails'
-  | 'volunteer.connect'
   | 'volunteer.release.button'
   | 'volunteer.release.releasing'
   | 'volunteer.release.confirmTitle'
@@ -51,7 +44,6 @@ export type VolunteerKey =
   | 'volunteer.unableToOpenMaps'
   | 'volunteer.faqQ1'
   | 'volunteer.faqQ2'
-  | 'volunteer.pointsLabel'
   | 'volunteer.cannotAccept'
   | 'volunteer.cannotReject'
   | 'volunteer.cannotOpenChat'
@@ -111,10 +103,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.myDeliveryProgress': 'My delivery progress',
   'volunteer.noPendingRequests': 'No pending delivery requests right now',
   'volunteer.noActiveDeliveries': 'No active deliveries right now',
-  'volunteer.noNearbyNgos': 'No nearby NGOs found',
-  'volunteer.nearMe': 'Near me',
-  'volunteer.byPopularity': 'By Popularity',
-  'volunteer.seeMore': 'See more',
   'volunteer.faqs': 'FAQs',
   'volunteer.onTheWay': 'On the way',
   'volunteer.assigned': 'Assigned',
@@ -125,9 +113,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.viewMore': 'View more',
   'volunteer.yes': 'Yes',
   'volunteer.no': 'No',
-  'volunteer.distanceUnavailable': 'Distance unavailable',
-  'volunteer.viewDetails': 'View Details',
-  'volunteer.connect': 'Connect',
   'volunteer.release.button': 'Release delivery',
   'volunteer.release.releasing': 'Releasing...',
   'volunteer.release.confirmTitle': 'Release this delivery?',
@@ -154,7 +139,6 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.unableToOpenMaps': 'Unable to open Google Maps right now.',
   'volunteer.faqQ1': 'Who will pick up the food?',
   'volunteer.faqQ2': 'Can we perform one-time donations?',
-  'volunteer.pointsLabel': 'Points:',
   'volunteer.cannotAccept': 'Cannot accept request',
   'volunteer.cannotReject': 'Cannot reject request',
   'volunteer.cannotOpenChat': 'Cannot open chat',
@@ -215,10 +199,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.myDeliveryProgress': 'Tiến độ giao hàng của tôi',
   'volunteer.noPendingRequests': 'Hiện không có yêu cầu giao hàng nào',
   'volunteer.noActiveDeliveries': 'Hiện không có đơn giao hàng nào',
-  'volunteer.noNearbyNgos': 'Không tìm thấy tổ chức gần đây',
-  'volunteer.nearMe': 'Gần tôi',
-  'volunteer.byPopularity': 'Theo độ phổ biến',
-  'volunteer.seeMore': 'Xem thêm',
   'volunteer.faqs': 'Câu hỏi thường gặp',
   'volunteer.onTheWay': 'Đang trên đường',
   'volunteer.assigned': 'Đã phân công',
@@ -229,9 +209,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.viewMore': 'Xem thêm',
   'volunteer.yes': 'Có',
   'volunteer.no': 'Không',
-  'volunteer.distanceUnavailable': 'Không có thông tin khoảng cách',
-  'volunteer.viewDetails': 'Xem chi tiết',
-  'volunteer.connect': 'Kết nối',
   'volunteer.release.button': 'Trả đơn',
   'volunteer.release.releasing': 'Đang trả...',
   'volunteer.release.confirmTitle': 'Trả lại đơn?',
@@ -258,7 +235,6 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.unableToOpenMaps': 'Không thể mở Google Maps lúc này.',
   'volunteer.faqQ1': 'Ai sẽ lấy thực phẩm?',
   'volunteer.faqQ2': 'Có thể quyên góp một lần không?',
-  'volunteer.pointsLabel': 'Điểm:',
   'volunteer.cannotAccept': 'Không thể tiếp nhận yêu cầu',
   'volunteer.cannotReject': 'Không thể từ chối yêu cầu',
   'volunteer.cannotOpenChat': 'Không thể mở chat',

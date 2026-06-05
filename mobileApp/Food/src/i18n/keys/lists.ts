@@ -9,15 +9,6 @@ export type ListsKey =
   | 'donorList.addressNotAvailable'
   | 'donorList.kmAway'
   | 'donorList.exp'
-  | 'ngoList.title'
-  | 'ngoList.searchPlaceholder'
-  | 'ngoList.nearMe'
-  | 'ngoList.byPopularity'
-  | 'ngoList.noNgos'
-  | 'ngoList.addressNotAvailable'
-  | 'ngoList.unknownDistance'
-  | 'ngoList.viewDetails'
-  | 'ngoList.donate'
   | 'donationDetail.title'
   | 'donationDetail.quantity'
   | 'donationDetail.expires'
@@ -65,15 +56,6 @@ export const listsEn: Record<ListsKey, string> = {
   'donorList.addressNotAvailable': 'Address not available',
   'donorList.kmAway': 'km away',
   'donorList.exp': 'Exp:',
-  'ngoList.title': 'List of NGOs',
-  'ngoList.searchPlaceholder': 'Search NGO by name',
-  'ngoList.nearMe': 'Near me',
-  'ngoList.byPopularity': 'By Popularity',
-  'ngoList.noNgos': 'No NGOs found',
-  'ngoList.addressNotAvailable': 'Address not available',
-  'ngoList.unknownDistance': 'Unknown distance',
-  'ngoList.viewDetails': 'View Details',
-  'ngoList.donate': 'Donate',
   'donationDetail.title': 'Donation Details',
   'donationDetail.quantity': 'Quantity',
   'donationDetail.expires': 'Expires',
@@ -122,15 +104,6 @@ export const listsVi: Record<ListsKey, string> = {
   'donorList.addressNotAvailable': 'Không có địa chỉ',
   'donorList.kmAway': 'km',
   'donorList.exp': 'HH:',
-  'ngoList.title': 'Danh sách tổ chức NGO',
-  'ngoList.searchPlaceholder': 'Tìm NGO theo tên',
-  'ngoList.nearMe': 'Gần tôi',
-  'ngoList.byPopularity': 'Theo độ phổ biến',
-  'ngoList.noNgos': 'Không tìm thấy NGO',
-  'ngoList.addressNotAvailable': 'Không có địa chỉ',
-  'ngoList.unknownDistance': 'Không rõ khoảng cách',
-  'ngoList.viewDetails': 'Xem chi tiết',
-  'ngoList.donate': 'Quyên góp',
   'donationDetail.title': 'Chi tiết bài ủng hộ',
   'donationDetail.quantity': 'Số lượng',
   'donationDetail.expires': 'Hết hạn',

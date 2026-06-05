@@ -53,34 +53,9 @@ export interface MyProfileResponse {
   };
 }
 
-export interface NearbyNgoItem {
-  id: string;
-  name: string;
-  address_line: string;
-  pin_code?: string | null;
-  city: string;
-  avatar_url?: string | null;
-  points?: number;
-  latitude?: number | null;
-  longitude?: number | null;
-  distance_km?: number | null;
-}
-
-export interface NearbyNgosResponse {
-  success: boolean;
-  data: {
-    ngos: NearbyNgoItem[];
-    requester_has_location: boolean;
-  };
-}
-
 // UI: Home — lấy thông tin user + profile
 export const getMyProfile = (): Promise<AxiosResponse<MyProfileResponse>> =>
   http.get('/profile/me');
-
-// UI: Donor Home — NGOs Near You
-export const getNearbyNgos = (limit = 8): Promise<AxiosResponse<NearbyNgosResponse>> =>
-  http.get(`/profile/ngos-nearby?limit=${limit}`);
 
 // UI: Donor Details form
 export const completeDonorProfile = (data: DonorProfileRequest): Promise<AxiosResponse<ProfileResponse>> =>

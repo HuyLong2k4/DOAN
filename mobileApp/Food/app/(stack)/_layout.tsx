@@ -4,7 +4,6 @@ export default function StackLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="leaderboard" />
-      <Stack.Screen name="ngoList" />
       <Stack.Screen name="REWARD/leaderboard" />
       <Stack.Screen name="REWARD/rewards" />
       <Stack.Screen name="SETTINGS/settings" />
@@ -13,7 +12,6 @@ export default function StackLayout() {
       <Stack.Screen name="DONOR/donate" />
       <Stack.Screen name="DONOR/historyDonation" />
       <Stack.Screen name="DONOR/donationDetail" />
-      <Stack.Screen name="NGO/ngoList" />
       <Stack.Screen name="RECEIVER/home" />
       <Stack.Screen name="RECEIVER/donorList" />
       <Stack.Screen name="RECEIVER/donationDetail" />

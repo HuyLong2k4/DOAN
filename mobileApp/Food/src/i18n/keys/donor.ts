@@ -36,9 +36,6 @@ export type DonorKey =
   | 'donor.history.loadFailed'
   | 'donor.viewAll'
   | 'donor.noDonationsYet'
-  | 'donor.ngo.title'
-  | 'donor.seeMore'
-  | 'donor.noNgosYet'
   | 'donor.faq.title'
   | 'donor.faq.pickup'
   | 'donor.faq.oneTime'
@@ -153,9 +150,6 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.history.loadFailed': 'Could not load your donation history.',
   'donor.viewAll': 'View all',
   'donor.noDonationsYet': 'No donations yet',
-  'donor.ngo.title': 'NGOs Near You',
-  'donor.seeMore': 'See more',
-  'donor.noNgosYet': 'No NGOs available yet',
   'donor.faq.title': 'FAQs',
   'donor.faq.pickup': 'Who will pick up the food?',
   'donor.faq.oneTime': 'Can we perform one-time donations?',
@@ -271,9 +265,6 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.history.loadFailed': 'Không thể tải lịch sử ủng hộ của bạn.',
   'donor.viewAll': 'Xem tất cả',
   'donor.noDonationsYet': 'Chưa có ủng hộ',
-  'donor.ngo.title': 'Tổ chức gần bạn',
-  'donor.seeMore': 'Xem thêm',
-  'donor.noNgosYet': 'Chưa có tổ chức',
   'donor.faq.title': 'Câu hỏi thường gặp',
   'donor.faq.pickup': 'Ai sẽ lấy thực phẩm?',
   'donor.faq.oneTime': 'Có thể ủng hộ một lần không?',

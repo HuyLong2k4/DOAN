@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import { http } from '../../../src/api/http';
-import { getNearbyNgos, type NearbyNgoItem } from '../../../src/api/profile.api';
 import { getMyStats } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
@@ -27,7 +26,6 @@ import { mapVolunteerDeliveries } from './_components/mappers';
 import type {
   DeliveryRequest,
   FoodDonationApiItem,
-  NearbyNgo,
   VolunteerDeliveryApiItem,
   VolunteerDeliveryItem,
   VolunteerSummary,
@@ -56,15 +54,12 @@ export default function VolunteerHomeScreen() {
     { q: t('volunteer.faqQ2') },
   ];
 
-  const [ngoTab, setNgoTab] = useState<'near' | 'popular'>('near');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [requests, setRequests] = useState<DeliveryRequest[]>([]);
   const [myDeliveries, setMyDeliveries] = useState<VolunteerDeliveryItem[]>([]);
-  const [nearbyNgos, setNearbyNgos] = useState<NearbyNgo[]>([]);
   const [summary, setSummary] = useState<VolunteerSummary>({ delivered_count: 0, feedback_count: 0 });
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingMyDeliveries, setLoadingMyDeliveries] = useState(false);
-  const [loadingNgos, setLoadingNgos] = useState(false);
   const [actingRequestId, setActingRequestId] = useState<string | null>(null);
   const [actingDeliveryId, setActingDeliveryId] = useState<string | null>(null);
   const [releasingDeliveryId, setReleasingDeliveryId] = useState<string | null>(null);
@@ -291,13 +286,11 @@ export default function VolunteerHomeScreen() {
         try {
           setLoadingRequests(true);
           setLoadingMyDeliveries(true);
-          setLoadingNgos(true);
 
-          const [requestRes, myDeliveryRes, summaryRes, ngoRes, statsRes, profileRes] = await Promise.all([
+          const [requestRes, myDeliveryRes, summaryRes, statsRes, profileRes] = await Promise.all([
             http.get('/food-donations'),
             http.get('/food-donations/volunteer/my-deliveries'),
             http.get('/food-donations/volunteer/summary'),
-            getNearbyNgos(12),
             getMyStats().catch(() => null),
             http.get('/profile/me').catch(() => null),
           ]);
@@ -320,22 +313,6 @@ export default function VolunteerHomeScreen() {
 
           const summaryData = (summaryRes.data?.data ?? {}) as Partial<VolunteerSummary>;
 
-          const ngoData = (ngoRes.data?.data?.ngos ?? []) as NearbyNgoItem[];
-          const maxPoints = ngoData.reduce((max, item) => Math.max(max, item.points || 0), 0);
-          const popularThreshold = maxPoints > 0 ? Math.max(1, Math.floor(maxPoints * 0.6)) : 0;
-
-          const mappedNgos: NearbyNgo[] = ngoData.map((item) => {
-            const pointsValue = Number(item.points || 0);
-            return {
-              id: String(item.id),
-              name: String(item.name || 'NGO'),
-              distanceKm: item.distance_km != null ? Number(item.distance_km) : null,
-              points: pointsValue,
-              address: [item.address_line, item.city].filter(Boolean).join(', ') || 'Address unavailable',
-              popular: popularThreshold > 0 && pointsValue >= popularThreshold,
-            };
-          });
-
           if (active) {
             setRequests(mappedRequests);
             setMyDeliveries(mappedMyDeliveries);
@@ -343,7 +320,6 @@ export default function VolunteerHomeScreen() {
               delivered_count: Number(summaryData.delivered_count || 0),
               feedback_count: Number(summaryData.feedback_count || 0),
             });
-            setNearbyNgos(mappedNgos);
             if (statsRes) {
               // Đồng bộ user.points (server cộng điểm khi receiver xác nhận giao);
               // user chỉ set lúc login nên cần làm mới để Stats row hiển thị đúng.
@@ -362,7 +338,6 @@ export default function VolunteerHomeScreen() {
           if (active) {
             setLoadingRequests(false);
             setLoadingMyDeliveries(false);
-            setLoadingNgos(false);
           }
         }
       })();
@@ -370,24 +345,6 @@ export default function VolunteerHomeScreen() {
         active = false;
       };
     }, [t])
-  );
-
-  const visibleNgos = useMemo(
-    () => {
-      if (ngoTab === 'near') {
-        return [...nearbyNgos].sort((a, b) => {
-          if (a.distanceKm == null && b.distanceKm == null) return b.points - a.points;
-          if (a.distanceKm == null) return 1;
-          if (b.distanceKm == null) return -1;
-          return a.distanceKm - b.distanceKm;
-        });
-      }
-
-      const popularOnly = nearbyNgos.filter((n) => n.popular);
-      const source = popularOnly.length > 0 ? popularOnly : nearbyNgos;
-      return [...source].sort((a, b) => b.points - a.points);
-    },
-    [nearbyNgos, ngoTab]
   );
 
   return (
@@ -508,59 +465,6 @@ export default function VolunteerHomeScreen() {
           </View>
         )}
 
-        <View style={styles.tabsRow}>
-          <View style={styles.tabsLeft}>
-            {(['near', 'popular'] as const).map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                style={[styles.tab, ngoTab === tab && styles.tabActive]}
-                onPress={() => setNgoTab(tab)}
-              >
-                <Text style={[styles.tabText, ngoTab === tab && styles.tabTextActive]}>
-                  {tab === 'near' ? t('volunteer.nearMe') : t('volunteer.byPopularity')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TouchableOpacity onPress={() => router.push('/(stack)/NGO/ngoList' as never)}>
-            <Text style={styles.seeMoreText}>{t('volunteer.seeMore')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loadingNgos ? (
-          <View style={styles.requestStateCard}>
-            <ActivityIndicator color={c.primary} />
-          </View>
-        ) : visibleNgos.length === 0 ? (
-          <View style={styles.requestStateCard}>
-            <Text style={styles.requestStateText}>{t('volunteer.noNearbyNgos')}</Text>
-          </View>
-        ) : (
-          visibleNgos.map((ngo) => (
-            <View key={ngo.id} style={styles.ngoCard}>
-              <View style={styles.ngoImage}>
-                <Ionicons name="business-outline" size={30} color="#888" />
-              </View>
-              <View style={styles.ngoBody}>
-                <Text style={styles.ngoName}>{ngo.name}</Text>
-                <Text style={styles.ngoDistance}>
-                  {ngo.distanceKm != null ? `${ngo.distanceKm.toFixed(1)} km` : t('volunteer.distanceUnavailable')}
-                </Text>
-                <Text style={styles.ngoDistance}>{t('volunteer.pointsLabel')} {ngo.points}</Text>
-                <Text style={styles.ngoAddress} numberOfLines={1}>{ngo.address}</Text>
-                <View style={styles.ngoActionRow}>
-                  <TouchableOpacity style={styles.outlineButton}>
-                    <Text style={styles.outlineButtonText}>{t('volunteer.viewDetails')}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.primaryButton}>
-                    <Text style={styles.primaryButtonText}>{t('volunteer.connect')}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          ))
-        )}
-
         <Text style={styles.sectionTitle}>{t('volunteer.faqs')}</Text>
         {FAQS.map((faq, i) => (
           <TouchableOpacity
@@ -677,58 +581,6 @@ const styles = StyleSheet.create({
   requestStateText: { fontSize: 13, color: '#777' },
 
   deliveryListWrap: { paddingHorizontal: 18, gap: 10, marginBottom: 10 },
-
-  tabsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: 12,
-  },
-  tabsLeft: { flexDirection: 'row', flex: 1 },
-  tab: { paddingVertical: 10, marginRight: 20 },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: '#111' },
-  tabText: { fontSize: 13, color: '#8A8A8A' },
-  tabTextActive: { color: '#111', fontWeight: '700' },
-  seeMoreText: { fontSize: 13, color: c.primary, fontWeight: '700' },
-
-  ngoCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginHorizontal: 18,
-    marginBottom: 10,
-    overflow: 'hidden',
-  },
-  ngoImage: {
-    width: 90,
-    height: 90,
-    backgroundColor: '#ECECEC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ngoBody: { flex: 1, padding: 10 },
-  ngoName: { fontSize: 14, fontWeight: '700', color: '#111' },
-  ngoDistance: { fontSize: 12, color: '#777', marginTop: 2, marginBottom: 8 },
-  ngoAddress: { fontSize: 11, color: '#8A8A8A', marginBottom: 8 },
-  ngoActionRow: { flexDirection: 'row', gap: 8 },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: '#111',
-    borderRadius: 18,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  outlineButtonText: { fontSize: 11, color: '#111', fontWeight: '600' },
-  primaryButton: {
-    backgroundColor: c.primary,
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  primaryButtonText: { fontSize: 11, color: '#fff', fontWeight: '700' },
 
   faqItem: {
     flexDirection: 'row',

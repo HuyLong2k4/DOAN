@@ -119,7 +119,16 @@
       "Bash(node --check src/app/services/feedbackService.js)",
       "Bash(node --check src/app/services/notificationService.js)",
       "Bash(node --check src/app/i18n/notifications.js)",
-      "Bash(node -e \"const n=require\\('./src/app/i18n/notifications'\\); const r=n.renderNotification\\('feedback.receivedWithComment','en',{receiverName:'Mai',rating:5,title:'Gà Con',comment:'Ngon!'}\\); console.log\\('EN render:', JSON.stringify\\(r\\)\\); const v=n.renderNotification\\('donation.cancelledByDonor','vi',{title:'Táo'}\\); console.log\\('VI render:', JSON.stringify\\(v\\)\\); require\\('./src/app/services/notificationService'\\); require\\('./src/app/services/foodDonation/donorActions'\\); require\\('./src/app/services/feedbackService'\\); console.log\\('requires OK'\\);\")"
+      "Bash(node -e \"const n=require\\('./src/app/i18n/notifications'\\); const r=n.renderNotification\\('feedback.receivedWithComment','en',{receiverName:'Mai',rating:5,title:'Gà Con',comment:'Ngon!'}\\); console.log\\('EN render:', JSON.stringify\\(r\\)\\); const v=n.renderNotification\\('donation.cancelledByDonor','vi',{title:'Táo'}\\); console.log\\('VI render:', JSON.stringify\\(v\\)\\); require\\('./src/app/services/notificationService'\\); require\\('./src/app/services/foodDonation/donorActions'\\); require\\('./src/app/services/feedbackService'\\); console.log\\('requires OK'\\);\")",
+      "Bash(grep -ivE \"\\\\.\\(png|jpg|jpeg|svg|ttf|otf|woff\\)$\")",
+      "Bash(node -e \"try{require.resolve\\('mongoose'\\);require.resolve\\('bcryptjs'\\);require.resolve\\('dotenv'\\);console.log\\('deps OK'\\)}catch\\(e\\){console.log\\('MISSING',e.message\\)}\")",
+      "Bash(node scripts/seed.js)",
+      "Bash(node -e ' *)",
+      "Bash(powershell -Command \"\\(Test-NetConnection -ComputerName 127.0.0.1 -Port 5000 -InformationLevel Quiet\\)\")",
+      "Bash(powershell -Command 'Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike '\\\\''127.*'\\\\'' -and $_.IPAddress -notlike '\\\\''169.*'\\\\''} | Select-Object IPAddress,InterfaceAlias | Format-Table -AutoSize')",
+      "Bash(powershell -Command 'try { $r = Invoke-RestMethod -Uri '\\\\''http://127.0.0.1:5000/api/auth/login'\\\\'' -Method Post -ContentType '\\\\''application/json'\\\\'' -Body '\\\\''{\"identifier\":\"0905100001\",\"password\":\"123456\"}'\\\\''; Write-Output \\('\\\\''LOGIN OK -> '\\\\'' + $r.user.full_name + '\\\\'' / role='\\\\'' + $r.user.role + '\\\\'' / token='\\\\'' + $r.accessToken.Substring\\(0,16\\) + '\\\\''...'\\\\''\\) } catch { Write-Output \\('\\\\''LOGIN FAIL: '\\\\'' + $_.Exception.Message\\); if \\($_.ErrorDetails\\) { Write-Output $_.ErrorDetails.Message } }')",
+      "Bash(powershell -Command ' *)",
+      "Bash(node -e \"require\\('./src/app/services/profileService'\\); require\\('./src/app/controllers/profileController'\\); require\\('./src/app/routes/profileRoutes'\\); console.log\\('✅ backend profile modules load OK'\\)\")"
     ]
   }
 }

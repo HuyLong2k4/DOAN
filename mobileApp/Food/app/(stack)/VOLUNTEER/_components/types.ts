@@ -48,15 +48,6 @@ export type VolunteerDeliveryItem = {
   deliveryStatus: 'AGENT_ASSIGNED' | 'ON_THE_WAY';
 };
 
-export type NearbyNgo = {
-  id: string;
-  name: string;
-  distanceKm: number | null;
-  points: number;
-  address: string;
-  popular?: boolean;
-};
-
 export type VolunteerSummary = {
   delivered_count: number;
   feedback_count: number;
