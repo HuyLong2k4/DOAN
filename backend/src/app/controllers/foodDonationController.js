@@ -31,7 +31,20 @@ class FoodDonationController {
     // ── GET /api/food-donations/:id ─────────────────────────────────────────
     static async getDonationById(req, res) {
         try {
-            const data = await FoodDonationService.getDonationById(req.params.id, req.user);
+            // GPS real-time từ mobile (nếu có) → đo khoảng cách từ vị trí hiện tại,
+            // đồng nhất với list. Không có thì fallback toạ độ profile trong service.
+            let viewerLocationOverride = null;
+            const latRaw = req.query.lat ?? req.query.latitude;
+            const lonRaw = req.query.lon ?? req.query.lng ?? req.query.longitude;
+            if (latRaw != null && lonRaw != null) {
+                const lat = Number(latRaw);
+                const lon = Number(lonRaw);
+                if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                    viewerLocationOverride = { latitude: lat, longitude: lon };
+                }
+            }
+
+            const data = await FoodDonationService.getDonationById(req.params.id, req.user, viewerLocationOverride);
             return res.status(200).json({ success: true, data });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

@@ -46,7 +46,7 @@ export default function VolunteerHomeScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const user = useAuthStore((s) => s.user);
-  const firstName = user?.full_name?.split(' ')[0] ?? '';
+  const displayName = user?.full_name?.trim() || '';
   const points = user?.points ?? 0;
 
   const FAQS = [
@@ -352,7 +352,7 @@ export default function VolunteerHomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
         <HomeHeader
           greeting={t('volunteer.greeting')}
-          firstName={firstName}
+          displayName={displayName}
           rolePrefix={t('volunteer.rolePrefix')}
           roleLabel={t('volunteer.role')}
           containerStyle={styles.header}

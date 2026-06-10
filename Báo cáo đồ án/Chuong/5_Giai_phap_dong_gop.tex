@@ -1,0 +1,120 @@
+\IfFileExists{../main.tex}{%
+  \documentclass[../main.tex]{subfiles}%
+}{%
+  \documentclass[main.tex]{subfiles}%
+}
+\begin{document}
+\setcounter{chapter}{5}
+
+Chương này trình bày những giải pháp kỹ thuật mà tôi tâm đắc nhất trong quá trình thực hiện đồ án. Đây phần lớn là các bài toán nảy sinh từ \textbf{đặc thù nghiệp vụ chia sẻ thực phẩm} --- nhiều bên tham gia, thao tác đồng thời, quy trình kéo dài và dễ bị bỏ ngang, dữ liệu nhạy cảm về vị trí và danh tính. Mỗi mục dưới đây gồm ba phần: \textit{bài toán}, \textit{giải pháp} và \textit{kết quả}; đồng thời chỉ ra khả năng tổng quát hoá sang lớp bài toán rộng hơn khi phù hợp. Các nội dung đã mô tả ở chương trước chỉ được nhắc lại vắn tắt kèm tham chiếu chéo.
+
+% ===========================================================================
+\section{Ghép cặp an toàn trong môi trường tương tranh}
+\label{section:5.1}
+
+\textbf{Bài toán.} Một đơn quyên góp là tài nguyên \textit{duy nhất}: chỉ một người nhận được phép ``chốt'' nó, và khi giao qua tình nguyện viên thì chỉ một tình nguyện viên được phép nhận. Tuy nhiên hệ thống vận hành theo cơ chế \textit{ai nhanh tay thì được} (đã mô tả ở quy trình nghiệp vụ, mục~\ref{section:2.3.16}), nên nhiều người dùng hoàn toàn có thể bấm ``Kết nối'' / ``Nhận đơn'' gần như cùng lúc. Nếu xử lý ngây thơ theo kiểu ``đọc trạng thái rồi mới ghi'' (check-then-set), hai yêu cầu song song đều thấy đơn còn trống và cùng ghi đè, dẫn đến \textit{double-booking}: hai người cùng tưởng mình đã nhận một đơn, hoặc phát sinh hai bản ghi giao nhận (\texttt{Delivery}) cho cùng một đơn.
+
+\textbf{Giải pháp.} Tôi không dùng khoá tường minh hay giao dịch nặng, mà tận dụng tính \textbf{nguyên tử ở mức một thao tác ghi} của cơ sở dữ liệu để hiện thực mẫu \textit{so sánh-rồi-đặt} (compare-and-set). Mỗi lần ``chốt'' đơn là một câu lệnh cập nhật có điều kiện: chỉ ghi khi đơn \emph{vẫn} đang ở trạng thái hợp lệ và \emph{chưa} có ai chiếm:
+
+\begin{verbatim}
+const claim = await FoodDonation.updateOne(
+  { _id, status: 'PENDING', selected_receiver_id: null }, // dieu kien
+  { $set: { selected_receiver_id, selected_at } }          // hanh dong
+);
+if (claim.modifiedCount === 0) throw Error(409); // thua cuoc dua
+\end{verbatim}
+
+Do tầng lưu trữ bảo đảm hai cập nhật song song được tuần tự hoá, chỉ \textbf{đúng một} yêu cầu làm \texttt{modifiedCount = 1} (thắng), các yêu cầu còn lại nhận \texttt{0} và bị trả lỗi 409 một cách tường minh. Cùng nguyên tắc đó được áp dụng cho: tình nguyện viên nhận đơn (\texttt{findOneAndUpdate} với guard \texttt{status: PENDING}), và việc tạo \texttt{Delivery}. Riêng với \texttt{Delivery}, vì phải tạo bản ghi mới \emph{trước} rồi mới gắn vào đơn, tôi dùng biến thể \textit{tạo--chiếm--hoàn tác}: tạo \texttt{Delivery}, thực hiện claim nguyên tử trên điều kiện \texttt{delivery\_id: null}; nếu thua cuộc đua thì \textbf{xoá bản ghi vừa tạo} để không để lại ``rác'' mồ côi.
+
+\textbf{Tổng quát hoá.} Đây chính là lời giải kinh điển cho lớp bài toán \textit{cấp phát tài nguyên hữu hạn dưới tương tranh} (đặt vé, giữ chỗ, rút tồn kho\ldots): thay vì khoá bi quan, ta đặt điều kiện bất biến vào ngay mệnh đề ghi và để tầng lưu trữ làm trọng tài.
+
+\textbf{Kết quả.} Kịch bản hai người nhận bấm kết nối đồng thời luôn cho đúng một người thắng, người còn lại nhận thông báo ``Đơn vừa được người khác nhận'' (ca kiểm thử TC09, mục~\ref{section:4.4}); không quan sát thấy đơn bị chốt đôi hay \texttt{Delivery} trùng trong suốt quá trình thử nghiệm.
+
+% ===========================================================================
+\section{Ước lượng khoảng cách lai: nhanh, tiết kiệm và bền bỉ}
+\label{section:5.2}
+
+\textbf{Bài toán.} Trải nghiệm cốt lõi của ứng dụng là ``đơn ở gần hiển thị trước''. Khoảng cách \textit{đường chim bay} (Haversine, đã trình bày ở Chương 3, công thức~(\ref{eq:haversine})) tính rất nhanh nhưng sai lệch so với quãng đường di chuyển thực tế. Ngược lại, khoảng cách \textit{đường bộ} từ dịch vụ bản đồ thì chính xác nhưng (i) tốn hạn ngạch (quota) và tiền theo từng lượt gọi, (ii) có độ trễ mạng và (iii) có thể thất bại. Ngoài ra dữ liệu toạ độ thực tế không sạch: hồ sơ mới khởi tạo mặc định \texttt{(0,0)} --- rơi vào Vịnh Guinea --- sẽ cho khoảng cách sai hàng nghìn km.
+
+\textbf{Giải pháp.} Tôi thiết kế một bộ ước lượng khoảng cách \textbf{hai tầng có suy giảm an toàn}:
+\begin{itemize}
+  \item \textbf{Tầng chính:} gọi Google Distance Matrix để lấy quãng đường đường bộ khi có khoá API.
+  \item \textbf{Tầng dự phòng:} nếu không có khoá, API lỗi, hoặc mất mạng, hệ thống \emph{tự động} quay về Haversine --- người dùng vẫn luôn có thứ tự sắp xếp hợp lý thay vì màn hình trống.
+  \item \textbf{Bộ nhớ đệm (cache) thông minh:} kết quả đường bộ được lưu in-memory với thời gian sống 10 phút, khoá cache là cặp toạ độ \emph{đã làm tròn} tới ~111\,m. Nhờ làm tròn, nhiều người nhận khác nhau ở gần nhau cùng xem một danh sách sẽ \textbf{dùng chung} một mục cache, giảm mạnh số lượt gọi API; đồng thời khi donor đổi địa chỉ, khoá cache đổi theo nên tự hết hiệu lực.
+  \item \textbf{Vệ sinh dữ liệu:} mọi toạ độ \texttt{(0,0)} hoặc ngoài miền hợp lệ bị loại trước khi tính.
+\end{itemize}
+Bán kính cũng được dùng để \textit{lọc đối tượng nhận thông báo} (10\,km cho donor khi có yêu cầu mới, 20\,km cho tình nguyện viên khi điều phối) nhằm tránh làm phiền người ở quá xa.
+
+\textbf{Tổng quát hoá.} Mẫu ``\textit{nguồn chính bên ngoài + dự phòng nội bộ + cache khử trùng lặp}'' áp dụng được cho mọi tích hợp dịch vụ trả phí/không ổn định (dịch máy, OCR, gợi ý\ldots): ưu tiên chất lượng cao khi có thể, nhưng không bao giờ để toàn hệ thống phụ thuộc sống còn vào bên thứ ba.
+
+\textbf{Kết quả.} Danh sách đơn luôn sắp xếp được theo khoảng cách kể cả khi không cấu hình khoá bản đồ; khi có khoá, cache giúp cắt giảm phần lớn lượt gọi lặp lại trong cùng khu vực; loại bỏ hoàn toàn lỗi ``khoảng cách hàng nghìn km'' do toạ độ rác.
+
+% ===========================================================================
+\section{Vòng đời đơn như một máy trạng thái tự phục hồi}
+\label{section:5.3}
+
+\textbf{Bài toán.} Một đơn đi qua nhiều bước và nhiều bên (donor, receiver, tình nguyện viên). Trong thực tế, người dùng \textit{bỏ ngang} là chuyện thường: receiver chọn ``tự lấy'' rồi không bao giờ đến; tình nguyện viên báo ``đang giao'' rồi biến mất; receiver nhận hàng nhưng quên bấm xác nhận. Nếu không xử lý, các đơn này \textbf{kẹt trạng thái vĩnh viễn}, làm sai lệch thống kê và giam giữ tài nguyên (đơn không bao giờ được mở lại cho người khác, điểm thưởng không bao giờ được trao).
+
+\textbf{Giải pháp.} Tôi mô hình hoá toàn bộ vòng đời đơn thành một \textbf{máy trạng thái} tường minh (Hình~\ref{fig:state_lifecycle}), rồi bổ sung ba \textbf{tác vụ nền định kỳ} đóng vai trò ``người dọn dẹp'' (janitor), tự đưa các trạng thái treo về trạng thái kết thúc:
+\begin{itemize}
+  \item \texttt{expireOverdueDonations} (mỗi 15 phút): đơn \texttt{PENDING} quá hạn sử dụng $\rightarrow$ \texttt{EXPIRED}; đồng thời mở lại yêu cầu thực phẩm liên kết (nếu có) để donor khác còn cơ hội đáp ứng.
+  \item \texttt{autoConfirmStaleDeliveries} (mỗi 1 giờ): đơn ở \texttt{AWAITING\_CONFIRMATION} quá 24 giờ mà receiver chưa bấm xác nhận $\rightarrow$ tự xác nhận hoàn tất và trao điểm.
+  \item \texttt{cancelStaleOnTheWayDeliveries} (mỗi 30 phút): đơn ở \texttt{ON\_THE\_WAY} quá 6 giờ (tình nguyện viên ``no-show'') $\rightarrow$ \texttt{CANCELLED}.
+\end{itemize}
+Điểm mấu chốt là mỗi lượt quét đều \textbf{bất biến với lần chạy lại} (idempotent): mọi chuyển trạng thái dùng cùng cơ chế cập nhật có điều kiện ở mục~\ref{section:5.1}, nên dù tác vụ chạy chồng lấn hay đơn vừa được người dùng thao tác xen vào, cũng không gây chuyển trạng thái sai.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/Giaiphap/state_lifecycle.png}
+    \caption{Máy trạng thái vòng đời đơn với các chuyển trạng thái tự phục hồi (cron)}
+    \label{fig:state_lifecycle}
+\end{figure}
+
+\textbf{Tổng quát hoá.} Đây là mẫu \textit{đối soát theo thời hạn} (timeout-driven reconciliation) cho mọi quy trình dài có khả năng bị bỏ ngang: thay vì tin rằng người dùng luôn hoàn thành quy trình, hệ thống định kỳ tự đưa trạng thái về nhất quán.
+
+\textbf{Kết quả.} Không còn đơn ``kẹt'' vô thời hạn; quyền lợi được bảo đảm công bằng kể cả khi một bên quên thao tác (ví dụ receiver quên xác nhận thì sau 24 giờ donor và tình nguyện viên vẫn được cộng điểm).
+
+% ===========================================================================
+\section{Bảo đảm tính toàn vẹn và chống gian lận khi giao nhận}
+\label{section:5.4}
+
+\textbf{Bài toán.} Khi điểm thưởng gắn với hành vi, sẽ xuất hiện động cơ gian lận: một người có thể khai khống ``tôi đã lấy/đã giao hàng'' để được ghi nhận mà không thực sự gặp mặt, hoặc một người lạ mạo nhận đơn của người khác. Cần một cơ chế \textbf{chứng minh có thật sự diễn ra cuộc gặp} mà không phụ thuộc thiết bị đắt tiền (QR scanner, định vị chính xác\ldots).
+
+\textbf{Giải pháp.} Tôi kết hợp hai lớp bảo vệ:
+
+\emph{(a) Mã lấy hàng (pickup code) như bằng chứng gặp mặt.} Khi receiver chọn phương thức nhận, hệ thống sinh một mã 4 chữ số gắn với \texttt{Delivery}. Mã chỉ donor nhìn thấy; khi gặp mặt, donor đọc mã cho người đến lấy (tình nguyện viên hoặc receiver), bên kia nhập mã thì giao dịch mới được công nhận. Mã 4 chữ số là đủ ngắn để đọc miệng nhưng vẫn an toàn nhờ \textbf{chống dò} (brute-force): nhập sai \textbf{5 lần} liên tiếp sẽ bị \textbf{tạm khoá 10 phút}, kéo số tổ hợp thử được mỗi giờ xuống mức không khả thi. Bộ đếm sai được tăng \textit{nguyên tử} và tự reset khi nhập đúng.
+
+\emph{(b) Bàn giao hai pha + ``giam'' điểm (escrow).} Khi tình nguyện viên bấm ``đã giao'', hệ thống \textbf{không} cộng điểm ngay mà chuyển đơn sang \texttt{AWAITING\_CONFIRMATION}. Điểm chỉ được trao khi \textit{phía thụ hưởng} --- receiver --- xác nhận đã nhận (hoặc sau 24 giờ tự xác nhận, mục~\ref{section:5.3}). Như vậy điểm bị ``giam'' cho đến khi có xác nhận từ bên độc lập, loại bỏ động cơ khai khống. Ngược lại, nếu hàng không tới, receiver có thể báo ``không đến'' bất cứ lúc nào để huỷ đơn.
+
+\textbf{Kết quả.} Mọi giao dịch hoàn tất đều có ``bằng chứng'' là việc nhập đúng mã do donor nắm giữ; điểm thưởng chỉ phát sinh sau xác nhận hai phía. Thử nghiệm cho thấy: nhập sai mã bị chặn và khoá đúng ngưỡng (TC12), báo no-show huỷ được đơn đang giao (TC13), và tình nguyện viên không thể nhận điểm chỉ bằng thao tác ``đã giao'' đơn phương.
+
+% ===========================================================================
+\section{Xác thực không trạng thái nhưng thu hồi được tức thì}
+\label{section:5.5}
+
+\textbf{Bài toán.} Hệ thống dùng JWT để xác thực không trạng thái (stateless) --- máy chủ không lưu phiên, chỉ cần xác minh chữ ký (đã nêu ở Chương 3). Nhưng chính tính ``không trạng thái'' tạo ra nhược điểm cố hữu: một token đã phát hành \textbf{vẫn còn hiệu lực đến khi hết hạn}, kể cả khi người dùng đăng xuất, đổi mật khẩu, hay bị quản trị viên khoá tài khoản. Đây là rủi ro bảo mật thực sự (ví dụ lộ token cũ sau khi đổi mật khẩu).
+
+\textbf{Giải pháp.} Tôi thêm một \textbf{số phiên bản token} (\texttt{token\_version}) cho mỗi người dùng và \textbf{nhúng giá trị này vào JWT} lúc phát hành. Mỗi yêu cầu, middleware so khớp \texttt{tokenVersion} trong token với \texttt{token\_version} hiện tại trong cơ sở dữ liệu; lệch nhau thì từ chối. Khi đăng xuất hoặc đổi mật khẩu, hệ thống chỉ cần \textbf{tăng \texttt{token\_version} lên 1} --- lập tức \textit{toàn bộ} token cũ trở nên vô hiệu mà không cần bất kỳ danh sách đen (blacklist) hay kho phiên phía máy chủ nào. Bổ sung thêm cờ \texttt{is\_active} cho phép quản trị viên khoá tài khoản (chặn truy cập ngay) mà vẫn giữ nguyên dữ liệu lịch sử.
+
+\textbf{Tổng quát hoá.} Mẫu ``\textit{bộ đếm phiên bản/epoch}'' là cách nhẹ và phổ biến để thu hồi hàng loạt token stateless: chỉ tốn một số nguyên cho mỗi chủ thể nhưng vô hiệu hoá được tất cả token đã cấp trước thời điểm tăng đếm.
+
+\textbf{Kết quả.} Đăng xuất và đổi mật khẩu vô hiệu hoá ngay mọi phiên cũ trên mọi thiết bị; tài khoản bị khoá không thể tiếp tục dùng token còn hạn --- tất cả mà không cần lưu trạng thái phiên ở máy chủ.
+
+% ===========================================================================
+\section{Hệ thống thông báo đa ngôn ngữ, hợp nhất in-app và push}
+\label{section:5.6}
+
+\textbf{Bài toán.} Một sự kiện (ví dụ ``đơn của bạn đã được nhận'') thường phải báo cho \textit{nhiều} người cùng lúc, mỗi người có thể chọn ngôn ngữ khác nhau, và cần xuất hiện ở cả hai kênh: thông báo trong ứng dụng (lưu lại để xem sau) lẫn thông báo đẩy (push) tới điện thoại. Nếu viết rời rạc cho từng nơi gọi, mã sẽ trùng lặp và rất dễ quên một kênh hoặc gửi sai ngôn ngữ.
+
+\textbf{Giải pháp.} Tôi gom toàn bộ vào một điểm phát duy nhất --- \texttt{NotificationService.dispatch}. Nơi gọi chỉ cung cấp \textit{khoá nội dung} (key) cùng tham số; dịch vụ sẽ: (i) tra ngôn ngữ ưa thích của \textbf{từng} người nhận và \textit{kết xuất riêng} tiêu đề/nội dung theo ngôn ngữ đó; (ii) tạo bản ghi thông báo in-app cho tất cả; (iii) gửi push qua Expo cho những người có token hợp lệ, \textit{chia lô} 100 thông điệp mỗi lần theo giới hạn của Expo; và (iv) \textbf{tự dọn} các token hỏng (thiết bị gỡ app / token sai) mà Expo trả về, để cơ sở dữ liệu không tích luỹ token chết. Toàn bộ chạy theo kiểu ``gửi và quên'' (fire-and-forget) nên không làm chậm luồng nghiệp vụ chính.
+
+\textbf{Kết quả.} Mỗi người nhận thấy thông báo đúng ngôn ngữ của mình; mọi nơi trong hệ thống chỉ cần một lời gọi thống nhất để vừa lưu in-app vừa đẩy push; danh sách token luôn được làm sạch tự động.
+
+% ===========================================================================
+\section{Tổng kết chương}
+\label{section:5.7}
+
+Các giải pháp trên tuy thuộc những khía cạnh khác nhau (tương tranh, tích hợp dịch vụ ngoài, độ bền quy trình, an toàn giao dịch, bảo mật phiên, trải nghiệm thông báo) nhưng cùng chia sẻ một triết lý thiết kế: \textit{ưu tiên tính đúng đắn dưới điều kiện không lý tưởng} --- người dùng thao tác đồng thời, dịch vụ ngoài có thể lỗi, quy trình có thể bị bỏ ngang, và luôn tồn tại động cơ gian lận. Nhiều mẫu trong số này (compare-and-set, dự phòng + cache, đối soát theo thời hạn, bộ đếm phiên bản) có thể tái sử dụng cho nhiều hệ thống điều phối nguồn lực khác ngoài phạm vi chia sẻ thực phẩm.
+
+\ifSubfilesClassLoaded{\printbibliography{}}{}
+\end{document}

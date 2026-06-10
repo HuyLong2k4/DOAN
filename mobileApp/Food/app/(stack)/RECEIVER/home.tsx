@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert, AppState,
   ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
-import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { getMyStats, type ReceiverStats } from '../../../src/api/user.api';
@@ -13,6 +12,7 @@ import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '../../../src/theme/roleUi';
 import HomeHeader from '../../../src/components/HomeHeader';
+import { getCurrentGps } from '../../../src/utils/location';
 
 type DonationItem = {
   _id: string;
@@ -121,7 +121,7 @@ export default function HomeReceiverScreen() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const user = useAuthStore((s) => s.user);
-  const firstName = user?.full_name?.split(' ')[0] ?? 'Friend';
+  const displayName = user?.full_name?.trim() || 'Friend';
   const currentUserId = String((user as any)?.id || (user as any)?._id || '');
   const requestStatusMeta = getRequestStatusMeta(t);
 
@@ -134,31 +134,6 @@ export default function HomeReceiverScreen() {
   const [connectingDonationId, setConnectingDonationId] = useState<string | null>(null);
   const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
   const [stats, setStats] = useState<ReceiverStats | null>(null);
-  // Cache GPS trong session để khỏi xin quyền/đọc GPS mỗi lần focus lại home.
-  const lastGpsRef = useRef<{ latitude: number; longitude: number; at: number } | null>(null);
-
-  const getCurrentGps = useCallback(async (): Promise<{ latitude: number; longitude: number } | null> => {
-    try {
-      const cached = lastGpsRef.current;
-      if (cached && Date.now() - cached.at < 60_000) {
-        return { latitude: cached.latitude, longitude: cached.longitude };
-      }
-
-      const current = await Location.getForegroundPermissionsAsync();
-      let status = current.status;
-      if (status === 'undetermined') {
-        const req = await Location.requestForegroundPermissionsAsync();
-        status = req.status;
-      }
-      if (status !== 'granted') return null;
-
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      lastGpsRef.current = { latitude: loc.coords.latitude, longitude: loc.coords.longitude, at: Date.now() };
-      return { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
-    } catch {
-      return null;
-    }
-  }, []);
 
   const fetchData = useCallback(async () => {
     const gps = await getCurrentGps();
@@ -175,7 +150,7 @@ export default function HomeReceiverScreen() {
       donorPosts: (donorsRes.data?.data ?? []) as DonationItem[],
       stats: statsRes ? (statsRes.data.data as ReceiverStats) : null,
     };
-  }, [getCurrentGps]);
+  }, []);
 
   const applyData = useCallback((data: Awaited<ReturnType<typeof fetchData>>) => {
     setMyPosts(data.myPosts);
@@ -340,7 +315,7 @@ export default function HomeReceiverScreen() {
         <View style={styles.contentCard}>
           <HomeHeader
             greeting={t('receiver.greeting')}
-            firstName={firstName}
+            displayName={displayName}
             rolePrefix={t('receiver.rolePrefix')}
             roleLabel={t('receiver.role')}
             bellSize={22}

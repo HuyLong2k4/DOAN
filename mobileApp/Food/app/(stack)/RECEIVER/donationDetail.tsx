@@ -23,6 +23,7 @@ import { http } from '../../../src/api/http';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
+import { getCurrentGps } from '../../../src/utils/location';
 import { roleUi } from '@/src/theme/roleUi';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 
@@ -108,7 +109,10 @@ export default function ReceiverDonationDetailScreen() {
   const loadDetail = useCallback(async () => {
     if (!donationId) return;
     try {
-      const res = await http.get(`/food-donations/${donationId}`);
+      // Gửi GPS thật để khoảng cách khớp với màn home/donorList (cùng một mốc).
+      const gps = await getCurrentGps();
+      const params = gps ? { params: { lat: gps.latitude, lon: gps.longitude } } : undefined;
+      const res = await http.get(`/food-donations/${donationId}`, params);
       setData(res.data?.data || null);
     } catch (err: any) {
       Alert.alert(t('donationDetail.loadFailed'), err?.response?.data?.message || '');

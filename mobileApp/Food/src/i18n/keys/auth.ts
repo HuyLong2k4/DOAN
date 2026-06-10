@@ -79,6 +79,7 @@ export type AuthKey =
   | 'auth.details.locationPinned'
   | 'auth.details.editManually'
   | 'auth.details.submit'
+  | 'auth.details.reselectRole'
   | 'auth.details.errorOrgName'
   | 'auth.details.errorAddress'
   | 'auth.details.errorGeneric'
@@ -191,6 +192,7 @@ export const authEn: Record<AuthKey, string> = {
   'auth.details.locationPinned': 'Location pinned — you can still edit above',
   'auth.details.editManually': 'Edit manually',
   'auth.details.submit': 'Submit',
+  'auth.details.reselectRole': 'Choose a different role',
   'auth.details.errorOrgName': 'Please enter organization name.',
   'auth.details.errorAddress': 'Please enter full address.',
   'auth.details.errorGeneric': 'Something went wrong.',
@@ -304,6 +306,7 @@ export const authVi: Record<AuthKey, string> = {
   'auth.details.locationPinned': 'Đã chọn vị trí — bạn vẫn có thể chỉnh sửa bên trên',
   'auth.details.editManually': 'Chỉnh sửa thủ công',
   'auth.details.submit': 'Gửi',
+  'auth.details.reselectRole': 'Chọn lại vai trò',
   'auth.details.errorOrgName': 'Vui lòng nhập tên tổ chức.',
   'auth.details.errorAddress': 'Vui lòng nhập địa chỉ đầy đủ.',
   'auth.details.errorGeneric': 'Có lỗi xảy ra.',

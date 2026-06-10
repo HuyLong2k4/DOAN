@@ -30,7 +30,7 @@ const FAQS = [
 export default function HomeScreen() {
   const router    = useRouter();
   const user      = useAuthStore((s) => s.user);
-  const firstName = user?.full_name?.split(' ')[0] ?? 'there';
+  const displayName = user?.full_name?.trim() || 'there';
   const points    = user?.points ?? 0;
   const { level } = getRewardLevel(points, 'DONOR');
   const { t }     = useI18n();
@@ -283,7 +283,7 @@ export default function HomeScreen() {
         {/* ── Header ── */}
         <HomeHeader
           greeting={t('donor.greeting')}
-          firstName={firstName}
+          displayName={displayName}
           rolePrefix={t('donor.rolePrefix')}
           roleLabel={t('donor.role')}
           containerStyle={styles.header}

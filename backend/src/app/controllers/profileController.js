@@ -54,6 +54,17 @@ class ProfileController {
         }
     }
 
+    // ── PATCH /api/profile/reset-role ─────────────────────────────────────
+    // Đặt lại vai trò (sửa chọn nhầm) → đưa user về màn Select Role.
+    static async resetRole(req, res) {
+        try {
+            const result = await ProfileService.resetRoleForReselect(req.user.id, req.user.role);
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
     // ── PATCH /api/profile/volunteer/active-status ────────────────────────
     static async toggleActiveStatus(req, res) {
         try {

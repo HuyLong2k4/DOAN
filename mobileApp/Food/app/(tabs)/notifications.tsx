@@ -42,27 +42,27 @@ function useTimeAgo() {
   };
 }
 
+function roleHome(role?: string): string | null {
+  switch (role) {
+    case 'DONOR':     return '/(tabs)/DONOR/home';
+    case 'RECEIVER':  return '/(tabs)/RECEIVER/home';
+    case 'VOLUNTEER': return '/(tabs)/VOLUNTEER/home';
+    default:          return null;
+  }
+}
+
 function routeForNotification(type?: string | null, role?: string): string | null {
   if (!type) return null;
-  switch (type) {
-    case 'NEW_FOOD':
-    case 'ORDER_CONFIRMED':
-    case 'PICKUP_REMINDER':
-    case 'ORDER_REJECTED':
-      if (role === 'RECEIVER') return '/(tabs)/RECEIVER/home';
-      return null;
-    case 'NEW_ORDER':
-    case 'FOOD_EXPIRING':
-      if (role === 'DONOR') return '/(tabs)/DONOR/home';
-      return null;
-    case 'NEW_MESSAGE':
-      return '/(tabs)/message';
-    case 'FEEDBACK_RECEIVED':
-      // Donor/volunteer xem đánh giá → màn Achievement (có mục "Feedback received").
-      return '/(stack)/REWARD/rewards';
-    default:
-      return null;
-  }
+  // Tin nhắn chat → màn message.
+  if (type === 'NEW_MESSAGE') return '/(tabs)/message';
+  // Đánh giá nhận được (donor/volunteer) → màn Achievement (có mục "Feedback received").
+  if (type === 'FEEDBACK_RECEIVED') return '/(stack)/REWARD/rewards';
+  // Mọi sự kiện yêu cầu/đơn quyên góp còn lại (FOOD_REQUEST_ACCEPTED, NEW_FOOD_REQUEST,
+  // DONATION_CONNECT_APPROVED, VOLUNTEER_PICKUP_STARTED, DELIVERY_CONFIRMED, ...) →
+  // về home theo role hiện tại, nơi hiển thị request/donation kèm nút tiếp tục luồng
+  // (chọn cách nhận hàng, theo dõi giao hàng...). Backend chỉ gửi noti đúng role nên
+  // home luôn là điểm đến phù hợp.
+  return roleHome(role);
 }
 
 export default function NotificationsScreen() {

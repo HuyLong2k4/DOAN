@@ -27,10 +27,7 @@ export type CommonKey =
   | 'profile.signOutTitle'
   | 'profile.signOutConfirm'
   | 'profile.cancel'
-  | 'profile.languageEnglish'
-  | 'profile.languageVietnamese'
   | 'settings.title'
-  | 'settings.languageSection'
   | 'settings.changePasswordSection'
   | 'settings.oldPassword'
   | 'settings.newPassword'
@@ -122,10 +119,7 @@ export const commonEn: Record<CommonKey, string> = {
   'profile.signOutTitle': 'Sign Out',
   'profile.signOutConfirm': 'Are you sure you want to sign out?',
   'profile.cancel': 'Cancel',
-  'profile.languageEnglish': 'English',
-  'profile.languageVietnamese': 'Vietnamese',
   'settings.title': 'Settings',
-  'settings.languageSection': 'Language',
   'settings.changePasswordSection': 'Change password',
   'settings.oldPassword': 'Current password',
   'settings.newPassword': 'New password',
@@ -218,10 +212,7 @@ export const commonVi: Record<CommonKey, string> = {
   'profile.signOutTitle': 'Đăng xuất',
   'profile.signOutConfirm': 'Bạn có chắc chắn muốn đăng xuất không?',
   'profile.cancel': 'Hủy',
-  'profile.languageEnglish': 'Tiếng Anh',
-  'profile.languageVietnamese': 'Tiếng Việt',
   'settings.title': 'Cài đặt',
-  'settings.languageSection': 'Ngôn ngữ',
   'settings.changePasswordSection': 'Đổi mật khẩu',
   'settings.oldPassword': 'Mật khẩu hiện tại',
   'settings.newPassword': 'Mật khẩu mới',

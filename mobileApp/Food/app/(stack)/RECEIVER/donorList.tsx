@@ -18,6 +18,7 @@ import { http } from '../../../src/api/http';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
+import { getCurrentGps } from '../../../src/utils/location';
 import { roleUi } from '@/src/theme/roleUi';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 
@@ -77,7 +78,11 @@ export default function ReceiverDonorListScreen() {
   ];
 
   const fetchDonors = useCallback(async () => {
-    const res = await http.get('/food-donations');
+    // Gửi GPS thật giống màn home để khoảng cách của cùng một đơn nhất quán
+    // (nếu không truyền, backend fallback về toạ độ địa chỉ hồ sơ → số km lệch).
+    const gps = await getCurrentGps();
+    const params = gps ? { params: { lat: gps.latitude, lon: gps.longitude } } : undefined;
+    const res = await http.get('/food-donations', params);
     return (res.data?.data ?? []) as DonationItem[];
   }, []);
 

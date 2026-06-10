@@ -18,6 +18,9 @@ router.post('/receiver',         ProfileController.completeReceiverProfile);
 // POST /api/profile/volunteer   → Hoàn thành Volunteer profile (Volunteer Details form)
 router.post('/volunteer',        ProfileController.completeVolunteerProfile);
 
+// PATCH /api/profile/reset-role → Đặt lại vai trò để chọn lại (sửa chọn nhầm role)
+router.patch('/reset-role', ProfileController.resetRole);
+
 // PATCH /api/profile/volunteer/active-status → Volunteer bật/tắt nhận đơn
 router.patch('/volunteer/active-status', ProfileController.toggleActiveStatus);
 

@@ -7,7 +7,7 @@ const c = roleUi.colors;
 
 interface HomeHeaderProps {
   greeting: string;     // vd: t('donor.greeting')
-  firstName: string;
+  displayName: string;
   rolePrefix: string;   // vd: t('donor.rolePrefix')
   roleLabel: string;    // vd: t('donor.role')
   bellSize?: number;
@@ -21,7 +21,7 @@ interface HomeHeaderProps {
  */
 export default function HomeHeader({
   greeting,
-  firstName,
+  displayName,
   rolePrefix,
   roleLabel,
   bellSize = 26,
@@ -32,7 +32,7 @@ export default function HomeHeader({
   return (
     <View style={[styles.header, containerStyle]}>
       <View style={styles.textWrap}>
-        <Text style={styles.greeting}>{greeting} {firstName}</Text>
+        <Text style={styles.greeting}>{greeting} {displayName}</Text>
         <View style={styles.roleRow}>
           <Text style={styles.roleText}>{rolePrefix} </Text>
           <Text style={styles.roleBold}>{roleLabel}</Text>

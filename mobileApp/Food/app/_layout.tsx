@@ -107,24 +107,18 @@ export default function RootLayout() {
           else router.navigate('/(tabs)/message' as any);
           break;
         }
-        case 'NEW_FOOD':
-        case 'ORDER_REJECTED':
-          if (role === 'RECEIVER') router.navigate('/(tabs)/RECEIVER/home' as any);
-          break;
-        case 'NEW_ORDER':
-        case 'FOOD_EXPIRING':
-          if (role === 'DONOR') router.navigate('/(tabs)/DONOR/home' as any);
-          break;
-        case 'ORDER_CONFIRMED':
-        case 'PICKUP_REMINDER':
-          if (role === 'RECEIVER') router.navigate('/(tabs)/RECEIVER/home' as any);
-          break;
         case 'FEEDBACK_RECEIVED':
           // Donor/volunteer xem đánh giá → màn Achievement.
           router.navigate('/(stack)/REWARD/rewards' as any);
           break;
         default:
-          router.navigate('/(tabs)/notifications' as any);
+          // Mọi noti yêu cầu/đơn còn lại → về home theo role (nơi xem & tiếp tục luồng).
+          // Chưa xác định được role (vd: cold start chưa load profile) → mở danh sách noti.
+          if (role === 'DONOR' || role === 'RECEIVER' || role === 'VOLUNTEER') {
+            router.navigate(homeRouteByRole(role) as any);
+          } else {
+            router.navigate('/(tabs)/notifications' as any);
+          }
       }
     });
     return () => sub.remove();
@@ -162,18 +156,19 @@ export default function RootLayout() {
     }
 
     if (user?.profile_completed) {
-      // Volunteer should use VOLUNTEER/home tab entry, not donor home tab entries.
-      if (inTabsGroup && user.role === 'VOLUNTEER' && (segments[1] ?? '') === 'DONOR') {
-        router.replace('/(tabs)/VOLUNTEER/home' as any);
+      const roleNamespaces = ['DONOR', 'RECEIVER', 'VOLUNTEER'];
+      const tabsNamespace = segments[1] ?? '';
+
+      // Tabs group: nếu đang ở tab home của role KHÁC role hiện tại, đưa về đúng home.
+      // Xảy ra khi tab navigator fallback về screen khai báo đầu tiên (DONOR/home) —
+      // vd: receiver back ra khỏi tab ẩn (notifications) thì lạc sang home của donor.
+      // Bao phủ mọi cặp role lệch nhau (trước đây chỉ xử lý VOLUNTEER↔DONOR, bỏ sót RECEIVER).
+      if (inTabsGroup && roleNamespaces.includes(tabsNamespace) && tabsNamespace !== user.role) {
+        router.replace(homeRouteByRole(user.role) as any);
         return;
       }
 
-      // Donor should use donor home tab entry, not volunteer home tab.
-      if (inTabsGroup && user.role === 'DONOR' && (segments[1] ?? '') === 'VOLUNTEER') {
-        router.replace('/(tabs)/DONOR/home' as any);
-        return;
-      }
-      const roleNamespaces = ['DONOR', 'RECEIVER', 'VOLUNTEER'];
+      // Stack group: tương tự cho các màn (stack)/<ROLE>/...
       if (inStackGroup && roleNamespaces.includes(stackNamespace) && stackNamespace !== user.role) {
         router.replace(homeRouteByRole(user.role) as any);
       }

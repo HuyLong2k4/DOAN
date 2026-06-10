@@ -13,7 +13,7 @@ const User = require('../../models/userModel');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
 const Feedback = require('../../models/feedbackModel');
-const { distanceKm, getRoadDistancesFromGoogle, getViewerLocation, isValidCoord } = require('./distance');
+const { distanceKm, getViewerLocation, isValidCoord } = require('./distance');
 const { computeReleaseReceiverEligibility } = require('./donorActions');
 
 function _error(message, statusCode = 400) {
@@ -70,34 +70,17 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
             ? viewerLocationOverride
             : await getViewerLocation(viewer);
 
-    const distanceCandidates = [];
-    if (viewerLocation) {
-        donations.forEach((d) => {
-            const profile = profileMap[d.donor_id?._id?.toString()];
-            if (!isValidCoord(profile?.latitude, profile?.longitude)) return;
-            distanceCandidates.push({
-                id: d._id.toString(),
-                latitude: profile.latitude,
-                longitude: profile.longitude,
-            });
-        });
-    }
-
-    const googleDistanceMap = await getRoadDistancesFromGoogle(viewerLocation, distanceCandidates);
-
     let enriched = donations.map((d) => {
         const profile = profileMap[d.donor_id?._id?.toString()];
 
         let pickup_distance_km = null;
         if (viewerLocation && isValidCoord(profile?.latitude, profile?.longitude)) {
-            pickup_distance_km =
-                googleDistanceMap?.get(d._id.toString()) ??
-                distanceKm(
-                    viewerLocation.latitude,
-                    viewerLocation.longitude,
-                    profile.latitude,
-                    profile.longitude,
-                );
+            pickup_distance_km = distanceKm(
+                viewerLocation.latitude,
+                viewerLocation.longitude,
+                profile.latitude,
+                profile.longitude,
+            );
         }
 
         return {
@@ -454,7 +437,7 @@ async function getVolunteerDeliveryDetail(donationId, volunteerId) {
 
 // ── GET /api/food-donations/:id ─────────────────────────────────────────────
 // Lấy chi tiết 1 đơn (full images + description + donor info + pickup address).
-async function getDonationById(donationId, viewer = null) {
+async function getDonationById(donationId, viewer = null, viewerLocationOverride = null) {
     const donation = await FoodDonation.findById(donationId)
         .populate('donor_id', 'full_name avatar_url phone_number')
         .lean();
@@ -471,16 +454,12 @@ async function getDonationById(donationId, viewer = null) {
         : null;
 
     let pickup_distance_km = null;
-    const viewerLocation = await getViewerLocation(viewer);
+    const viewerLocation =
+        (viewerLocationOverride && isValidCoord(viewerLocationOverride.latitude, viewerLocationOverride.longitude))
+            ? viewerLocationOverride
+            : await getViewerLocation(viewer);
     if (viewerLocation && isValidCoord(donorProfile?.latitude, donorProfile?.longitude)) {
-        const candidates = [{
-            id: String(donation._id),
-            latitude: donorProfile.latitude,
-            longitude: donorProfile.longitude,
-        }];
-        const googleMap = await getRoadDistancesFromGoogle(viewerLocation, candidates);
         pickup_distance_km =
-            googleMap?.get(String(donation._id)) ??
             distanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
     }
 

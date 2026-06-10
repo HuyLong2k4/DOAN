@@ -1,0 +1,387 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{FoodWasteReport2024}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=2fdde55bb5e9e8ba64a258bd2e4bb33b}{%
+           family={{UNEP}},
+           familyi={U\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {United Nations Environment Programme}%
+      }
+      \list{location}{1}{%
+        {Nairobi}%
+      }
+      \strng{namehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{fullhash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{fullhashraw}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{bibnamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorbibnamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authornamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorfullhash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorfullhashraw}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Food Waste Index Report 2024}
+      \field{type}{Report}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://www.unep.org/resources/publication/food-waste-index-report-2024
+      \endverb
+      \verb{url}
+      \verb https://www.unep.org/resources/publication/food-waste-index-report-2024
+      \endverb
+    \endentry
+    \entry{TheStateofFoodSecurityandNutrition2023}{report}{}{}
+      \name{author}{5}{}{%
+        {{hash=4807e0aebe86c17f559853f35515b533}{%
+           family={{FAO}},
+           familyi={F\bibinitperiod}}}%
+        {{hash=3c0067fadb951fbb8da3ec89314eded7}{%
+           family={{IFAD}},
+           familyi={I\bibinitperiod}}}%
+        {{hash=d13783605ea066c4fee77fe8192de83a}{%
+           family={{UNICEF}},
+           familyi={U\bibinitperiod}}}%
+        {{hash=8af5c2278136b36a59c8185541581d4e}{%
+           family={{WFP}},
+           familyi={W\bibinitperiod}}}%
+        {{hash=9ed1e9f759b27c20c0ee8a56113c84e3}{%
+           family={{WHO}},
+           familyi={W\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {FAO}%
+      }
+      \list{location}{1}{%
+        {Rome}%
+      }
+      \strng{namehash}{f7a4e7b7fb0cb572697a09b1003fc1e6}
+      \strng{fullhash}{f210780a485b8cbce28c2b937fc94f6b}
+      \strng{fullhashraw}{f210780a485b8cbce28c2b937fc94f6b}
+      \strng{bibnamehash}{f210780a485b8cbce28c2b937fc94f6b}
+      \strng{authorbibnamehash}{f210780a485b8cbce28c2b937fc94f6b}
+      \strng{authornamehash}{f7a4e7b7fb0cb572697a09b1003fc1e6}
+      \strng{authorfullhash}{f210780a485b8cbce28c2b937fc94f6b}
+      \strng{authorfullhashraw}{f210780a485b8cbce28c2b937fc94f6b}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The State of Food Security and Nutrition in the World 2023}
+      \field{type}{Report}
+      \field{year}{2023}
+      \verb{doi}
+      \verb 10.4060/cc3017en
+      \endverb
+    \endentry
+    \entry{FoodWasteReport2021}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=2fdde55bb5e9e8ba64a258bd2e4bb33b}{%
+           family={{UNEP}},
+           familyi={U\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {United Nations Environment Programme}%
+      }
+      \list{location}{1}{%
+        {Nairobi}%
+      }
+      \strng{namehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{fullhash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{fullhashraw}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{bibnamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorbibnamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authornamehash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorfullhash}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \strng{authorfullhashraw}{2fdde55bb5e9e8ba64a258bd2e4bb33b}
+      \field{extraname}{2}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Food Waste Index Report 2021}
+      \field{type}{Report}
+      \field{year}{2021}
+      \verb{urlraw}
+      \verb https://www.unep.org/resources/publication/food-waste-index-report-2024
+      \endverb
+      \verb{url}
+      \verb https://www.unep.org/resources/publication/food-waste-index-report-2024
+      \endverb
+    \endentry
+    \entry{CELConsulting2018}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=e29062d6d5f9b492dc98e44a4d4b0208}{%
+           family={{CEL Consulting}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{fullhash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{fullhashraw}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{bibnamehash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{authorbibnamehash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{authornamehash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{authorfullhash}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \strng{authorfullhashraw}{e29062d6d5f9b492dc98e44a4d4b0208}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{8}
+      \field{title}{Food Losses in {Vietnam}: The Shocking Reality}
+      \field{year}{2018}
+      \verb{urlraw}
+      \verb https://www.cel-consulting.com/post/2018/08/10/food-losses-in-vietnam-the-shocking-reality
+      \endverb
+      \verb{url}
+      \verb https://www.cel-consulting.com/post/2018/08/10/food-losses-in-vietnam-the-shocking-reality
+      \endverb
+    \endentry
+    \entry{BaoTinTuc2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=862b19c2ced9930d34da255fe6705ac7}{%
+           family={{Báo Tin tức}},
+           familyi={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{fullhash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{fullhashraw}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{bibnamehash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{authorbibnamehash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{authornamehash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{authorfullhash}{862b19c2ced9930d34da255fe6705ac7}
+      \strng{authorfullhashraw}{862b19c2ced9930d34da255fe6705ac7}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{1}
+      \field{title}{Giải pháp xử lý rác thải thành tài nguyên}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://baotintuc.vn/xa-hoi/giai-phap-xu-ly-rac-thai-thanh-tai-nguyen-20240119085505125.htm
+      \endverb
+      \verb{url}
+      \verb https://baotintuc.vn/xa-hoi/giai-phap-xu-ly-rac-thai-thanh-tai-nguyen-20240119085505125.htm
+      \endverb
+    \endentry
+    \entry{ThuVienPhapLuat2025}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=a333817812e8dfeafba71a34cc12aa4d}{%
+           family={{Thư viện Pháp luật}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{fullhash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{fullhashraw}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{bibnamehash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{authorbibnamehash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{authornamehash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{authorfullhash}{a333817812e8dfeafba71a34cc12aa4d}
+      \strng{authorfullhashraw}{a333817812e8dfeafba71a34cc12aa4d}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Kết quả rà soát hộ nghèo, hộ cận nghèo năm 2025 theo chuẩn nghèo đa chiều giai đoạn 2022-2025}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://thuvienphapluat.vn/phap-luat/ho-tro-phap-luat/ket-qua-ra-soat-ho-ngheo-ho-can-ngheo-nam-2025-theo-chuan-ngheo-da-chieu-giai-doan-2022--2025-theo--258211.html
+      \endverb
+      \verb{url}
+      \verb https://thuvienphapluat.vn/phap-luat/ho-tro-phap-luat/ket-qua-ra-soat-ho-ngheo-ho-can-ngheo-nam-2025-theo-chuan-ngheo-da-chieu-giai-doan-2022--2025-theo--258211.html
+      \endverb
+    \endentry
+    \entry{FoodBankVietnam_Home}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=eead056eb03db8211e1af7f1d19693ed}{%
+           family={{Food Bank Vietnam}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{fullhash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{fullhashraw}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{bibnamehash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{authorbibnamehash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{authornamehash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{authorfullhash}{eead056eb03db8211e1af7f1d19693ed}
+      \strng{authorfullhashraw}{eead056eb03db8211e1af7f1d19693ed}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Trang chủ {Food Bank Vietnam}}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://foodbankvietnam.com/
+      \endverb
+      \verb{url}
+      \verb https://foodbankvietnam.com/
+      \endverb
+    \endentry
+    \entry{USDA_DangerZone}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=7a90d34755c9d2ea119e3a512aea8cf2}{%
+           family={{USDA Food Safety and Inspection Service}},
+           familyi={U\bibinitperiod}}}%
+      }
+      \strng{namehash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{fullhash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{fullhashraw}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{bibnamehash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{authorbibnamehash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{authornamehash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{authorfullhash}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \strng{authorfullhashraw}{7a90d34755c9d2ea119e3a512aea8cf2}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Danger Zone (40 {$^\circ$}F - 140 {$^\circ$}F)}
+      \field{year}{2017}
+      \verb{urlraw}
+      \verb https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/danger-zone-40f-140f
+      \endverb
+      \verb{url}
+      \verb https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/danger-zone-40f-140f
+      \endverb
+    \endentry
+    \entry{BoCongThuong_COP26}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=5ed79e9cdcee89f3b6d8a1cd08aa3a43}{%
+           family={{Bộ Công Thương}},
+           familyi={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{fullhash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{fullhashraw}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{bibnamehash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{authorbibnamehash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{authornamehash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{authorfullhash}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \strng{authorfullhashraw}{5ed79e9cdcee89f3b6d8a1cd08aa3a43}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{7}
+      \field{title}{Nỗ lực thực hiện các cam kết của {Việt Nam} tại Hội nghị {COP26}}
+      \field{year}{2022}
+      \verb{urlraw}
+      \verb https://moit.gov.vn/bao-ve-moi-truong/no-luc-thuc-hien-cac-cam-ket-cua-viet-nam-tai-hoi-nghi-cop26.html
+      \endverb
+      \verb{url}
+      \verb https://moit.gov.vn/bao-ve-moi-truong/no-luc-thuc-hien-cac-cam-ket-cua-viet-nam-tai-hoi-nghi-cop26.html
+      \endverb
+    \endentry
+    \entry{UN_Agenda2030}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=3cc54e2c0d69c1b76b4d49edb22dd6d1}{%
+           family={{United Nations}},
+           familyi={U\bibinitperiod}}}%
+      }
+      \list{organization}{1}{%
+        {A/RES/70/1}%
+      }
+      \strng{namehash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{fullhash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{fullhashraw}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{bibnamehash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{authorbibnamehash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{authornamehash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{authorfullhash}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \strng{authorfullhashraw}{3cc54e2c0d69c1b76b4d49edb22dd6d1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Transforming our world: the 2030 Agenda for Sustainable Development}
+      \field{year}{2015}
+      \verb{urlraw}
+      \verb https://sdgs.un.org/2030agenda
+      \endverb
+      \verb{url}
+      \verb https://sdgs.un.org/2030agenda
+      \endverb
+    \endentry
+    \entry{TooGoodToGo}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=a7bf0afc5cd98df148cf5db1799657f9}{%
+           family={{Too Good To Go}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{fullhash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{fullhashraw}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{bibnamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorbibnamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authornamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorfullhash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorfullhashraw}{a7bf0afc5cd98df148cf5db1799657f9}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About us}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://www.toogoodtogo.com/en/about-us
+      \endverb
+      \verb{url}
+      \verb https://www.toogoodtogo.com/en/about-us
+      \endverb
+    \endentry
+    \entry{Olio}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=879d236575ab594d46353af9c74e110e}{%
+           family={{OLIO}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{879d236575ab594d46353af9c74e110e}
+      \strng{fullhash}{879d236575ab594d46353af9c74e110e}
+      \strng{fullhashraw}{879d236575ab594d46353af9c74e110e}
+      \strng{bibnamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorbibnamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authornamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorfullhash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorfullhashraw}{879d236575ab594d46353af9c74e110e}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About us}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://olioapp.com/en/
+      \endverb
+      \verb{url}
+      \verb https://olioapp.com/en/
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

@@ -5,7 +5,7 @@ import {
   ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { completeReceiverProfile } from '../../src/api/profile.api';
+import { completeReceiverProfile, resetRole } from '../../src/api/profile.api';
 import LocationPickerModal, { PickedLocation } from '../../src/components/LocationPickerModal';
 import { useI18n } from '../../src/i18n/useI18n';
 import { useAuthStore } from '../../src/store/authStore';
@@ -102,6 +102,16 @@ export default function ReceiverDetails() {
     }
   };
 
+  const handleReselectRole = async () => {
+    try {
+      const res = await resetRole();
+      setUser(res.data.user);
+      router.replace('/(auth)/selectRole');
+    } catch (e: any) {
+      setErr(e?.response?.data?.message || t('auth.details.errorGeneric'));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -179,6 +189,10 @@ export default function ReceiverDetails() {
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('auth.details.submit')}</Text>}
           </TouchableOpacity>
 
+          <TouchableOpacity onPress={handleReselectRole} disabled={loading}>
+            <Text style={styles.reselectText}>{t('auth.details.reselectRole')}</Text>
+          </TouchableOpacity>
+
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -218,4 +232,5 @@ const styles = StyleSheet.create({
   pinnedNote:    { textAlign: 'center', color: roleUi.colors.success, fontSize: 12, marginTop: 4 },
   btn:           { backgroundColor: roleUi.colors.primary, borderRadius: 6, height: 50, justifyContent: 'center', alignItems: 'center', marginTop: 24 },
   btnText:       { color: '#fff', fontWeight: '700', fontSize: 16 },
+  reselectText:  { textAlign: 'center', color: '#888', fontSize: 13, marginTop: 18, textDecorationLine: 'underline' },
 });

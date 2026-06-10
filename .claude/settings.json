@@ -128,7 +128,24 @@
       "Bash(powershell -Command 'Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike '\\\\''127.*'\\\\'' -and $_.IPAddress -notlike '\\\\''169.*'\\\\''} | Select-Object IPAddress,InterfaceAlias | Format-Table -AutoSize')",
       "Bash(powershell -Command 'try { $r = Invoke-RestMethod -Uri '\\\\''http://127.0.0.1:5000/api/auth/login'\\\\'' -Method Post -ContentType '\\\\''application/json'\\\\'' -Body '\\\\''{\"identifier\":\"0905100001\",\"password\":\"123456\"}'\\\\''; Write-Output \\('\\\\''LOGIN OK -> '\\\\'' + $r.user.full_name + '\\\\'' / role='\\\\'' + $r.user.role + '\\\\'' / token='\\\\'' + $r.accessToken.Substring\\(0,16\\) + '\\\\''...'\\\\''\\) } catch { Write-Output \\('\\\\''LOGIN FAIL: '\\\\'' + $_.Exception.Message\\); if \\($_.ErrorDetails\\) { Write-Output $_.ErrorDetails.Message } }')",
       "Bash(powershell -Command ' *)",
-      "Bash(node -e \"require\\('./src/app/services/profileService'\\); require\\('./src/app/controllers/profileController'\\); require\\('./src/app/routes/profileRoutes'\\); console.log\\('✅ backend profile modules load OK'\\)\")"
+      "Bash(node -e \"require\\('./src/app/services/profileService'\\); require\\('./src/app/controllers/profileController'\\); require\\('./src/app/routes/profileRoutes'\\); console.log\\('✅ backend profile modules load OK'\\)\")",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5000,9229 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { $p = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; [PSCustomObject]@{ Port=$_.LocalPort; PID=$_.OwningProcess; Name=$p.ProcessName; Path=$p.Path } } | Format-Table -AutoSize)",
+      "PowerShell(try { Invoke-RestMethod -Uri 'http://127.0.0.1:5000/api/profile/reset-role' -Method Patch -ErrorAction Stop } catch { Write-Output \\(\"HTTP status = \" + [int]$_.Exception.Response.StatusCode + \" \\(\" + $_.Exception.Response.StatusCode + \"\\)\"\\) })",
+      "PowerShell(try { $x = [xml]\\(Get-Content \"d:\\\\Đồ án\\\\Báo cáo đồ án\\\\Hinhve\\\\Khaosat\\\\UC_TongQuan.svg\" -Raw -Encoding UTF8\\); Write-Output \\(\"SVG hop le. Root=<\" + $x.DocumentElement.Name + \">, so phan tu con=\" + $x.svg.ChildNodes.Count\\) } catch { Write-Output \\(\"XML LOI: \" + $_.Exception.Message\\) })",
+      "Bash(where java *)",
+      "Bash(where npx *)",
+      "Bash(npx -y @resvg/resvg-js-cli WF_ChiTietBaiUngHo.svg WF_ChiTietBaiUngHo.png --width 880)",
+      "Bash(npx -y @resvg/resvg-js-cli --help)",
+      "Bash(npx -y @resvg/resvg-js-cli --fit-zoom 2 --font-sans-serif-family \"Segoe UI\" WF_ChiTietBaiUngHo.svg WF_ChiTietBaiUngHo.png)",
+      "Bash(npx -y @resvg/resvg-js-cli --fit-zoom 2 --font-sans-serif-family \"Segoe UI\" WF_TaoBaiUngHo.svg WF_TaoBaiUngHo.png)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('expo-router', p.dependencies['expo-router']\\); console.log\\('expo', p.dependencies['expo']\\);\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\);\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({path:'.env'}\\); const u=process.env.MONGO_URI||''; if\\(!u\\){console.log\\('NO MONGO_URI'\\);process.exit\\(0\\);} const m=u.match\\(/@\\([^/]+\\)\\\\/\\([^?]+\\)/\\)||u.match\\(/\\\\/\\\\/\\([^/]+\\)\\\\/\\([^?]+\\)/\\); const isAtlas=/mongodb\\\\+srv/.test\\(u\\)||/mongodb\\\\.net/.test\\(u\\); console.log\\('scheme:', u.split\\(':'\\)[0]\\); console.log\\('isAtlas/remote:', isAtlas\\); console.log\\('host:', m?m[1]:'\\(unparsed\\)'\\); console.log\\('db:', m?m[2]:'\\(unparsed\\)'\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const t=fs.readFileSync\\('.env','utf8'\\);console.log\\(t.split\\(/\\\\r?\\\\n/\\).map\\(l=>l.replace\\(/=.*/, m=> l.startsWith\\('#'\\)||!l.includes\\('='\\)?m:'=<đã ẩn>'\\)\\).join\\('\\\\n'\\)\\);\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const k=process.env.GOOGLE_MAPS_API_KEY||''; console.log\\('length:', k.length\\); console.log\\('prefix:', k.slice\\(0,4\\)\\); console.log\\('looks like Google key \\(AIza...\\):', k.startsWith\\('AIza'\\)\\); console.log\\('empty/placeholder:', k.length<20\\);\")",
+      "Bash(node -c src/app/services/foodDonation/distance.js)",
+      "Bash(node --check \"d:/Đồ án/backend/scripts/seed.js\")",
+      "Bash(findstr /I \"reward redem\")"
     ]
   }
 }

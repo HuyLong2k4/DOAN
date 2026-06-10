@@ -193,6 +193,27 @@ class ProfileService {
         await profile.save();
         return { is_active: profile.is_active };
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // PATCH /api/profile/reset-role
+    // Đặt lại vai trò để user chọn lại từ đầu (sửa trường hợp chọn nhầm role).
+    // Xoá hồ sơ của role hiện tại, đưa role về UNSET + profile_completed=false
+    // → guard điều hướng app quay về màn Select Role.
+    // ──────────────────────────────────────────────────────────────────────
+    static async resetRoleForReselect(userId, currentRole) {
+        if (currentRole === 'DONOR')     await DonorProfile.deleteOne({ user_id: userId });
+        if (currentRole === 'RECEIVER')  await ReceiverProfile.deleteOne({ user_id: userId });
+        if (currentRole === 'VOLUNTEER') await VolunteerProfile.deleteOne({ user_id: userId });
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { role: 'UNSET', profile_completed: false, onboarding_step: 2 },
+            { new: true }
+        );
+        if (!user) throw this._error('Không tìm thấy tài khoản.', 404);
+
+        return { message: 'Đã đặt lại vai trò. Vui lòng chọn lại.', user: this._safeUser(user) };
+    }
 }
 
 module.exports = ProfileService;

@@ -58,8 +58,8 @@ class FoodDonationService {
     static getDonations(viewer, filter, viewerLocationOverride) {
         return queries.getDonations(viewer, filter, viewerLocationOverride);
     }
-    static getDonationById(donationId, viewer) {
-        return queries.getDonationById(donationId, viewer);
+    static getDonationById(donationId, viewer, viewerLocationOverride) {
+        return queries.getDonationById(donationId, viewer, viewerLocationOverride);
     }
     static getMyDonations(donorId) {
         return queries.getMyDonations(donorId);

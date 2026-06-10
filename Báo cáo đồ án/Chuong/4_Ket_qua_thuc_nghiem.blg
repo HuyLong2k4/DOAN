@@ -1,0 +1,9 @@
+[5] Config.pm:328> INFO - This is Biber 2.21
+[6] Config.pm:331> INFO - Logfile is '4_Ket_qua_thuc_nghiem.blg'
+[209] biber:342> INFO - === Tue Jun  9, 2026, 13:02:39
+[279] Biber.pm:421> INFO - Reading '4_Ket_qua_thuc_nghiem.bcf'
+[425] Biber.pm:1002> INFO - Found 0 citekeys in bib section 0
+[461] bbl.pm:676> INFO - Writing '4_Ket_qua_thuc_nghiem.bbl' with encoding 'UTF-8'
+[462] bbl.pm:779> INFO - Output to 4_Ket_qua_thuc_nghiem.bbl
+[462] Biber.pm:132> WARN - The file '4_Ket_qua_thuc_nghiem.bcf' does not contain any citations!
+[462] Biber.pm:134> INFO - WARNINGS: 1

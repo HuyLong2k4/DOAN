@@ -68,3 +68,7 @@ export const completeReceiverProfile = (data: ReceiverProfileRequest): Promise<A
 // UI: Volunteer Details form
 export const completeVolunteerProfile = (data: VolunteerProfileRequest): Promise<AxiosResponse<ProfileResponse>> =>
   http.post('/profile/volunteer', data);
+
+// UI: Đổi / chọn lại vai trò — reset role về UNSET, app tự đưa về màn Select Role
+export const resetRole = (): Promise<AxiosResponse<ProfileResponse>> =>
+  http.patch('/profile/reset-role');

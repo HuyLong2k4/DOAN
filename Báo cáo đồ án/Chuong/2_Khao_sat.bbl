@@ -1,0 +1,79 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{TooGoodToGo}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=a7bf0afc5cd98df148cf5db1799657f9}{%
+           family={{Too Good To Go}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{fullhash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{fullhashraw}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{bibnamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorbibnamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authornamehash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorfullhash}{a7bf0afc5cd98df148cf5db1799657f9}
+      \strng{authorfullhashraw}{a7bf0afc5cd98df148cf5db1799657f9}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About us}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://www.toogoodtogo.com/en/about-us
+      \endverb
+      \verb{url}
+      \verb https://www.toogoodtogo.com/en/about-us
+      \endverb
+    \endentry
+    \entry{Olio}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=879d236575ab594d46353af9c74e110e}{%
+           family={{OLIO}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{879d236575ab594d46353af9c74e110e}
+      \strng{fullhash}{879d236575ab594d46353af9c74e110e}
+      \strng{fullhashraw}{879d236575ab594d46353af9c74e110e}
+      \strng{bibnamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorbibnamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authornamehash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorfullhash}{879d236575ab594d46353af9c74e110e}
+      \strng{authorfullhashraw}{879d236575ab594d46353af9c74e110e}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About us}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://olioapp.com/en/
+      \endverb
+      \verb{url}
+      \verb https://olioapp.com/en/
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
