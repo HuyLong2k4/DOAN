@@ -13,7 +13,7 @@ const User = require('../../models/userModel');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
 const Feedback = require('../../models/feedbackModel');
-const { distanceKm, getViewerLocation, isValidCoord } = require('./distance');
+const { roadDistanceKm, getViewerLocation, isValidCoord } = require('./distance');
 const { computeReleaseReceiverEligibility } = require('./donorActions');
 
 function _error(message, statusCode = 400) {
@@ -70,12 +70,12 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
             ? viewerLocationOverride
             : await getViewerLocation(viewer);
 
-    let enriched = donations.map((d) => {
+    let enriched = await Promise.all(donations.map(async (d) => {
         const profile = profileMap[d.donor_id?._id?.toString()];
 
         let pickup_distance_km = null;
         if (viewerLocation && isValidCoord(profile?.latitude, profile?.longitude)) {
-            pickup_distance_km = distanceKm(
+            pickup_distance_km = await roadDistanceKm(
                 viewerLocation.latitude,
                 viewerLocation.longitude,
                 profile.latitude,
@@ -91,7 +91,7 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
             pickup_longitude:    isValidCoord(profile?.latitude, profile?.longitude) ? profile.longitude : null,
             pickup_distance_km,
         };
-    });
+    }));
 
     if (viewer?.role === 'VOLUNTEER' && viewer?.id) {
         // Sắp xếp theo khoảng cách tăng dần (gần nhất trước), tie-break theo
@@ -460,13 +460,23 @@ async function getDonationById(donationId, viewer = null, viewerLocationOverride
             : await getViewerLocation(viewer);
     if (viewerLocation && isValidCoord(donorProfile?.latitude, donorProfile?.longitude)) {
         pickup_distance_km =
-            distanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
+            await roadDistanceKm(viewerLocation.latitude, viewerLocation.longitude, donorProfile.latitude, donorProfile.longitude);
     }
 
     // Chủ đơn (donor) xem chi tiết: kèm thông tin người nhận đã ghép + mã lấy
     // hàng để đọc cho volunteer. Chỉ owner mới thấy để tránh lộ thông tin
     // receiver cho người dùng khác fetch theo id.
     const isOwner = viewer?.id && donorObjectId && String(donorObjectId) === String(viewer.id);
+
+    // SĐT donor chỉ lộ cho người trong đơn (owner / receiver đã chốt / volunteer
+    // đã gán). Receiver đang cân nhắc connect KHÔNG được thấy số — tránh lộ/spam.
+    const viewerId = viewer?.id ? String(viewer.id) : null;
+    const isSelectedReceiver = Boolean(viewerId && donation.selected_receiver_id
+        && String(donation.selected_receiver_id) === viewerId);
+    const isAssignedVolunteer = Boolean(viewerId && donation.volunteer_id
+        && String(donation.volunteer_id) === viewerId);
+    const canSeeDonorContact = Boolean(isOwner) || isSelectedReceiver || isAssignedVolunteer;
+
     let selected_receiver = null;
     let pickup_code = null;
     let delivery_status = null;
@@ -486,8 +496,16 @@ async function getDonationById(donationId, viewer = null, viewerLocationOverride
     }
 
     const donorHasValidCoord = isValidCoord(donorProfile?.latitude, donorProfile?.longitude);
+
+    let donor_id = donation.donor_id;
+    if (!canSeeDonorContact && donor_id && typeof donor_id === 'object') {
+        const { phone_number, ...donorPublic } = donor_id;
+        donor_id = donorPublic;
+    }
+
     return {
         ...donation,
+        donor_id,
         pickup_address_line: donorProfile?.address_line ?? null,
         pickup_city:         donorProfile?.city         ?? null,
         pickup_latitude:     donorHasValidCoord ? donorProfile.latitude  : null,

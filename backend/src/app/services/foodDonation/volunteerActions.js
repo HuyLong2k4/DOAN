@@ -11,6 +11,13 @@ const User = require('../../models/userModel');
 const NotificationService = require('../notificationService');
 const pickupCodeUtil = require('./pickupCode');
 
+// Giới hạn số đơn một volunteer được "gánh" cùng lúc — chặn một tài khoản ôm
+// cả mẻ rồi bỏ trốn, đồng thời tránh volunteer nhận quá sức. Đếm mọi delivery
+// chưa kết thúc, KỂ CẢ AWAITING_CONFIRMATION, để volunteer không thể markDelivered
+// nhằm xả slot rồi nhận thêm đơn (chỉ DELIVERED/CANCELLED mới được trừ ra).
+const MAX_ACTIVE_DELIVERIES_PER_VOLUNTEER = 3;
+const ACTIVE_DELIVERY_STATUSES = ['AGENT_ASSIGNED', 'ON_THE_WAY', 'AWAITING_CONFIRMATION'];
+
 function _error(message, statusCode = 400) {
     return Object.assign(new Error(message), { statusCode });
 }
@@ -34,6 +41,20 @@ async function acceptDonationByVolunteer(donationId, volunteerId) {
 
     if (!delivery) {
         throw _error('Không tìm thấy delivery của đơn này.', 404);
+    }
+
+    // Cap số đơn đang gánh. Race hiếm: hai accept đồng thời có thể vượt cap
+    // đúng 1 đơn — chấp nhận được vì lần kế tiếp vẫn bị chặn, không cho ôm vô hạn.
+    const activeCount = await Delivery.countDocuments({
+        volunteer_id: volunteerId,
+        status: { $in: ACTIVE_DELIVERY_STATUSES },
+    });
+    if (activeCount >= MAX_ACTIVE_DELIVERIES_PER_VOLUNTEER) {
+        throw _error(
+            `Bạn đang có ${activeCount} đơn chưa hoàn tất. Hãy giao xong trước khi nhận thêm `
+            + `(tối đa ${MAX_ACTIVE_DELIVERIES_PER_VOLUNTEER} đơn cùng lúc).`,
+            409,
+        );
     }
 
     const updated = await FoodDonation.findOneAndUpdate(

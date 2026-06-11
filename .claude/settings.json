@@ -145,7 +145,9 @@
       "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const k=process.env.GOOGLE_MAPS_API_KEY||''; console.log\\('length:', k.length\\); console.log\\('prefix:', k.slice\\(0,4\\)\\); console.log\\('looks like Google key \\(AIza...\\):', k.startsWith\\('AIza'\\)\\); console.log\\('empty/placeholder:', k.length<20\\);\")",
       "Bash(node -c src/app/services/foodDonation/distance.js)",
       "Bash(node --check \"d:/Đồ án/backend/scripts/seed.js\")",
-      "Bash(findstr /I \"reward redem\")"
+      "Bash(findstr /I \"reward redem\")",
+      "Bash(git checkout *)",
+      "Bash(node --check src/app/services/foodDonation/distance.js)"
     ]
   }
 }

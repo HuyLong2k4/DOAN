@@ -417,32 +417,36 @@ export default function ReceiverDonationDetailScreen() {
               ) : null}
             </View>
           </View>
-          <View style={styles.donorActions}>
-            <TouchableOpacity
-              style={[styles.donorActionBtn, !donorPhone && styles.donorActionBtnDisabled]}
-              onPress={onCallDonor}
-              disabled={!donorPhone}
-            >
-              <Ionicons name="call-outline" size={15} color={donorPhone ? roleUi.colors.primaryStrong : '#8A8A8A'} />
-              <Text style={[styles.donorActionText, !donorPhone && { color: '#8A8A8A' }]}>
-                {t('donationDetail.callDonor')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.donorActionBtn}
-              onPress={onChatDonor}
-              disabled={openingChat}
-            >
-              {openingChat ? (
-                <ActivityIndicator size="small" color={roleUi.colors.primaryStrong} />
-              ) : (
-                <>
-                  <Ionicons name="chatbubble-outline" size={15} color={roleUi.colors.primaryStrong} />
-                  <Text style={styles.donorActionText}>{t('donationDetail.chatDonor')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
+          {/* Nút liên hệ chỉ hiện khi đã connect — chat backend chỉ cho thành
+              viên của đơn, nên hiện trước connect sẽ bấm vào lỗi 403. */}
+          {selectedForMe ? (
+            <View style={styles.donorActions}>
+              <TouchableOpacity
+                style={[styles.donorActionBtn, !donorPhone && styles.donorActionBtnDisabled]}
+                onPress={onCallDonor}
+                disabled={!donorPhone}
+              >
+                <Ionicons name="call-outline" size={15} color={donorPhone ? roleUi.colors.primaryStrong : '#8A8A8A'} />
+                <Text style={[styles.donorActionText, !donorPhone && { color: '#8A8A8A' }]}>
+                  {t('donationDetail.callDonor')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.donorActionBtn}
+                onPress={onChatDonor}
+                disabled={openingChat}
+              >
+                {openingChat ? (
+                  <ActivityIndicator size="small" color={roleUi.colors.primaryStrong} />
+                ) : (
+                  <>
+                    <Ionicons name="chatbubble-outline" size={15} color={roleUi.colors.primaryStrong} />
+                    <Text style={styles.donorActionText}>{t('donationDetail.chatDonor')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
 
         {data?.description ? (
