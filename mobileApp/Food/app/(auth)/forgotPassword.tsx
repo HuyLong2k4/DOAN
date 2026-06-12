@@ -40,7 +40,7 @@ export default function ForgotPassword() {
     <SafeAreaView style={styles.container}>
       <AuthBlobs />
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inner}>
 
         <View style={styles.header}>
           <Image

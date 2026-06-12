@@ -1,4 +1,5 @@
 const ChatService = require('../services/chatService');
+const { emitNewMessage } = require('../../socket/chatSocket');
 const path = require('path');
 
 class ChatController {
@@ -65,6 +66,11 @@ class ChatController {
                 req.body?.text,
                 attachments,
             );
+
+            // Phát socket event cho người nhận (và người gửi) như đường socket —
+            // để tin gửi qua REST (khi socket chưa connect) vẫn cập nhật real-time.
+            emitNewMessage(req.app.get('io'), data, req.user.id);
+
             return res.status(201).json({ success: true, data });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

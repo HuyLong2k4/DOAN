@@ -13,8 +13,6 @@ export type FeedbackKey =
   | 'feedback.donorSuffix'
   | 'feedback.commentOptional'
   | 'feedback.typePlaceholder'
-  | 'feedback.contributeOptional'
-  | 'feedback.tipPlaceholder'
   | 'feedback.noVolunteer'
   | 'feedback.thankDonor'
   | 'feedback.feedbackLabel'
@@ -44,8 +42,6 @@ export const feedbackEn: Record<FeedbackKey, string> = {
   'feedback.donorSuffix': '(Donor)',
   'feedback.commentOptional': 'Comment (optional)',
   'feedback.typePlaceholder': 'Type...',
-  'feedback.contributeOptional': 'Contribute via money (optional)',
-  'feedback.tipPlaceholder': '+Tip',
   'feedback.noVolunteer': 'No volunteer was assigned for this delivery.',
   'feedback.thankDonor': 'Show your gratitude to Donor',
   'feedback.feedbackLabel': 'Feedback',
@@ -76,8 +72,6 @@ export const feedbackVi: Record<FeedbackKey, string> = {
   'feedback.donorSuffix': '(Người tặng)',
   'feedback.commentOptional': 'Nhận xét (tuỳ chọn)',
   'feedback.typePlaceholder': 'Nhập...',
-  'feedback.contributeOptional': 'Đóng góp tiền (tuỳ chọn)',
-  'feedback.tipPlaceholder': '+Tiền thưởng',
   'feedback.noVolunteer': 'Không có tình nguyện viên nào cho đơn này.',
   'feedback.thankDonor': 'Bày tỏ lòng biết ơn với người tặng',
   'feedback.feedbackLabel': 'Nhận xét',

@@ -54,7 +54,7 @@ export default function ResetPassword() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inner}>
 
         <Text style={styles.title}>{t('auth.reset.title')}</Text>
         <Text style={styles.sub}>{t('auth.reset.subtitle')}</Text>

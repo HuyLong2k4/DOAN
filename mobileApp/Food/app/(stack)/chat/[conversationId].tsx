@@ -28,6 +28,7 @@ import {
 } from '../../../src/api/chat.api';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useChatStore } from '../../../src/store/chatStore';
+import { useNotificationStore } from '../../../src/store/notificationStore';
 import type { ChatMessage } from '../../../src/types';
 import { connectChatSocket } from '../../../src/utils/chatSocket';
 import { roleUi } from '@/src/theme/roleUi';
@@ -93,6 +94,7 @@ export default function ChatRoomScreen() {
   const typingLastEmitRef = useRef<number>(0);
   const typingStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingActiveRef = useRef<boolean>(false);
+  const listRef = useRef<FlatList<ChatMessage>>(null);
 
   const emitStopTyping = useCallback(() => {
     if (typingStopTimerRef.current) {
@@ -154,6 +156,9 @@ export default function ChatRoomScreen() {
       setMessages(res.data?.data || []);
       await markConversationRead(conversationId);
       markConversationReadLocal(conversationId);
+      // Backend cũng đánh dấu read các notification NEW_MESSAGE của hội thoại này
+      // → làm mới badge thông báo để số đếm khớp.
+      void useNotificationStore.getState().refresh();
     } catch (err: any) {
       Alert.alert('Không tải được tin nhắn', err?.response?.data?.message || 'Vui lòng thử lại sau.');
     } finally {
@@ -330,11 +335,23 @@ export default function ChatRoomScreen() {
 
       if (socket && socket.connected) {
         await new Promise<void>((resolve, reject) => {
+          // Timeout phòng khi socket rớt SAU khi emit → ack không bao giờ về,
+          // promise treo, nút gửi kẹt mãi. Sau 10s coi như thất bại để báo lỗi.
+          let settled = false;
+          const timer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('Gửi tin nhắn quá thời gian. Vui lòng thử lại.'));
+          }, 10000);
+
           socket.emit('chat:send', {
             conversation_id: conversationId,
             text,
             attachments: uploadedAttachments,
           }, (ack: any) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
             if (ack?.success && ack?.data?.message) {
               setMessages((prev) => upsertMessage(prev, ack.data.message as ChatMessage));
               resolve();
@@ -404,13 +421,16 @@ export default function ChatRoomScreen() {
       ) : (
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={10}
         >
           <FlatList
+            ref={listRef}
             data={messages}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messagesList}
+            // Tự cuộn xuống tin mới nhất khi mở chat / có tin mới / vừa gửi.
+            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
             renderItem={({ item }) => (
               <View style={[styles.bubbleWrap, item.is_me ? styles.bubbleRight : styles.bubbleLeft]}>
                 {!item.is_me && item.sender?.full_name ? (

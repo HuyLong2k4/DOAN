@@ -6,6 +6,30 @@ const ChatService = require('../app/services/chatService');
 const userRoomName = (userId) => `user:${userId}`;
 const conversationRoomName = (conversationId) => `conversation:${conversationId}`;
 
+// Phát một message mới qua socket. Gửi tới userRoom của TỪNG người nhận (bao trùm
+// mọi thiết bị, dù họ có mở màn chat hay không — userRoom được join lúc connect và
+// không rời) và userRoom người gửi (để danh sách hội thoại của chính họ cập nhật
+// real-time). Dùng chung cho cả socket send lẫn REST send, và chỉ emit một lần cho
+// mỗi người (không phát kèm conversationRoom → tránh trùng tin cho người đang mở chat).
+function emitNewMessage(io, result, senderId = null) {
+    if (!io || !result) return;
+
+    const recipientPayload = {
+        conversation_id: result.conversation_id,
+        message: { ...result.message, is_me: false },
+    };
+    (result.recipient_ids || []).forEach((recipientId) => {
+        io.to(userRoomName(recipientId)).emit('chat:new_message', recipientPayload);
+    });
+
+    if (senderId) {
+        io.to(userRoomName(String(senderId))).emit('chat:new_message', {
+            conversation_id: result.conversation_id,
+            message: result.message, // is_me = true (đã tính theo người gửi)
+        });
+    }
+}
+
 function extractToken(socket) {
     const authToken = socket.handshake?.auth?.token;
     if (authToken) return authToken;
@@ -86,21 +110,11 @@ function createChatSocketServer(httpServer) {
 
                 const result = await ChatService.sendMessage(conversationId, socket.user, text, attachments);
 
-                const senderPayload = {
-                    conversation_id: result.conversation_id,
-                    message: result.message,
-                };
-                const recipientPayload = {
-                    conversation_id: result.conversation_id,
-                    message: { ...result.message, is_me: false },
-                };
+                emitNewMessage(io, result, socket.user.id);
 
-                socket.to(conversationRoomName(result.conversation_id)).emit('chat:new_message', recipientPayload);
-                result.recipient_ids.forEach((recipientId) => {
-                    io.to(userRoomName(recipientId)).emit('chat:new_message', recipientPayload);
-                });
-
-                if (typeof ack === 'function') ack({ success: true, data: senderPayload });
+                if (typeof ack === 'function') {
+                    ack({ success: true, data: { conversation_id: result.conversation_id, message: result.message } });
+                }
             } catch (err) {
                 if (typeof ack === 'function') ack({ success: false, message: err.message });
             }
@@ -150,6 +164,7 @@ function createChatSocketServer(httpServer) {
 
 module.exports = {
     createChatSocketServer,
+    emitNewMessage,
     userRoomName,
     conversationRoomName,
 };

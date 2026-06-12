@@ -9,10 +9,14 @@ function getSocketBaseUrl() {
 }
 
 export function connectChatSocket(token: string) {
-  if (socket && socket.connected && activeToken === token) {
+  // Cùng token → tái dùng socket hiện có (kể cả khi đang connect/đang reconnect).
+  // socket.io tự lo reconnect; KHÔNG teardown ở đây để tránh huỷ socket đang kết nối
+  // làm mất các listener đã đăng ký (vd. listener global ở tabs layout).
+  if (socket && activeToken === token) {
     return socket;
   }
 
+  // Đổi token (đăng nhập tài khoản khác) → bỏ socket cũ, tạo mới.
   if (socket) {
     socket.disconnect();
     socket = null;

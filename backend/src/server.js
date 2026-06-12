@@ -53,7 +53,10 @@ app.use('/api/notifications',   notificationRoutes);
 app.get('/', (_, res) => res.send('Hello world'));
 
 const server = http.createServer(app);
-createChatSocketServer(server);
+// Lưu io vào app để các controller REST (vd. gửi tin nhắn qua HTTP fallback) phát
+// được socket event cho người nhận — đồng bộ với đường socket.
+const io = createChatSocketServer(server);
+app.set('io', io);
 
 server.listen(PORT, '0.0.0.0', () =>
   console.log(`Server listening on port ${PORT}`)

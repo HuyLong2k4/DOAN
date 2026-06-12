@@ -61,7 +61,6 @@ export default function ReceiverFeedbackScreen() {
   const [volunteerRating, setVolunteerRating] = useState(0);
   const [donorComment, setDonorComment] = useState('');
   const [volunteerComment, setVolunteerComment] = useState('');
-  const [tipAmount, setTipAmount] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -166,7 +165,7 @@ export default function ReceiverFeedbackScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader title={t('feedback.title')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
 
           <View style={styles.successBox}>
@@ -205,16 +204,6 @@ export default function ReceiverFeedbackScreen() {
                   placeholder={t('feedback.typePlaceholder')}
                   placeholderTextColor="#8A8A8A"
                   multiline
-                />
-
-                <Text style={styles.inputLabel}>{t('feedback.contributeOptional')}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={tipAmount}
-                  onChangeText={setTipAmount}
-                  placeholder={t('feedback.tipPlaceholder')}
-                  placeholderTextColor="#8A8A8A"
-                  keyboardType="number-pad"
                 />
               </>
             ) : (

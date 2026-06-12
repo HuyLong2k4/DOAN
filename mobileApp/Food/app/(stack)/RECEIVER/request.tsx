@@ -158,7 +158,7 @@ export default function ReceiverRequestScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader title={t('request.listingType')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
 
           {prefillDonorName ? (

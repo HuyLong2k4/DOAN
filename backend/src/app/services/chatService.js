@@ -235,14 +235,31 @@ class ChatService {
         });
 
         if (!conversation) {
-            conversation = await Conversation.create({
-                participants: [currentUserId, counterpartId],
-                pair_key: pairKey,
-                donation_id: donation._id,
-                delivery_id: donation.delivery_id || null,
-                last_message_text: '',
-                last_message_at: null,
-            });
+            try {
+                conversation = await Conversation.create({
+                    participants: [currentUserId, counterpartId],
+                    pair_key: pairKey,
+                    donation_id: donation._id,
+                    delivery_id: donation.delivery_id || null,
+                    last_message_text: '',
+                    last_message_at: null,
+                });
+            } catch (err) {
+                // Unique index {donation_id, pair_key} chặn bản thứ 2 khi:
+                //  - hai request tạo đồng thời (double-tap), hoặc
+                //  - đã tồn tại 1 hội thoại cùng cặp+đơn nhưng đã archive (is_active=false).
+                // Lấy lại bản đã có (bỏ filter is_active) và kích hoạt lại nếu cần,
+                // thay vì ném E11000 → 500.
+                if (err && err.code === 11000) {
+                    conversation = await Conversation.findOne({ donation_id: donation._id, pair_key: pairKey });
+                    if (!conversation) throw err;
+                    if (!conversation.is_active) conversation.is_active = true;
+                    if (!conversation.delivery_id && donation.delivery_id) conversation.delivery_id = donation.delivery_id;
+                    if (conversation.isModified()) await conversation.save();
+                } else {
+                    throw err;
+                }
+            }
         } else if (!conversation.delivery_id && donation.delivery_id) {
             conversation.delivery_id = donation.delivery_id;
             await conversation.save();
@@ -435,6 +452,19 @@ class ChatService {
                 $addToSet: { seen_by: userId },
             },
         );
+
+        // Đọc chat → đánh dấu đã đọc luôn các thông báo NEW_MESSAGE của hội thoại
+        // này, tránh tab Thông báo ngập tin nhắn và không bao giờ tự sạch.
+        await Notification.updateMany(
+            {
+                user_id: userId,
+                type: 'NEW_MESSAGE',
+                related_entity_type: 'Conversation',
+                related_entity_id: conversationId,
+                is_read: false,
+            },
+            { $set: { is_read: true } },
+        ).catch(() => {});
 
         return {
             read_count: result.modifiedCount || 0,

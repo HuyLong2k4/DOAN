@@ -149,7 +149,7 @@ export default function DonateScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader title={t('donor.donate.header')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
 
           {/* ── Title ── */}
