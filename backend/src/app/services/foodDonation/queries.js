@@ -57,6 +57,7 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
     const donations = await FoodDonation.find(query)
         .sort({ createdAt: -1 })
         .populate('donor_id', 'full_name avatar_url')
+        .populate('volunteer_id', 'full_name')
         .lean();
 
     const donorIds = [...new Set(donations.map(d => d.donor_id?._id?.toString()))].filter(Boolean);

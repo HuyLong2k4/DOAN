@@ -174,7 +174,7 @@ class ProfileService {
     // GET /api/profile/me  — dùng trên màn hình Home để hiển thị thông tin
     // ──────────────────────────────────────────────────────────────────────
     static async getMyProfile(userId) {
-        const user = await User.findById(userId).select('-password -fcm_token');
+        const user = await User.findById(userId).select('-password -fcm_token').lean();
         if (!user) throw this._error('Không tìm thấy tài khoản.', 404);
 
         let profile = null;
@@ -182,7 +182,11 @@ class ProfileService {
         if (user.role === 'RECEIVER')  profile = await ReceiverProfile.findOne({ user_id: userId });
         if (user.role === 'VOLUNTEER') profile = await VolunteerProfile.findOne({ user_id: userId });
 
-        return { user, profile };
+        // Chuẩn hoá `id` (string) cho client. Document thô chỉ có `_id`, khiến
+        // user.id = undefined sau khi app nạp lại profile lúc khởi động — làm
+        // hỏng mọi nơi client dùng user.id (vd. viewerId màn chat, PATCH /users/:id).
+        // Giữ nguyên toàn bộ field khác.
+        return { user: { ...user, id: String(user._id) }, profile };
     }
 
     static async toggleActiveStatus(userId) {

@@ -125,7 +125,7 @@ async function cancelDonationByDonor(donationId, donorId) {
 
     const result = await FoodDonation.updateOne(
         { _id: donationId, donor_id: donorId, status: 'PENDING' },
-        { $set: { status: 'CANCELLED' } },
+        { $set: { status: 'CANCELLED', cancel_reason: 'DONOR_CANCELLED', cancelled_at: new Date() } },
     );
 
     if (result.modifiedCount === 0) {
@@ -226,7 +226,7 @@ async function releaseReceiverByDonor(donationId, donorId) {
         // Nhánh A: huỷ donation hoàn toàn.
         const result = await FoodDonation.updateOne(
             { _id: donationId, donor_id: donorId, status: { $in: ['PENDING', 'ACCEPTED'] } },
-            { $set: { status: 'CANCELLED' } },
+            { $set: { status: 'CANCELLED', cancel_reason: 'DONOR_RELEASED', cancelled_at: new Date() } },
         );
         if (result.modifiedCount === 0) {
             throw _error('Đơn đã đổi trạng thái, không thể giải phóng receiver.', 409);

@@ -137,9 +137,13 @@ export default function ChatRoomScreen() {
   }, [token, conversationId, emitStopTyping]);
 
   const roomTitle = useMemo(() => {
-    const withName = messages.find((m) => m.sender?.id !== viewerId)?.sender?.full_name;
+    // Ưu tiên tên counterpart truyền vào lúc mở chat (đúng người đối thoại).
+    // Chỉ suy từ tin nhắn khi thiếu title — và dùng is_me (backend tính) thay vì
+    // tự so viewerId ở client (id client có thể lệch định dạng → chọn nhầm).
+    if (fallbackTitle && fallbackTitle !== 'Chat') return fallbackTitle;
+    const withName = messages.find((m) => !m.is_me)?.sender?.full_name;
     return withName || fallbackTitle;
-  }, [fallbackTitle, messages, viewerId]);
+  }, [fallbackTitle, messages]);
 
   const loadMessages = useCallback(async () => {
     if (!conversationId) return;

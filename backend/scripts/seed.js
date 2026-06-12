@@ -380,6 +380,11 @@ async function run() {
       unit: d.unit,
       expiration_datetime: H(d.exp),
       status: d.status,
+      // Gán lý do huỷ cho đơn CANCELLED để admin thấy ngữ cảnh (no-show vs huỷ thường).
+      cancel_reason: d.status === 'CANCELLED'
+        ? (d.cancelReason || (volunteerId ? 'VOLUNTEER_NO_SHOW' : 'DONOR_CANCELLED'))
+        : null,
+      cancelled_at: d.status === 'CANCELLED' ? H(-0.5) : null,
     });
 
     // Delivery cho các đơn có receiver

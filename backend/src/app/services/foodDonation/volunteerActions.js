@@ -10,6 +10,7 @@ const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
 const NotificationService = require('../notificationService');
 const pickupCodeUtil = require('./pickupCode');
+const { archiveDonationConversationsForUser } = require('./archiveConversations');
 
 // Giới hạn số đơn một volunteer được "gánh" cùng lúc — chặn một tài khoản ôm
 // cả mẻ rồi bỏ trốn, đồng thời tránh volunteer nhận quá sức. Đếm mọi delivery
@@ -157,6 +158,10 @@ async function releaseDonationByVolunteer(donationId, volunteerId) {
         related_entity_type: 'FoodDonation',
         related_entity_id: donation._id,
     });
+
+    // Đóng các thread chat liên quan tới volunteer vừa trả đơn (donor↔volunteer,
+    // receiver↔volunteer) — đơn vẫn tiếp tục tìm volunteer khác nên GIỮ donor↔receiver.
+    await archiveDonationConversationsForUser(donation._id, volunteerId);
 
     return { message: 'Đã trả lại đơn. Đơn sẽ tìm volunteer khác.' };
 }

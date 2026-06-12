@@ -15,8 +15,10 @@ import { roleUi } from '../../../src/theme/roleUi';
 import { useI18n } from '@/src/i18n/useI18n';
 import HomeHeader from '../../../src/components/HomeHeader';
 import { getRewardLevel } from '../../../src/constants/rewardLevels';
+import type { TranslationKey } from '../../../src/i18n/translations';
 import type {
   ApprovedReceiverRequest,
+  DeliveryStatus,
   DonorDonation,
   ReceiverBrief,
   ReceiverFoodRequest,
@@ -26,6 +28,24 @@ const FAQS = [
   { q: 'Who will pick up the food?' },
   { q: 'Can we perform one-time donations?' },
 ];
+
+// Volunteer đã thực sự nhận đơn (để donor biết "đang chờ tìm" vs "volunteer đang đến").
+const VOLUNTEER_ASSIGNED_STATUSES: DeliveryStatus[] = ['AGENT_ASSIGNED', 'ON_THE_WAY', 'AWAITING_CONFIRMATION'];
+
+function hasAssignedVolunteer(status: DeliveryStatus | null): boolean {
+  return status != null && VOLUNTEER_ASSIGNED_STATUSES.includes(status);
+}
+
+// Nhãn trạng thái đơn VIA_AGENT theo tiến trình giao — phản ánh đúng khi volunteer
+// trả/huỷ đơn (delivery về WAITING_AGENT) thay vì luôn hiện "Qua tình nguyện viên".
+function viaAgentStageKey(status: DeliveryStatus | null): TranslationKey {
+  switch (status) {
+    case 'AGENT_ASSIGNED':        return 'donor.volunteerStage.assigned';
+    case 'ON_THE_WAY':            return 'donor.volunteerStage.delivering';
+    case 'AWAITING_CONFIRMATION': return 'donor.volunteerStage.awaitingConfirm';
+    default:                      return 'donor.volunteerStage.finding';
+  }
+}
 
 export default function HomeScreen() {
   const router    = useRouter();
@@ -59,6 +79,7 @@ export default function HomeScreen() {
         donationTitle: d.title,
         receiver: (d.selected_receiver_id as ReceiverBrief) || { _id: d._id, full_name: 'Receiver' },
         deliveryType: d.delivery_type || null,
+        deliveryStatus: d.delivery_status ?? null,
       }));
   }, [donations]);
 
@@ -436,7 +457,7 @@ export default function HomeScreen() {
                         >
                           <Text style={styles.approvedBadgeText}>
                             {req.deliveryType === 'VIA_AGENT'
-                              ? t('donor.delivery.viaAgent')
+                              ? t(viaAgentStageKey(req.deliveryStatus))
                               : req.deliveryType === 'SELF_PICKUP'
                                 ? t('donor.delivery.selfPickup')
                                 : t('donor.delivery.awaitingChoice')}
@@ -444,7 +465,7 @@ export default function HomeScreen() {
                         </View>
                       </View>
 
-                      {req.deliveryType === 'VIA_AGENT' ? (
+                      {req.deliveryType === 'VIA_AGENT' && hasAssignedVolunteer(req.deliveryStatus) ? (
                         <TouchableOpacity
                           style={[styles.openVolunteerChatBtn, openingChatDonationId === req.donationId && styles.actionBtnDisabled]}
                           onPress={() => openVolunteerChat(req.donationId)}
@@ -485,7 +506,7 @@ export default function HomeScreen() {
                       >
                         <Text style={styles.approvedBadgeText}>
                           {req.deliveryType === 'VIA_AGENT'
-                            ? t('donor.delivery.viaAgent')
+                            ? t(viaAgentStageKey(req.deliveryStatus))
                             : req.deliveryType === 'SELF_PICKUP'
                               ? t('donor.delivery.selfPickup')
                               : t('donor.delivery.awaitingChoice')}
@@ -493,7 +514,7 @@ export default function HomeScreen() {
                       </View>
                     </View>
 
-                    {req.deliveryType === 'VIA_AGENT' ? (
+                    {req.deliveryType === 'VIA_AGENT' && hasAssignedVolunteer(req.deliveryStatus) ? (
                       <TouchableOpacity
                         style={[styles.openVolunteerChatBtn, openingChatDonationId === req.donationId && styles.actionBtnDisabled]}
                         onPress={() => openVolunteerChat(req.donationId)}

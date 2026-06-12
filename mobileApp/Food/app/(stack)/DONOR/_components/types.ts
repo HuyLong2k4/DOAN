@@ -10,9 +10,19 @@ export type ReceiverBrief = {
   avatar_url?: string;
 };
 
+export type DeliveryStatus =
+  | 'WAITING_AGENT'
+  | 'SELF_PICKUP_READY'
+  | 'AGENT_ASSIGNED'
+  | 'ON_THE_WAY'
+  | 'AWAITING_CONFIRMATION'
+  | 'DELIVERED'
+  | 'CANCELLED';
+
 export type DonorDonation = Donation & {
   selected_receiver_id?: ReceiverBrief | null;
   delivery_type?: 'VIA_AGENT' | 'SELF_PICKUP' | null;
+  delivery_status?: DeliveryStatus | null;
 };
 
 export type ApprovedReceiverRequest = {
@@ -20,6 +30,7 @@ export type ApprovedReceiverRequest = {
   donationTitle: string;
   receiver: ReceiverBrief;
   deliveryType: 'VIA_AGENT' | 'SELF_PICKUP' | null;
+  deliveryStatus: DeliveryStatus | null;
 };
 
 export type ReceiverFoodRequest = {

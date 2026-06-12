@@ -6,15 +6,13 @@ import { roleUi } from '@/src/theme/roleUi';
 type Props = {
   item: DeliveryRequest;
   busy: boolean;
-  chatBusy: boolean;
   onAccept: () => void;
   onReject: () => void;
   onOpenMap: () => void;
-  onChatDonor: () => void;
   t: TFn;
 };
 
-export function RequestCard({ item, busy, chatBusy, onAccept, onReject, onOpenMap, onChatDonor, t }: Props) {
+export function RequestCard({ item, busy, onAccept, onReject, onOpenMap, t }: Props) {
   return (
     <View style={styles.requestCard}>
       <Text style={styles.requestTitle}>{item.title}</Text>
@@ -38,17 +36,6 @@ export function RequestCard({ item, busy, chatBusy, onAccept, onReject, onOpenMa
 
       <TouchableOpacity onPress={onOpenMap}>
         <Text style={styles.requestLink}>{t('volunteer.viewMore')}</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        disabled={chatBusy || busy}
-        onPress={onChatDonor}
-        style={[styles.requestChatBtn, (chatBusy || busy) && styles.disabled]}
-      >
-        <Ionicons name="chatbubble-ellipses-outline" size={14} color={roleUi.colors.primaryStrong} />
-        <Text style={styles.requestChatBtnText}>
-          {chatBusy ? t('volunteer.openingChat') : t('volunteer.chatWithDonor')}
-        </Text>
       </TouchableOpacity>
 
       <View style={styles.requestActionsRow}>
@@ -101,19 +88,6 @@ const styles = StyleSheet.create({
   requestMetaText: { fontSize: 12, color: '#444' },
   requestAddress: { flex: 1, fontSize: 12, color: '#444' },
   requestLink: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 8 },
-  requestChatBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: roleUi.colors.primarySoft,
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#D5E0EC',
-  },
-  requestChatBtnText: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '700' },
   requestActionsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   requestActionBtn: {
     flex: 1,

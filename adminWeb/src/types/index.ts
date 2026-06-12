@@ -52,6 +52,8 @@ export interface DonationRecord {
   unit?: string;
   images?: string[];
   status?: DonationStatus;
+  cancel_reason?: CancelReason | null;
+  cancelled_at?: string | null;
   delivery_type?: string | null;
   expiration_datetime?: string;
   pickup_address_line?: string | null;
@@ -59,6 +61,13 @@ export interface DonationRecord {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type CancelReason =
+  | 'DONOR_CANCELLED'
+  | 'DONOR_RELEASED'
+  | 'RECEIVER_DISCONNECTED'
+  | 'VOLUNTEER_NO_SHOW'
+  | 'AUTO_NO_SHOW';
 
 export interface RequestRecord {
   _id: string;

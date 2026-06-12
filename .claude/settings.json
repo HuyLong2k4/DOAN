@@ -147,7 +147,18 @@
       "Bash(node --check \"d:/Đồ án/backend/scripts/seed.js\")",
       "Bash(findstr /I \"reward redem\")",
       "Bash(git checkout *)",
-      "Bash(node --check src/app/services/foodDonation/distance.js)"
+      "Bash(node --check src/app/services/foodDonation/distance.js)",
+      "Bash(node scripts/seedNoShowTest.js)",
+      "Bash(node -e \"require\\('./src/app/services/foodDonation/receiverActions'\\); require\\('./src/app/services/foodDonation/donorActions'\\); require\\('./src/app/services/foodDonation/maintenance'\\); require\\('./src/app/services/foodDonation/queries'\\); console.log\\('backend services load OK'\\);\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(ls *.json)",
+      "Bash(ls -R mobileApp/Food/app/\\\\\\(stack\\\\\\)/chat)",
+      "Bash(ls mobileApp/Food/app/\\\\\\(tabs\\\\\\)/message.tsx)",
+      "Bash(cat mobileApp/Food/src/types/chat.types.ts)",
+      "Bash(sed -n '60,90p' \"mobileApp/Food/app/\\(tabs\\)/message.tsx\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('scripts:', JSON.stringify\\(p.scripts\\)\\)\")",
+      "Bash(grep -i \"RequestCard\\\\|VOLUNTEER/home\\\\|VOLUNTEER\\\\\\\\\\\\\\\\home\")",
+      "Bash(grep -iE \"DONOR\\\\\\\\\\\\\\\\home|DONOR/home|_components\\\\\\\\\\\\\\\\types|_components/types|i18n\\\\\\\\\\\\\\\\keys\\\\\\\\\\\\\\\\donor|viaAgentStageKey|hasAssignedVolunteer|deliveryStatus|volunteerStage\")"
     ]
   }
 }

@@ -10,6 +10,7 @@ import { Modal } from '../components/Modal';
 import { DonationStatusPill } from '../components/StatusPill';
 import {
   DONATION_STATUSES,
+  cancelReasonLabel,
   donationStatusLabel,
   foodTypeLabel,
   formatDateTime,
@@ -206,6 +207,7 @@ export function DonationsPage() {
               </p>
               <div className="detail-grid">
                 <DetailRow label="Donor">{detail.donor_id?.full_name || '—'}</DetailRow>
+                <DetailRow label="Volunteer">{detail.volunteer_id?.full_name || '—'}</DetailRow>
                 <DetailRow label="Hình thức giao">{detail.delivery_type || '—'}</DetailRow>
                 <DetailRow label="Địa chỉ pickup" full>
                   {detail.pickup_address_line || '—'}
@@ -223,6 +225,16 @@ export function DonationsPage() {
                 <DetailRow label="Trạng thái">
                   <DonationStatusPill status={detail.status} />
                 </DetailRow>
+                {detail.status === 'CANCELLED' ? (
+                  <>
+                    <DetailRow label="Lý do huỷ" full>
+                      {cancelReasonLabel(detail.cancel_reason)}
+                    </DetailRow>
+                    {detail.cancelled_at ? (
+                      <DetailRow label="Thời điểm huỷ">{formatDateTime(detail.cancelled_at)}</DetailRow>
+                    ) : null}
+                  </>
+                ) : null}
                 <DetailRow label="Hết hạn">{formatDateTime(detail.expiration_datetime)}</DetailRow>
                 <DetailRow label="Tạo lúc">{formatDateTime(detail.createdAt)}</DetailRow>
                 <DetailRow label="Cập nhật">{formatDateTime(detail.updatedAt)}</DetailRow>

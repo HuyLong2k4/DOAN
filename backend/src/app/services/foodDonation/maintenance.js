@@ -172,7 +172,7 @@ async function cancelStaleOnTheWayDeliveries(timeoutHours = 6) {
 
         await FoodDonation.updateOne(
             { _id: donation._id, status: { $nin: ['COMPLETED', 'EXPIRED', 'CANCELLED'] } },
-            { $set: { status: 'CANCELLED' } },
+            { $set: { status: 'CANCELLED', cancel_reason: 'AUTO_NO_SHOW', cancelled_at: new Date() } },
         );
 
         const targets = [String(donation.donor_id)];

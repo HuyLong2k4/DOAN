@@ -414,11 +414,9 @@ export default function VolunteerHomeScreen() {
                 item={r}
                 t={t}
                 busy={actingRequestId === r.id}
-                chatBusy={openingChatDonationId === r.id}
                 onAccept={() => setConfirmTarget(r)}
                 onReject={() => handleRejectRequest(r.id)}
                 onOpenMap={() => openPickupOnMaps(r)}
-                onChatDonor={() => void openChatWithDonor(r.id, r.title)}
               />
             ))}
           </ScrollView>

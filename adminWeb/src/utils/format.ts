@@ -1,4 +1,4 @@
-import type { DonationStatus, FoodType, RequestStatus, UserRole } from '../types';
+import type { CancelReason, DonationStatus, FoodType, RequestStatus, UserRole } from '../types';
 
 export function formatDateTime(value?: string | null): string {
   if (!value) return '—';
@@ -58,6 +58,19 @@ const REQUEST_STATUS_LABEL: Record<RequestStatus, string> = {
 export function requestStatusLabel(status?: RequestStatus | null): string {
   if (!status) return '—';
   return REQUEST_STATUS_LABEL[status] || status;
+}
+
+const CANCEL_REASON_LABEL: Record<CancelReason, string> = {
+  DONOR_CANCELLED: 'Donor tự huỷ đơn',
+  DONOR_RELEASED: 'Donor giải phóng do quá 30 phút chưa lấy',
+  RECEIVER_DISCONNECTED: 'Receiver tự rút khỏi đơn',
+  VOLUNTEER_NO_SHOW: 'TNV nhận hàng nhưng không giao (receiver báo)',
+  AUTO_NO_SHOW: 'Tự huỷ: TNV ôm hàng quá lâu chưa giao',
+};
+
+export function cancelReasonLabel(reason?: CancelReason | null): string {
+  if (!reason) return '—';
+  return CANCEL_REASON_LABEL[reason] || reason;
 }
 
 const FOOD_TYPE_LABEL: Record<FoodType, string> = {

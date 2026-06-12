@@ -24,6 +24,10 @@ export type DonorKey =
   | 'donor.delivery.viaAgent'
   | 'donor.delivery.selfPickup'
   | 'donor.delivery.awaitingChoice'
+  | 'donor.volunteerStage.finding'
+  | 'donor.volunteerStage.assigned'
+  | 'donor.volunteerStage.delivering'
+  | 'donor.volunteerStage.awaitingConfirm'
   | 'donor.openingChat'
   | 'donor.chatWithVolunteer'
   | 'donor.noReceiverRequests'
@@ -138,6 +142,10 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.delivery.viaAgent': 'Via Agent',
   'donor.delivery.selfPickup': 'Self Pickup',
   'donor.delivery.awaitingChoice': 'Awaiting Choice',
+  'donor.volunteerStage.finding': 'Finding a volunteer',
+  'donor.volunteerStage.assigned': 'Volunteer on the way to pick up',
+  'donor.volunteerStage.delivering': 'Delivering',
+  'donor.volunteerStage.awaitingConfirm': 'Awaiting receiver confirmation',
   'donor.openingChat': 'Opening chat...',
   'donor.chatWithVolunteer': 'Chat with volunteer',
   'donor.noReceiverRequests': 'No receiver requests yet',
@@ -253,6 +261,10 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.delivery.viaAgent': 'Qua tình nguyện viên',
   'donor.delivery.selfPickup': 'Tự nhận',
   'donor.delivery.awaitingChoice': 'Chờ chọn',
+  'donor.volunteerStage.finding': 'Đang tìm tình nguyện viên',
+  'donor.volunteerStage.assigned': 'Tình nguyện viên đang đến lấy',
+  'donor.volunteerStage.delivering': 'Đang giao hàng',
+  'donor.volunteerStage.awaitingConfirm': 'Chờ người nhận xác nhận',
   'donor.openingChat': 'Đang mở chat...',
   'donor.chatWithVolunteer': 'Chat với tình nguyện viên',
   'donor.noReceiverRequests': 'Chưa có yêu cầu',

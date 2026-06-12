@@ -307,7 +307,7 @@ async function disconnectDonationByReceiver(donationId, receiverId) {
         // Nhánh A: huỷ donation hoàn toàn, mở lại food_request.
         const result = await FoodDonation.updateOne(
             { _id: donationId, selected_receiver_id: receiverId, status: { $in: ['PENDING', 'ACCEPTED'] } },
-            { $set: { status: 'CANCELLED' } },
+            { $set: { status: 'CANCELLED', cancel_reason: 'RECEIVER_DISCONNECTED', cancelled_at: new Date() } },
         );
         if (result.modifiedCount === 0) {
             throw _error('Đơn đã đổi trạng thái, không thể rút.', 409);
@@ -414,7 +414,7 @@ async function reportVolunteerNoShow(donationId, receiverId) {
 
     await FoodDonation.updateOne(
         { _id: donation._id, status: { $nin: ['COMPLETED', 'EXPIRED', 'CANCELLED'] } },
-        { $set: { status: 'CANCELLED' } },
+        { $set: { status: 'CANCELLED', cancel_reason: 'VOLUNTEER_NO_SHOW', cancelled_at: new Date() } },
     );
 
     const volunteerId = delivery.volunteer_id ? String(delivery.volunteer_id) : null;
