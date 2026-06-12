@@ -3,6 +3,9 @@ import { http } from '../api/http';
 
 type NotificationState = {
   unreadCount: number;
+  // Bump mỗi khi có notification tới (foreground). Các màn home subscribe để
+  // refetch dữ liệu real-time — vd. volunteer trả đơn → donor thấy đơn đổi trạng thái.
+  dataVersion: number;
   refresh: () => Promise<void>;
   markAllRead: () => Promise<void>;
   increment: () => void;
@@ -11,6 +14,7 @@ type NotificationState = {
 
 export const useNotificationStore = create<NotificationState>((set) => ({
   unreadCount: 0,
+  dataVersion: 0,
 
   refresh: async () => {
     try {
@@ -33,7 +37,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     }
   },
 
-  increment: () => set((s) => ({ unreadCount: s.unreadCount + 1 })),
+  increment: () => set((s) => ({ unreadCount: s.unreadCount + 1, dataVersion: s.dataVersion + 1 })),
 
   reset: () => set({ unreadCount: 0 }),
 }));

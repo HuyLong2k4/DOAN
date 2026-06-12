@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { http } from '../../../src/api/http';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import { getMyStats } from '../../../src/api/user.api';
 import { useAuthStore } from '../../../src/store/authStore';
+import { useNotificationStore } from '../../../src/store/notificationStore';
 import DonationPostCard from '../../../src/components/DonationPostCard';
 import DonationHistoryCard from '../../../src/components/DonationHistoryCard';
 import { roleUi } from '../../../src/theme/roleUi';
@@ -59,6 +60,7 @@ export default function HomeScreen() {
   const [openFaq, setOpenFaq]             = useState<number | null>(null);
   const [donations, setDonations]         = useState<DonorDonation[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(false);
+  const [refreshing, setRefreshing]       = useState(false);
   const [openingChatDonationId, setOpeningChatDonationId] = useState<string | null>(null);
   const [receiverFoodRequests, setReceiverFoodRequests] = useState<ReceiverFoodRequest[]>([]);
   const [acceptingFoodRequestId, setAcceptingFoodRequestId] = useState<string | null>(null);
@@ -261,45 +263,59 @@ export default function HomeScreen() {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        try {
-          setLoadingDonations(true);
+  const loadData = useCallback(async (opts?: { silent?: boolean }) => {
+    try {
+      if (!opts?.silent) setLoadingDonations(true);
 
-          const [donationRes, requestRes, statsRes] = await Promise.all([
-            http.get('/food-donations/my'),
-            http.get('/food-requests'),
-            getMyStats().catch(() => null),
-          ]);
+      const [donationRes, requestRes, statsRes] = await Promise.all([
+        http.get('/food-donations/my'),
+        http.get('/food-requests'),
+        getMyStats().catch(() => null),
+      ]);
 
-          if (!active) return;
+      setDonations(donationRes.data.data ?? []);
+      setReceiverFoodRequests(requestRes.data?.data ?? []);
 
-          setDonations(donationRes.data.data ?? []);
-          setReceiverFoodRequests(requestRes.data?.data ?? []);
+      // Server cộng điểm cho donor khi receiver xác nhận đơn. user.points chỉ
+      // set lúc login → đồng bộ lại điểm mới nhất để Stats row hiển thị đúng.
+      const freshPoints = (statsRes?.data?.data as { points?: number } | undefined)?.points;
+      const store = useAuthStore.getState();
+      if (freshPoints != null && store.user && store.user.points !== freshPoints) {
+        store.setUser({ ...store.user, points: freshPoints });
+      }
+    } catch { /* ignore */ }
+    finally {
+      if (!opts?.silent) setLoadingDonations(false);
+    }
+  }, []);
 
-          // Server cộng điểm cho donor khi receiver xác nhận đơn. user.points chỉ
-          // set lúc login → đồng bộ lại điểm mới nhất để Stats row hiển thị đúng.
-          const freshPoints = (statsRes?.data?.data as { points?: number } | undefined)?.points;
-          const store = useAuthStore.getState();
-          if (freshPoints != null && store.user && store.user.points !== freshPoints) {
-            store.setUser({ ...store.user, points: freshPoints });
-          }
-        } catch { /* ignore */ }
-        finally {
-          if (active) {
-            setLoadingDonations(false);
-          }
-        }
-      })();
-      return () => { active = false; };
-    }, [])
-  );
+  useFocusEffect(useCallback(() => { void loadData(); }, [loadData]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData({ silent: true });
+    setRefreshing(false);
+  }, [loadData]);
+
+  // Có notification tới (vd. volunteer trả đơn) → refetch im lặng để trạng thái
+  // đơn cập nhật real-time ngay cả khi donor đang mở màn. Bỏ qua lần chạy đầu
+  // (đã có useFocusEffect lo việc tải lần đầu).
+  const dataVersion = useNotificationStore((s) => s.dataVersion);
+  const skipFirstVersion = useRef(true);
+  useEffect(() => {
+    if (skipFirstVersion.current) { skipFirstVersion.current = false; return; }
+    void loadData({ silent: true });
+  }, [dataVersion, loadData]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[roleUi.colors.primary]} tintColor={roleUi.colors.primary} />
+        }
+      >
 
         {/* ── Header ── */}
         <HomeHeader

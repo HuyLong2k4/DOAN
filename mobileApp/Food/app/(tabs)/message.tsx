@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useChatStore } from '../../src/store/chatStore';
 import { useI18n } from '../../src/i18n/useI18n';
 import { roleUi } from '@/src/theme/roleUi';
@@ -24,16 +24,18 @@ export default function MessageInboxScreen() {
   const conversations = useChatStore((s) => s.conversations);
   const unreadTotal = useChatStore((s) => s.unreadTotal);
   const loading = useChatStore((s) => s.loading);
-  const loadedOnce = useChatStore((s) => s.loadedOnce);
   const refreshConversations = useChatStore((s) => s.refreshConversations);
   const markConversationReadLocal = useChatStore((s) => s.markConversationReadLocal);
 
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (loadedOnce) return;
-    void refreshConversations();
-  }, [loadedOnce, refreshConversations]);
+  // Refetch mỗi lần vào tab — hội thoại tạo sau lần tải đầu (vd. vừa chat với
+  // donor khác) phải hiện ngay, không chỉ tải đúng một lần.
+  useFocusEffect(
+    useCallback(() => {
+      void refreshConversations();
+    }, [refreshConversations]),
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

@@ -158,7 +158,8 @@
       "Bash(sed -n '60,90p' \"mobileApp/Food/app/\\(tabs\\)/message.tsx\")",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('scripts:', JSON.stringify\\(p.scripts\\)\\)\")",
       "Bash(grep -i \"RequestCard\\\\|VOLUNTEER/home\\\\|VOLUNTEER\\\\\\\\\\\\\\\\home\")",
-      "Bash(grep -iE \"DONOR\\\\\\\\\\\\\\\\home|DONOR/home|_components\\\\\\\\\\\\\\\\types|_components/types|i18n\\\\\\\\\\\\\\\\keys\\\\\\\\\\\\\\\\donor|viaAgentStageKey|hasAssignedVolunteer|deliveryStatus|volunteerStage\")"
+      "Bash(grep -iE \"DONOR\\\\\\\\\\\\\\\\home|DONOR/home|_components\\\\\\\\\\\\\\\\types|_components/types|i18n\\\\\\\\\\\\\\\\keys\\\\\\\\\\\\\\\\donor|viaAgentStageKey|hasAssignedVolunteer|deliveryStatus|volunteerStage\")",
+      "Bash(grep -iE \"DONOR\\\\\\\\\\\\\\\\home|DONOR/home|notificationStore|loadData|dataVersion|RefreshControl|refreshing\")"
     ]
   }
 }
