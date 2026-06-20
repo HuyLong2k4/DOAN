@@ -55,6 +55,9 @@ function normalizeObjectId(value?: string | { _id?: string } | null): string {
   return value._id || '';
 }
 
+// Bán kính (km) coi là "gần tôi" — donor xa hơn sẽ bị ẩn ở tab này.
+const NEAR_RADIUS_KM = 5;
+
 export default function ReceiverDonorListScreen() {
   const router = useRouter();
   const { t } = useI18n();
@@ -134,7 +137,11 @@ export default function ReceiverDonorListScreen() {
 
       if (!isSearchMatch) return false;
 
-      if (tab === 'near' && item.pickup_distance_km == null) return false;
+      // "Gần tôi": chỉ hiện donor trong bán kính NEAR_RADIUS_KM (km đường đi do
+      // backend tính). Đơn thiếu khoảng cách (donor không có toạ độ / tắt GPS) bị ẩn.
+      if (tab === 'near' && (item.pickup_distance_km == null || item.pickup_distance_km > NEAR_RADIUS_KM)) {
+        return false;
+      }
 
       if (selectedFoodTypes.length > 0 && item.food_type && !selectedFoodTypes.includes(item.food_type)) return false;
 
@@ -213,7 +220,11 @@ export default function ReceiverDonorListScreen() {
         >
           {filteredDonors.length === 0 ? (
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyText}>{t('donorList.noDonors')}</Text>
+              <Text style={styles.emptyText}>
+                {tab === 'near'
+                  ? `${t('donorList.noNearbyPrefix')} ${NEAR_RADIUS_KM} km`
+                  : t('donorList.noDonors')}
+              </Text>
             </View>
           ) : (
             filteredDonors.map((item) => {
@@ -360,7 +371,7 @@ function DonorListCard({
   return (
     <View style={styles.cardWrap}>
       <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle}>{donorName}</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>{donorName}</Text>
         {distanceText ? <Text style={styles.distancePill}>{distanceText}</Text> : null}
       </View>
 
@@ -495,7 +506,7 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: '#EBEBEB',
   },
-  filterOptionText: { fontSize: 16, color: '#333' },
+  filterOptionText: { flex: 1, fontSize: 16, color: '#333' },
 
   categoryTitle: { fontSize: 16, color: '#111', marginBottom: 8 },
   tabsRow: {
@@ -582,8 +593,10 @@ const styles = StyleSheet.create({
   mealsText: { fontSize: 11, color: '#4A4A4A' },
   actionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 10,
     paddingBottom: 10,
   },

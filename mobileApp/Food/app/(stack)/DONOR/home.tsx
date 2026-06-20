@@ -717,9 +717,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   approvedBadge: {
-    borderRadius: 999,
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    flexShrink: 1,
+    maxWidth: '50%',
   },
   approvedBadgeViaAgent: { backgroundColor: c.primarySoft },
   approvedBadgeSelfPickup: { backgroundColor: c.successSoft },

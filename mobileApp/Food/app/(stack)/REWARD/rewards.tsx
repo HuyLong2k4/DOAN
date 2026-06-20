@@ -176,6 +176,16 @@ export default function RewardsScreen() {
         )}
 
         {!showLeaderboard && (
+          <>
+            <TouchableOpacity
+              style={styles.leaderboardBtn}
+              activeOpacity={0.85}
+              onPress={() => router.push('/(stack)/REWARD/leaderboard' as any)}
+            >
+              <Ionicons name="trophy-outline" size={18} color="#fff" />
+              <Text style={styles.leaderboardBtnText}>{t('rewards.viewLeaderboard')}</Text>
+            </TouchableOpacity>
+
           <View style={styles.mealsSection}>
             <Text style={styles.mealsHeading}>{t('rewards.recentMealsTitle')}</Text>
             {loadingBoard ? (
@@ -215,6 +225,7 @@ export default function RewardsScreen() {
               })
             )}
           </View>
+          </>
         )}
 
         {showLevels && (
@@ -323,6 +334,8 @@ const styles = StyleSheet.create({
   podiumPts:        { fontSize: 11, color: '#888' },
   viewAllBtn:       { alignSelf: 'center', marginVertical: 8 },
   viewAllText:      { fontSize: 13, color: roleUi.colors.primary, fontWeight: '600' },
+  leaderboardBtn:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: roleUi.colors.primary, marginHorizontal: 18, borderRadius: 10, paddingVertical: 12, marginBottom: 16 },
+  leaderboardBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   badgeRow:         { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: 18, borderRadius: 8, padding: 16, marginBottom: 16, gap: 12 },
   badgeIconWrap:    { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center' },
   badgeMsg:         { fontSize: 14, color: '#333', marginBottom: 4 },

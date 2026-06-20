@@ -19,6 +19,7 @@ import { getMyStats } from '../../../src/api/user.api';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import PickupCodeModal from '../../../src/components/PickupCodeModal';
+import EmptyState from '../../../src/components/EmptyState';
 import { RequestCard } from './_components/RequestCard';
 import { DeliveryProgressCard } from './_components/DeliveryProgressCard';
 import { ConfirmAcceptModal } from './_components/ConfirmAcceptModal';
@@ -395,13 +396,17 @@ export default function VolunteerHomeScreen() {
             <ActivityIndicator color={c.primary} />
           </View>
         ) : !isActive ? (
-          <View style={styles.requestStateCard}>
-            <Text style={styles.requestStateText}>{t('volunteer.offlineRequestsHint')}</Text>
-          </View>
+          <EmptyState
+            icon="pause-circle-outline"
+            title={t('volunteer.offlineRequestsHint')}
+            style={styles.emptyStateSpacing}
+          />
         ) : requests.length === 0 ? (
-          <View style={styles.requestStateCard}>
-            <Text style={styles.requestStateText}>{t('volunteer.noPendingRequests')}</Text>
-          </View>
+          <EmptyState
+            icon="bicycle-outline"
+            title={t('volunteer.noPendingRequests')}
+            style={styles.emptyStateSpacing}
+          />
         ) : (
           <ScrollView
             horizontal
@@ -416,7 +421,12 @@ export default function VolunteerHomeScreen() {
                 busy={actingRequestId === r.id}
                 onAccept={() => setConfirmTarget(r)}
                 onReject={() => handleRejectRequest(r.id)}
-                onOpenMap={() => openPickupOnMaps(r)}
+                onViewMore={() =>
+                  router.push({
+                    pathname: '/(stack)/VOLUNTEER/requestDetail',
+                    params: { donationId: r.id, title: r.title },
+                  } as any)
+                }
               />
             ))}
           </ScrollView>
@@ -428,9 +438,11 @@ export default function VolunteerHomeScreen() {
             <ActivityIndicator color={c.primary} />
           </View>
         ) : myDeliveries.length === 0 ? (
-          <View style={styles.requestStateCard}>
-            <Text style={styles.requestStateText}>{t('volunteer.noActiveDeliveries')}</Text>
-          </View>
+          <EmptyState
+            icon="cube-outline"
+            title={t('volunteer.noActiveDeliveries')}
+            style={styles.emptyStateSpacing}
+          />
         ) : (
           <View style={styles.deliveryListWrap}>
             {myDeliveries.map((item) => (
@@ -577,6 +589,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   requestStateText: { fontSize: 13, color: '#777' },
+  emptyStateSpacing: { marginHorizontal: 18, marginBottom: 14 },
 
   deliveryListWrap: { paddingHorizontal: 18, gap: 10, marginBottom: 10 },
 

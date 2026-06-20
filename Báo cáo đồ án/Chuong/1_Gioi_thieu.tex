@@ -1,0 +1,156 @@
+\IfFileExists{../main.tex}{%
+  \documentclass[../main.tex]{subfiles}%
+}{%
+  \documentclass[main.tex]{subfiles}%
+}
+\begin{document}
+\setcounter{chapter}{1}
+\section{Đặt vấn đề}%
+\label{section:1.1}
+Theo Food Waste Index Report 2024 của Chương trình Môi trường Liên Hợp Quốc (UNEP), trong năm 2022, thế giới đã lãng phí khoảng 1,05 tỷ tấn thực phẩm ở khâu tiêu dùng, tương đương 19\% lượng thực phẩm đến tay người tiêu dùng cuối; trong đó, hộ gia đình chiếm khoảng 60\%, dịch vụ ăn uống chiếm khoảng 28\% và bán lẻ chiếm phần còn lại \cite{FoodWasteReport2024}. Ở chiều ngược lại, báo cáo The State of Food Security and Nutrition in the World 2023 của Tổ chức Lương thực và Nông nghiệp Liên Hợp Quốc (FAO) ước tính có khoảng 735 triệu người trên thế giới đang trong tình trạng thiếu đói kinh niên, cao hơn 122 triệu người so với trước đại dịch COVID-19 \cite{TheStateofFoodSecurityandNutrition2023}. Nghịch lý ``thừa--thiếu'' cùng tồn tại này không chỉ phản ánh sự kém hiệu quả trong điều phối nguồn lực, mà còn gây hệ lụy nghiêm trọng đối với môi trường: thực phẩm bị bỏ đi được ước tính chiếm 8--10\% lượng phát thải khí nhà kính toàn cầu \cite{FoodWasteReport2024}.
+
+Việt Nam cũng đang đối mặt với nghịch lý tương tự. Theo Food Waste Index Report 2021 của UNEP, lượng thực phẩm lãng phí ở khâu hộ gia đình tại Việt Nam ước tính khoảng 76 kg/người/năm, tương đương khoảng 7,3 triệu tấn/năm chỉ tính riêng nhóm hộ gia đình \cite{FoodWasteReport2021}. Báo cáo khảo sát của CEL Consulting (2018) từng xếp Việt Nam vào nhóm các quốc gia có tỷ lệ thất thoát và lãng phí thực phẩm cao thứ hai khu vực châu Á — Thái Bình Dương, với tổn thất ước tính lên tới hàng tỷ USD mỗi năm \cite{CELConsulting2018}. Lượng thực phẩm thải bỏ này phần lớn được xử lý chung với rác thải sinh hoạt — theo Bộ Tài nguyên và Môi trường, tổng lượng chất thải rắn sinh hoạt phát sinh tại Việt Nam đã vượt 67.000 tấn/ngày, trong đó tỷ trọng rác thải hữu cơ (bao gồm thực phẩm) chiếm khoảng 60\%~\cite{BaoTinTuc2024}.
+
+Trong khi đó, xét từ phía nhu cầu, số liệu của Tổng cục Thống kê và Bộ Lao động — Thương binh và Xã hội cho thấy, tính đến cuối năm 2025, tỷ lệ nghèo đa chiều (gồm tỷ lệ hộ nghèo và hộ cận nghèo) là 2,95\%; tổng số hộ nghèo và hộ cận nghèo đa chiều là 1.089.151 hộ theo chuẩn nghèo đa chiều giai đoạn 2022–2025 \cite{ThuVienPhapLuat2025}.
+
+Bên cạnh đó, các đô thị lớn như Hà Nội và TP. Hồ Chí Minh có lượng lớn người lao động nhập cư thu nhập thấp, người vô gia cư, bệnh nhân và người nuôi bệnh tại các bệnh viện tuyến cuối — những nhóm đối tượng thường xuyên gặp khó khăn về bữa ăn hằng ngày nhưng chưa được thống kê đầy đủ.
+
+Cộng đồng và các tổ chức từ thiện ở Việt Nam đã có nhiều nỗ lực tự phát nhằm tận dụng nguồn thực phẩm dư thừa: các bếp ăn 0 đồng, các nhóm thiện nguyện hoạt động qua Facebook và Zalo, các chương trình quyên góp tại nhà thờ, chùa, cùng những sáng kiến như Foodbank Vietnam \cite{FoodBankVietnam_Home} hay các nhóm "giải cứu" thực phẩm tại Hà Nội và TP. Hồ Chí Minh. Tuy nhiên, phần lớn các hoạt động này còn rời rạc, phụ thuộc vào mối quan hệ cá nhân và phương thức trao đổi thủ công (gọi điện, nhắn tin, đăng bài tự phát). Người có thực phẩm muốn cho đi thường không biết ai đang cần ở phạm vi gần mình; ngược lại, người cần nhận lại không nắm được nguồn nào đang sẵn sàng chia sẻ. Đội ngũ tình nguyện viên có thiện chí vận chuyển cũng khó tiếp cận đúng nơi, đúng thời điểm.
+
+Từ bối cảnh trên, có thể nhận thấy một bài toán đang tồn tại: làm thế nào để rút ngắn khoảng cách thông tin giữa người có thực phẩm dư, người có nhu cầu nhận và lực lượng vận chuyển trung gian, sao cho việc chia sẻ diễn ra kịp thời, minh bạch và an toàn? Bài toán này bao hàm các khía cạnh con: (i) Bất đối xứng thông tin: hai bên cung — cầu cùng tồn tại nhưng không "nhìn thấy" nhau theo thời gian thực, đặc biệt trong phạm vi địa lý gần. (ii) Tính dễ hư hỏng của thực phẩm khiến quá trình kết nối phải diễn ra trong khoảng thời gian rất ngắn để bảo đảm an toàn vệ sinh — theo nguyên tắc an toàn thực phẩm của Bộ Nông nghiệp Hoa Kỳ (USDA), nhiều loại thực phẩm chế biến sẵn không nên để quá 2 giờ ở nhiệt độ thường~\cite{USDA_DangerZone}. (iii) Niềm tin và trách nhiệm: người nhận cần biết nguồn gốc thực phẩm, người quyên góp cần biết phần quyên góp đến đúng đối tượng, và cả hai cần một cơ chế xác thực, phản hồi. (iv) Logistics: phần lớn người nhận (đặc biệt là tổ chức nhỏ, cá nhân khó khăn) không có sẵn phương tiện đi lấy, dẫn đến nhu cầu phối hợp với lực lượng tình nguyện vận chuyển. (v) Thiếu công cụ đo lường: cộng đồng và các đơn vị thiện nguyện khó tổng hợp số bữa ăn đã chia sẻ, lượng thực phẩm đã cứu khỏi việc bỏ đi, để từ đó duy trì và mở rộng hoạt động.
+
+Việc giải quyết được bài toán nêu trên sẽ mang lại lợi ích nhiều mặt: (i) Đối với người quyên góp (nhà hàng, siêu thị, hộ gia đình, đơn vị tổ chức sự kiện): có thêm con đường rõ ràng để chuyển hoá phần thực phẩm dư thành giá trị xã hội, đồng thời giảm chi phí xử lý rác thải và thực hiện trách nhiệm xã hội của doanh nghiệp. (ii) Đối với người nhận (mái ấm, trung tâm bảo trợ, người yếu thế): được tiếp cận nguồn thực phẩm bổ sung ổn định hơn, kịp thời hơn. (iii) Đối với cộng đồng tình nguyện: tham gia một cách có tổ chức, được ghi nhận đóng góp một cách minh bạch. (iv) Đối với xã hội và môi trường: góp phần giảm lãng phí thực phẩm, giảm phát thải khí nhà kính từ rác thải hữu cơ, hiện thực hoá cam kết của Việt Nam tại COP26 về đạt phát thải ròng bằng "0" vào năm 2050 \cite{BoCongThuong_COP26} và các Mục tiêu Phát triển Bền vững của Liên Hợp Quốc — đặc biệt là không còn nạn đói và đến năm 2030, giảm một nửa lượng thực phẩm lãng phí trên đầu người ở cấp bán lẻ và tiêu dùng \cite{UN_Agenda2030}.
+
+Mô hình bài toán — kết nối ba bên bên có nguồn lực dư, bên có nhu cầu và bên trung gian vận chuyển trong phạm vi địa lý và thời gian giới hạn — không chỉ giới hạn ở thực phẩm. Tư duy giải quyết tương tự có thể áp dụng cho: quyên góp quần áo, sách vở, đồ dùng học tập, thuốc còn hạn sử dụng; điều phối hiến máu nhân đạo; cứu trợ trong thiên tai, dịch bệnh; phối hợp tình nguyện viên cho các hoạt động cộng đồng. Vì vậy, việc nghiên cứu và giải bài toán này không chỉ có ý nghĩa cho lĩnh vực thực phẩm mà còn đóng vai trò làm nền tảng tư duy cho nhiều bài toán điều phối nguồn lực xã hội khác.
+
+\section{Mục tiêu và phạm vi đề tài}%
+\label{section:1.2}
+
+\subsection{Khảo sát các sản phẩm hiện có}
+\label{subsection:1.2.1}
+Trên thế giới, vấn đề kết nối chia sẻ thực phẩm dư thừa đã thu hút sự quan tâm của nhiều tổ chức và doanh nghiệp công nghệ. Một số giải pháp tiêu biểu có thể kể đến như sau. 
+
+Too Good To Go là ứng dụng thương mại có trụ sở tại Đan Mạch, ra mắt năm 2016, cho phép các nhà hàng và siêu thị bán túi thực phẩm dư cuối ngày với giá giảm sâu cho người tiêu dùng gần đó. Tính đến năm 2024, ứng dụng này đã tiếp cận hơn 120 triệu người dùng tại hơn 21 quốc gia, chủ yếu ở châu Âu và Bắc Mỹ~\cite{TooGoodToGo}. Tuy nhiên, mô hình này mang bản chất thương mại — người nhận vẫn phải trả tiền để lấy thực phẩm — do đó không phục vụ được nhóm đối tượng khó khăn không có khả năng chi trả.
+
+OLIO là ứng dụng chia sẻ cộng đồng ra mắt tại Anh năm 2015, cho phép cá nhân đăng tải và nhận thực phẩm (hoặc đồ vật) miễn phí trong phạm vi lân cận \cite{Olio}. OLIO đã có mặt tại hơn 60 quốc gia với 12 triệu người dùng đăng ký trên toàn cầu \cite{Olio}. Điểm mạnh của OLIO là mô hình phi lợi nhuận, cá nhân với cá nhân, nhưng hạn chế lớn là không có cơ chế phối hợp vận chuyển, không hỗ trợ vai trò tình nguyện viên giao nhận chuyên biệt.
+
+Tại Việt Nam, các giải pháp hiện có vẫn chủ yếu mang tính thủ công và phi chính thức: các nhóm "giải cứu thực phẩm" hoạt động qua Facebook/Zalo, các tổ chức như Foodbank Vietnam điều phối bằng điện thoại và gặp mặt trực tiếp, các bếp ăn 0 đồng hoạt động theo giờ cố định. Qua khảo sát thực tế, tác giả nhận thấy hiện chưa có ứng dụng di động chuyên biệt nào được triển khai rộng rãi tại Việt Nam để giải quyết toàn diện bài toán kết nối chia sẻ thực phẩm theo thời gian thực.
+
+\subsection{So sánh và đánh giá tổng quan}
+\label{subsection:1.2.2}
+
+Bảng~\ref{tab:so_sanh_giai_phap_hien_co} tổng hợp so sánh ba giải pháp tiêu biểu nêu trên theo năm tiêu chí cốt lõi đối với bài toán chia sẻ thực phẩm.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{| c | l | c | c | c |}
+\hline
+\textbf{STT}  &\textbf{Tiêu chí} & \textbf{Too Good To Go} & \textbf{OLIO}  &  \textbf{Foodbank} \\ \hline
+1 & Miễn phí cho người nhận & Không & Có & Có                                            \\ \hline
+2 & Hỗ trợ vai trò tình nguyện viên & Không & Không & Có (Thủ công) \\ \hline
+3 & Kết nối theo thời gian thực & Có & Có & Không\\ \hline
+4 & Người nhận chủ động đăng yêu cầu & Không & Không & Không\\ \hline
+5 & Có mặt tại Việt Nam & Không & Không & Có           \\ \hline
+\end{tabular}%
+}
+\caption{So sánh các giải pháp hiện có}
+\label{tab:so_sanh_giai_phap_hien_co}
+\end{table}
+
+Từ khảo sát và so sánh trên, có thể rút ra các hạn chế chủ yếu:
+
+(i) Thứ nhất, chưa có giải pháp nào triển khai mô hình ba vai trò đầy đủ — người quyên góp, người nhận, tình nguyện viên vận chuyển — với cơ chế phối hợp tự động theo thời gian thực. Các giải pháp hiện tại hoặc bỏ qua vai trò vận chuyển (OLIO, Too Good To Go), hoặc xử lý thủ công (Foodbank Vietnam).
+
+(ii) Thứ hai, người nhận thụ động hoàn toàn: tất cả các nền tảng trên đều chỉ cho phép người nhận phản ứng với thực phẩm đang có sẵn, không có cơ chế để người nhận chủ động đăng yêu cầu thực phẩm cụ thể (về loại, số lượng, thời gian cần).
+
+(iii) Thứ ba, không có giải pháp được thiết kế cho thị trường Việt Nam: các ứng dụng quốc tế không hỗ trợ tiếng Việt, không phù hợp với hành vi và cơ sở hạ tầng logistics địa phương, chưa được triển khai tại Việt Nam.
+
+(iv) Thứ tư, thiếu công cụ thống kê tác động xã hội: cả người dùng lẫn tổ chức thiện nguyện không có số liệu rõ ràng về số lượng thực phẩm đã chia sẻ, số bữa ăn được tạo ra, hoặc số lượng người được hưởng lợi — làm giảm động lực tham gia lâu dài.
+
+\subsection{Mục tiêu đề tài}
+\label{subsection:1.2.3}
+
+Dựa trên phân tích các hạn chế hiện tại, đề tài hướng đến xây dựng một ứng dụng di động hỗ trợ kết nối chia sẻ thực phẩm dư thừa phù hợp với bối cảnh Việt Nam, với mục tiêu cụ thể như sau:
+
+(i) Về chức năng cốt lõi, ứng dụng cần hỗ trợ đầy đủ ba nhóm tác nhân chính trong chuỗi chia sẻ thực phẩm: (1) người quyên góp thực phẩm dư thừa, (2) người/tổ chức có nhu cầu nhận thực phẩm, và (3) tình nguyện viên đảm nhiệm vận chuyển. Ngoài ra, cần có giao diện quản trị để giám sát toàn bộ hoạt động trên nền tảng.
+
+(ii) Về kết nối thông minh, ứng dụng cần tích hợp cơ chế định vị địa lý để ưu tiên gợi ý các đơn quyên góp gần nhất với người nhận, rút ngắn thời gian di chuyển và tăng tỷ lệ thực phẩm được nhận trước khi hết hạn.
+
+(iii) Về luồng nghiệp vụ hai chiều, ứng dụng cần cho phép cả hai hướng: người quyên góp đăng thực phẩm sẵn có và người nhận chủ động đăng yêu cầu thực phẩm cụ thể — từ đó nền tảng có thể điều phối kết nối giữa hai phía.
+
+(iv) Về đo lường tác động, ứng dụng cần ghi nhận các chỉ số cơ bản như số lượng thực phẩm được chia sẻ, số lượt giao nhận thành công, giúp người dùng nhận thức được giá trị đóng góp của mình và thúc đẩy sự tham gia bền vững.
+
+\subsection{Phạm vi đề tài}
+\label{subsection:1.2.4}
+
+Đề tài được giới hạn trong phạm vi sau đây. Về nền tảng, ứng dụng dành cho người dùng cuối được phát triển cho thiết bị di động chạy hệ điều hành Android, kèm một cổng quản trị trên nền web phục vụ quản trị viên. Về tác nhân, hệ thống phục vụ bốn vai trò gồm người quyên góp, người nhận, tình nguyện viên vận chuyển và quản trị viên. Về nghiệp vụ, đề tài giải quyết luồng chia sẻ thực phẩm theo hai chiều, gồm người quyên góp đăng thực phẩm dư và người nhận đăng yêu cầu thực phẩm, kèm điều phối vận chuyển trong phạm vi địa lý giới hạn và cơ chế xác nhận giao nhận. Về thử nghiệm, hệ thống được kiểm thử với dữ liệu mô phỏng tại khu vực đô thị mà điển hình là Hà Nội. Một số nội dung nằm ngoài phạm vi đề tài, bao gồm cổng thanh toán trực tuyến, tích hợp với các đơn vị vận chuyển thương mại và việc phát hành chính thức trên kho ứng dụng.
+
+\section{Định hướng giải pháp}%
+\label{section:1.3}
+
+\subsection{Định hướng công nghệ và phương pháp}
+\label{subsection:1.3.1}
+
+Để giải quyết các nhiệm vụ xác định ở mục 1.2, đề tài tiếp cận theo các định hướng công nghệ và kỹ thuật sau:
+
+(i) Phát triển ứng dụng di động đa nền tảng (Cross-platform Mobile Development). Đề tài sử dụng framework React Native kết hợp với Expo nhằm phát triển nhanh từ một mã nguồn duy nhất; trong phạm vi đề tài, ứng dụng được xây dựng và thử nghiệm trên hệ điều hành Android.
+
+(ii) Kiến trúc Client–Server với RESTful API. Ứng dụng di động (client) giao tiếp với máy chủ thông qua giao thức REST trên nền Node.js và Express.js — kiến trúc phi trạng thái (stateless), dễ mở rộng theo chiều ngang.
+
+(iii) Lưu trữ dữ liệu trên MongoDB — cơ sở dữ liệu NoSQL dạng tài liệu JSON. Mô hình tài liệu linh hoạt phù hợp với dữ liệu đơn quyên góp và yêu cầu thực phẩm vốn có cấu trúc thay đổi theo trạng thái, đồng thời thuận tiện mở rộng về sau.
+
+(iv) Kết nối dựa trên vị trí địa lý. Khoảng cách giữa người quyên góp và người nhận được tính theo hai mức: thuật toán Haversine (khoảng cách đường chim bay) làm phương án dự phòng, và Google Distance Matrix API (khoảng cách đường bộ thực tế) làm phương án chính khi có kết nối. 
+
+(v) Hệ thống thông báo đẩy đa nền tảng (Push Notification). Thông báo theo thời gian thực tới người dùng được thực hiện qua Expo Push Notification Service — lớp trung gian cho Android. 
+
+(vi) Xác thực và phân quyền theo vai trò. Người dùng được xác thực qua JSON Web Token; quyền truy cập tài nguyên được kiểm soát theo cơ chế Role-Based Access Control với các vai trò tách biệt. 
+
+\subsection{Mô tả ngắn gọn giải pháp}
+\label{subsection:1.3.2}
+
+Dựa trên định hướng công nghệ nêu trên, giải pháp được đề xuất là một hệ thống ứng dụng di động đa nền tảng kết hợp cổng quản trị web, phục vụ bài toán kết nối chia sẻ thực phẩm dư thừa tại Việt Nam.
+
+Hệ thống tổ chức người dùng thành bốn vai trò riêng biệt: người quyên góp (Donor) đăng tải thực phẩm dư kèm thông tin về loại, số lượng, hạn sử dụng và hình ảnh; người nhận (Receiver) bao gồm cá nhân và tổ chức từ thiện có thể duyệt danh sách thực phẩm gần mình theo vị trí địa lý hoặc chủ động đăng yêu cầu thực phẩm cụ thể; tình nguyện viên (Volunteer) đảm nhiệm vận chuyển từ nơi cho đến nơi nhận; và quản trị viên (Admin) giám sát hoạt động qua giao diện web.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.8\textwidth]{Hinhve/Gioithieu/Luong_tu_nguoi_cho.png}
+    \caption{Luồng nghiệp vụ chia sẻ thực phẩm --- chiều từ người quyên góp}
+    \label{fig:luong_tu_nguoi_cho}
+\end{figure}
+
+Hình \ref{fig:luong_tu_nguoi_cho} mô tả sơ bộ luồng nghiệp vụ quyên tặng đồ ăn từ phía người quyên góp: người quyên góp đăng bài muốn quyên tặng thực phẩm, người nhận thấy bài đăng và kết nối. Sau khi kết nối, người nhận chọn tự nhận hoặc ủy quyền cho tình nguyện viên đến nhận. Sau khi nhận được đồ ăn từ người quyên góp, người nhận xác nhận hoàn tất.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.9\textwidth]{Hinhve/Gioithieu/Luong_tu_nguoi_nhan.png}
+    \caption{Luồng nghiệp vụ chia sẻ thực phẩm --- chiều từ người nhận}
+    \label{fig:luong_tu_nguoi_nhan}
+\end{figure}
+
+Hình \ref{fig:luong_tu_nguoi_nhan} mô tả sơ bộ luồng nghiệp vụ yêu cầu đồ ăn từ phía người nhận: người nhận đăng bài yêu cầu, người quyên góp thấy và đáp ứng yêu cầu, người nhận chọn tự nhận hoặc ủy quyền cho tình nguyện viên đến nhận. Sau khi nhận được đồ ăn từ người quyên góp, người nhận xác nhận hoàn tất.
+
+\subsection{Đóng góp và kết quả đạt được}
+\label{subsection:1.3.3}
+
+Đóng góp chính của đề tài là một hệ thống chia sẻ thực phẩm hoàn chỉnh, kết hợp đồng thời ba đặc trưng mà các giải pháp hiện có còn thiếu: (i) mô hình ba vai trò người quyên góp, người nhận và tình nguyện viên với cơ chế điều phối vận chuyển bán tự động theo nguyên tắc ``ai nhận trước được trước''; (ii) luồng nghiệp vụ hai chiều, cho phép người nhận chủ động đăng yêu cầu thực phẩm bên cạnh luồng người quyên góp đăng thực phẩm dư; và (iii) các cơ chế bảo đảm tin cậy gồm mã xác nhận lấy hàng chống giao nhận sai người, quy trình xác nhận hai bước chống khai khống đã giao, và hệ thống điểm thưởng ghi nhận đóng góp.
+
+Về kết quả, đề tài đã hoàn thành ứng dụng di động cho ba vai trò người dùng cùng cổng quản trị trên web, với các chức năng cốt lõi gồm xác thực và phân quyền theo vai trò, đăng và quản lý đơn quyên góp cũng như yêu cầu thực phẩm, gợi ý theo vị trí địa lý, nhắn tin thời gian thực, thông báo đẩy và theo dõi trạng thái giao nhận. Chi tiết thiết kế, xây dựng và đánh giá hệ thống được trình bày trong Chương 4; các giải pháp và đóng góp nổi bật được phân tích sâu trong Chương 5.
+
+\section{Bố cục đồ án}%
+\label{section:1.4}
+Để trình bày một cách logic và khoa học, phần còn lại của báo cáo đồ án tốt nghiệp này được tổ chức như sau.
+
+\textbf{\MakeUppercase{Chương 2: Khảo sát và phân tích yêu cầu}}: Nội dung chương tập trung khảo sát chi tiết các ứng dụng tương tự, mô tả tổng quan chức năng của hệ thống thông qua các biểu đồ use case tổng quát và phân rã, trình bày chi tiết quy trình nghiệp vụ, đồng thời đặc tả chức năng thông qua các đặc tả use case.
+
+\textbf{\MakeUppercase{Chương 3: Nền tảng lý thuyết và công nghệ sử dụng}}: Nội dung chương trình bày, giải thích về nền tảng lý thuyết và công nghệ sử dụng.
+
+\textbf{\MakeUppercase{Chương 4: Phân tích thiết kế, triển khai và đánh giá hệ thống}}: Nội dung chương trình bày về kiến trúc hệ thống, thiết kế giao diện. Thư viện, công cụ sử dụng và minh họa các chức năng chính.
+
+\textbf{\MakeUppercase{Chương 5: Các giải pháp và đóng góp nổi bật}}: Nội dung chương trình bày các giải pháp và đóng góp nổi bật của đồ án.
+
+\textbf{\MakeUppercase{Chương 6: Kết luận và hướng phát triển}}: Nội dung chương so sánh sản phẩm của đồ án với các ứng dụng tương tự, tổng kết những kết quả đã đạt được trong suốt quá trình thực hiện đồ án tốt nghiệp, nêu ra những kinh nghiệm và bài học rút ra, đồng thời đưa ra các định hướng cần thiết để hoàn thiện và phát triển các chức năng đã xây dựng.
+
+\ifSubfilesClassLoaded{\printbibliography{}}{}
+\end{document}

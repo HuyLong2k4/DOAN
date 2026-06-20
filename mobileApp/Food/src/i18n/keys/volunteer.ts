@@ -91,7 +91,15 @@ export type VolunteerKey =
   | 'volunteer.deliveryDetail.completed'
   | 'volunteer.deliveryDetail.loadFailed'
   | 'volunteer.deliveryDetail.noAddress'
-  | 'volunteer.deliveryDetail.noPhone';
+  | 'volunteer.deliveryDetail.noPhone'
+  | 'volunteer.requestDetail.title'
+  | 'volunteer.requestDetail.accept'
+  | 'volunteer.requestDetail.accepting'
+  | 'volunteer.requestDetail.reject'
+  | 'volunteer.requestDetail.acceptConfirmTitle'
+  | 'volunteer.requestDetail.acceptConfirmMsg'
+  | 'volunteer.requestDetail.rejectConfirmTitle'
+  | 'volunteer.requestDetail.rejectConfirmMsg';
 
 export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.greeting': 'Hi',
@@ -187,6 +195,14 @@ export const volunteerEn: Record<VolunteerKey, string> = {
   'volunteer.deliveryDetail.loadFailed': "Couldn't load this delivery.",
   'volunteer.deliveryDetail.noAddress': 'Address unavailable',
   'volunteer.deliveryDetail.noPhone': 'No phone number',
+  'volunteer.requestDetail.title': 'Delivery request',
+  'volunteer.requestDetail.accept': 'Accept delivery',
+  'volunteer.requestDetail.accepting': 'Accepting...',
+  'volunteer.requestDetail.reject': 'Decline',
+  'volunteer.requestDetail.acceptConfirmTitle': 'Accept this delivery?',
+  'volunteer.requestDetail.acceptConfirmMsg': 'You will be responsible for picking up and delivering this order.',
+  'volunteer.requestDetail.rejectConfirmTitle': 'Decline this request?',
+  'volunteer.requestDetail.rejectConfirmMsg': "You won't see this request again.",
 };
 
 export const volunteerVi: Record<VolunteerKey, string> = {
@@ -283,4 +299,12 @@ export const volunteerVi: Record<VolunteerKey, string> = {
   'volunteer.deliveryDetail.loadFailed': 'Không tải được đơn này.',
   'volunteer.deliveryDetail.noAddress': 'Không có địa chỉ',
   'volunteer.deliveryDetail.noPhone': 'Không có số điện thoại',
+  'volunteer.requestDetail.title': 'Yêu cầu giao hàng',
+  'volunteer.requestDetail.accept': 'Nhận đơn',
+  'volunteer.requestDetail.accepting': 'Đang nhận...',
+  'volunteer.requestDetail.reject': 'Từ chối',
+  'volunteer.requestDetail.acceptConfirmTitle': 'Nhận đơn này?',
+  'volunteer.requestDetail.acceptConfirmMsg': 'Bạn sẽ chịu trách nhiệm lấy hàng và giao đơn này.',
+  'volunteer.requestDetail.rejectConfirmTitle': 'Từ chối đơn này?',
+  'volunteer.requestDetail.rejectConfirmMsg': 'Bạn sẽ không thấy đơn này nữa.',
 };

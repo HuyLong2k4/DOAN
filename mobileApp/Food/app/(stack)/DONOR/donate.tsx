@@ -177,7 +177,7 @@ export default function DonateScreen() {
           {/* ── Type of Food dropdown ── */}
           <Text style={styles.label}>{t('donor.donate.typeOfFood')}</Text>
           <TouchableOpacity style={styles.dropdown} onPress={() => setShowDropdown(!showDropdown)} activeOpacity={0.8}>
-            <Text style={styles.dropdownText}>{t(foodType.label as any)}</Text>
+            <Text style={styles.dropdownText} numberOfLines={1}>{t(foodType.label as any)}</Text>
             <Ionicons name="chevron-down" size={20} color="#555" />
           </TouchableOpacity>
           {showDropdown && (
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   input:                 { borderWidth: 1, borderColor: c.divider, borderRadius: r.sm, height: 48, paddingHorizontal: 14, fontSize: 14, color: c.textPrimary },
   textarea:              { height: 100, paddingTop: 12, textAlignVertical: 'top' },
   dropdown:              { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: c.divider, borderRadius: r.sm, height: 48, paddingHorizontal: 14 },
-  dropdownText:          { fontSize: 14, color: c.textSecondary },
+  dropdownText:          { flex: 1, fontSize: 14, color: c.textSecondary, paddingRight: 10 },
   dropdownList:          { borderWidth: 1, borderColor: c.divider, borderRadius: r.sm, marginTop: 2, backgroundColor: c.surface, zIndex: 100 },
   dropdownItem:          { paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
   dropdownItemActive:    { backgroundColor: c.primarySoft },

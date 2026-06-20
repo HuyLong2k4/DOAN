@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   textWrap: { flexShrink: 1, marginRight: 8 },
   greeting: { fontSize: 16, color: c.textSecondary },
-  roleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  roleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 2 },
   roleText: { fontSize: 20, color: c.textPrimary },
   roleBold: { fontSize: 20, fontWeight: '800', color: c.textPrimary },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },

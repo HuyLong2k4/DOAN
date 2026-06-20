@@ -170,7 +170,7 @@ export default function ReceiverFeedbackScreen() {
 
           <View style={styles.successBox}>
             <Ionicons name="checkmark-circle" size={32} color={roleUi.colors.successText} />
-            <View style={{ marginLeft: 10 }}>
+            <View style={{ marginLeft: 10, flex: 1 }}>
               <Text style={styles.successHeading}>{t('feedback.congrats')}</Text>
               <Text style={styles.successText}>{t('feedback.delivered')}</Text>
             </View>
@@ -232,7 +232,7 @@ export default function ReceiverFeedbackScreen() {
             onPress={() => void onSubmit()}
             disabled={!isValid || submitting}
           >
-            <Text style={styles.submitText}>{submitting ? t('feedback.submitting') : t('feedback.submit')}</Text>
+            <Text style={styles.submitText} numberOfLines={1}>{submitting ? t('feedback.submitting') : t('feedback.submit')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

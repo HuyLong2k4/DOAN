@@ -427,7 +427,7 @@ export default function ReceiverDonationDetailScreen() {
                 disabled={!donorPhone}
               >
                 <Ionicons name="call-outline" size={15} color={donorPhone ? roleUi.colors.primaryStrong : '#8A8A8A'} />
-                <Text style={[styles.donorActionText, !donorPhone && { color: '#8A8A8A' }]}>
+                <Text style={[styles.donorActionText, !donorPhone && { color: '#8A8A8A' }]} numberOfLines={1}>
                   {t('donationDetail.callDonor')}
                 </Text>
               </TouchableOpacity>
@@ -441,7 +441,7 @@ export default function ReceiverDonationDetailScreen() {
                 ) : (
                   <>
                     <Ionicons name="chatbubble-outline" size={15} color={roleUi.colors.primaryStrong} />
-                    <Text style={styles.donorActionText}>{t('donationDetail.chatDonor')}</Text>
+                    <Text style={styles.donorActionText} numberOfLines={1}>{t('donationDetail.chatDonor')}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -474,7 +474,7 @@ export default function ReceiverDonationDetailScreen() {
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.secondaryBtn} onPress={onOpenMap}>
             <Ionicons name="map-outline" size={16} color={roleUi.colors.primaryStrong} />
-            <Text style={styles.secondaryBtnText}>{t('volunteer.openMap')}</Text>
+            <Text style={styles.secondaryBtnText} numberOfLines={1}>{t('volunteer.openMap')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -487,7 +487,7 @@ export default function ReceiverDonationDetailScreen() {
             disabled={connecting}
             onPress={onPrimaryAction}
           >
-            <Text style={styles.primaryBtnText}>{primaryActionLabel}</Text>
+            <Text style={styles.primaryBtnText} numberOfLines={1}>{primaryActionLabel}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

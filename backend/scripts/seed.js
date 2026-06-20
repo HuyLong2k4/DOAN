@@ -181,11 +181,24 @@ const DONATIONS = [
   { donor: '0905100004', title: 'Bánh kem để lâu',             description: 'Bánh kem dư, huỷ do để lâu.',                   food_type: 'PACKAGED', quantity: 10, unit: 'cái',  exp: 8,   status: 'CANCELLED' },
   // ── Đợt 3: phủ nốt các trạng thái Delivery còn thiếu ──
   // WAITING_AGENT: receiver đã nhận đơn (VIA_AGENT) nhưng chưa có volunteer tới lấy.
-  { donor: '0905100005', title: 'Cơm trưa chờ tình nguyện viên',     description: 'Receiver đã nhận, đang chờ TNV tới lấy.',       food_type: 'COOKED', quantity: 30, unit: 'suất', exp: 6, status: 'ACCEPTED',  receiver: '0906200006', viaAgent: true },
+  // Donation giữ status PENDING (đúng luồng thật) ⇒ hiện trong list "Yêu cầu giao" của volunteer.
+  { donor: '0905100005', title: 'Cơm trưa chờ tình nguyện viên',     description: 'Receiver đã nhận, đang chờ TNV tới lấy.',       food_type: 'COOKED', quantity: 30, unit: 'suất', exp: 6, status: 'PENDING',  receiver: '0906200006', viaAgent: true },
   // AWAITING_CONFIRMATION: volunteer báo đã giao, chờ receiver xác nhận đã nhận.
   { donor: '0905100006', title: 'Cơm trưa văn phòng (chờ xác nhận)', description: 'TNV báo đã giao, chờ người nhận xác nhận.',     food_type: 'COOKED', quantity: 25, unit: 'suất', exp: 5, status: 'PICKED_UP', receiver: '0906200006', volunteer: '0907300010', deliveryStatus: 'AWAITING_CONFIRMATION' },
   // Delivery CANCELLED: đơn đã ghép nhưng chuyến giao bị huỷ (TNV không tới).
   { donor: '0905100007', title: 'Bún chả huỷ chuyến giao',          description: 'Chuyến giao bị huỷ do TNV không tới.',          food_type: 'COOKED', quantity: 28, unit: 'suất', exp: 4, status: 'CANCELLED', receiver: '0906200008', volunteer: '0907300003', deliveryStatus: 'CANCELLED' },
+  // ── Đợt 4: đơn VIA_AGENT đang chờ tình nguyện viên nhận (volunteer chọn đơn để giao) ──
+  // status PENDING + selected_receiver_id + delivery_type VIA_AGENT ⇒ Delivery WAITING_AGENT,
+  // hiện trong list "Yêu cầu giao" của mọi volunteer đang online. Trải đều các quận để có đơn gần.
+  { donor: '0905100001', title: 'Cơm gà & canh chờ TNV',        description: 'Receiver đã nhận, cần TNV tới lấy giúp.',          food_type: 'COOKED',   quantity: 35, unit: 'suất', exp: 6,  status: 'PENDING', receiver: '0906200002', viaAgent: true },
+  { donor: '0905100002', title: 'Bánh mì & sữa sáng chờ TNV',   description: 'Bánh mì kèm sữa hộp, cần giao sớm trong sáng.',    food_type: 'PACKAGED', quantity: 40, unit: 'phần', exp: 5,  status: 'PENDING', receiver: '0906200001', viaAgent: true },
+  { donor: '0905100003', title: 'Cơm chay hộp chờ TNV',         description: 'Cơm chay đủ món, đang chờ TNV nhận đơn.',          food_type: 'COOKED',   quantity: 50, unit: 'suất', exp: 4,  status: 'PENDING', receiver: '0906200005', viaAgent: true },
+  { donor: '0905100004', title: 'Bánh ngọt hộp chờ TNV',        description: 'Bánh su, bông lan đóng hộp, cần người giao.',      food_type: 'PACKAGED', quantity: 30, unit: 'cái',  exp: 6,  status: 'PENDING', receiver: '0906200007', viaAgent: true },
+  { donor: '0905100005', title: 'Xôi & giò chả chờ TNV',        description: 'Xôi gấc kèm giò lụa, suất ăn sáng cần giao.',      food_type: 'COOKED',   quantity: 45, unit: 'suất', exp: 5,  status: 'PENDING', receiver: '0906200004', viaAgent: true },
+  { donor: '0905100007', title: 'Bún chả phần dư chờ TNV',      description: 'Bún chả còn dư buổi trưa, đóng hộp gọn.',          food_type: 'COOKED',   quantity: 28, unit: 'suất', exp: 4,  status: 'PENDING', receiver: '0906200008', viaAgent: true },
+  { donor: '0905100008', title: 'Bánh bao nóng chờ TNV',        description: 'Bánh bao nhân thịt trứng, giao khi còn nóng.',     food_type: 'PACKAGED', quantity: 50, unit: 'cái',  exp: 6,  status: 'PENDING', receiver: '0906200003', viaAgent: true },
+  { donor: '0905100009', title: 'Rau củ tươi chờ TNV',          description: 'Rau muống, cải, su hào tươi cần người chở.',       food_type: 'RAW',      quantity: 25, unit: 'kg',   exp: 12, status: 'PENDING', receiver: '0906200009', viaAgent: true },
+  { donor: '0905100010', title: 'Cơm niêu phần dư chờ TNV',     description: 'Cơm niêu còn nguyên, đang chờ TNV tới lấy.',       food_type: 'COOKED',   quantity: 30, unit: 'suất', exp: 5,  status: 'PENDING', receiver: '0906200010', viaAgent: true },
 ];
 
 // linkDonationIndex: gắn vào DONATIONS[index] (cho FULFILLED). accepted = phone donor.

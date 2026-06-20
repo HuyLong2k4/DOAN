@@ -8,14 +8,14 @@ type Props = {
   busy: boolean;
   onAccept: () => void;
   onReject: () => void;
-  onOpenMap: () => void;
+  onViewMore: () => void;
   t: TFn;
 };
 
-export function RequestCard({ item, busy, onAccept, onReject, onOpenMap, t }: Props) {
+export function RequestCard({ item, busy, onAccept, onReject, onViewMore, t }: Props) {
   return (
     <View style={styles.requestCard}>
-      <Text style={styles.requestTitle}>{item.title}</Text>
+      <Text style={styles.requestTitle} numberOfLines={2}>{item.title}</Text>
       {item.isPreferredForYou ? (
         <View style={styles.preferredBadge}>
           <Ionicons name="sparkles" size={10} color={roleUi.colors.primary} />
@@ -34,7 +34,7 @@ export function RequestCard({ item, busy, onAccept, onReject, onOpenMap, t }: Pr
         <Text style={styles.requestAddress} numberOfLines={2}>{item.address}</Text>
       </View>
 
-      <TouchableOpacity onPress={onOpenMap}>
+      <TouchableOpacity onPress={onViewMore}>
         <Text style={styles.requestLink}>{t('volunteer.viewMore')}</Text>
       </TouchableOpacity>
 
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   preferredBadgeText: { fontSize: 10, color: roleUi.colors.primary, fontWeight: '700' },
   requestDivider: { height: 1, backgroundColor: '#EFEFEF', marginVertical: 6 },
   requestMetaRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 6 },
-  requestMetaText: { fontSize: 12, color: '#444' },
+  requestMetaText: { flex: 1, fontSize: 12, color: '#444' },
   requestAddress: { flex: 1, fontSize: 12, color: '#444' },
   requestLink: { color: roleUi.colors.primaryStrong, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 8 },
   requestActionsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },

@@ -6,6 +6,7 @@ export type ListsKey =
   | 'donorList.all'
   | 'donorList.nearMe'
   | 'donorList.noDonors'
+  | 'donorList.noNearbyPrefix'
   | 'donorList.addressNotAvailable'
   | 'donorList.kmAway'
   | 'donorList.exp'
@@ -53,6 +54,7 @@ export const listsEn: Record<ListsKey, string> = {
   'donorList.all': 'All',
   'donorList.nearMe': 'Near Me',
   'donorList.noDonors': 'No donors found',
+  'donorList.noNearbyPrefix': 'No donors within',
   'donorList.addressNotAvailable': 'Address not available',
   'donorList.kmAway': 'km away',
   'donorList.exp': 'Exp:',
@@ -101,6 +103,7 @@ export const listsVi: Record<ListsKey, string> = {
   'donorList.all': 'Tất cả',
   'donorList.nearMe': 'Gần tôi',
   'donorList.noDonors': 'Không tìm thấy người tặng',
+  'donorList.noNearbyPrefix': 'Không có người tặng nào trong bán kính',
   'donorList.addressNotAvailable': 'Không có địa chỉ',
   'donorList.kmAway': 'km',
   'donorList.exp': 'HH:',

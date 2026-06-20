@@ -11,6 +11,7 @@ import { useI18n } from '../../../src/i18n/useI18n';
 import PickupCodeModal from '../../../src/components/PickupCodeModal';
 import { TimelineRow } from './_components/TimelineRow';
 import { TrackingMap } from './_components/TrackingMap';
+import { ContactChooserModal, type ContactOption } from './_components/ContactChooserModal';
 import { roleUi } from '@/src/theme/roleUi';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 
@@ -70,6 +71,7 @@ export default function ReceiverTrackingScreen() {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [error, setError] = useState('');
   const [myLocation, setMyLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [contactAction, setContactAction] = useState<'call' | 'chat' | null>(null);
 
   const fetchTracking = useCallback(async (silent = false) => {
     if (!donationId) {
@@ -159,15 +161,7 @@ export default function ReceiverTrackingScreen() {
     // phương án dự phòng khi không liên lạc được volunteer → cho chọn.
     // SELF_PICKUP: chỉ có donor.
     if (tracking?.delivery?.delivery_type === 'VIA_AGENT') {
-      Alert.alert(
-        t('tracking.contactChooseTitle'),
-        t('tracking.contactChooseBody'),
-        [
-          { text: t('tracking.contactVolunteer'), onPress: () => void placeCall(tracking?.volunteer?.phone_number) },
-          { text: t('tracking.contactDonor'), onPress: () => void placeCall(tracking?.donor?.phone_number) },
-          { text: t('tracking.contactCancel'), style: 'cancel' },
-        ],
-      );
+      setContactAction('call');
       return;
     }
 
@@ -365,15 +359,7 @@ export default function ReceiverTrackingScreen() {
     // VIA_AGENT: cho chọn nhắn tin volunteer hoặc donor (dự phòng khi không liên
     // lạc được volunteer). SELF_PICKUP: chỉ có donor.
     if (tracking?.delivery?.delivery_type === 'VIA_AGENT') {
-      Alert.alert(
-        t('tracking.contactChooseTitle'),
-        t('tracking.contactChooseBody'),
-        [
-          { text: t('tracking.contactVolunteer'), onPress: () => void openChatWith('VOLUNTEER') },
-          { text: t('tracking.contactDonor'), onPress: () => void openChatWith('DONOR') },
-          { text: t('tracking.contactCancel'), style: 'cancel' },
-        ],
-      );
+      setContactAction('chat');
       return;
     }
 
@@ -483,6 +469,33 @@ export default function ReceiverTrackingScreen() {
     return { latitude: 10.8231, longitude: 106.6297, latitudeDelta: 0.05, longitudeDelta: 0.05 };
   })();
 
+  // VIA_AGENT cho phép liên hệ TNV đang giao hoặc người tặng (dự phòng) — cùng
+  // một modal dùng cho cả gọi điện lẫn nhắn tin, phân biệt qua contactAction.
+  const contactOptions: ContactOption[] = contactAction
+    ? [
+        {
+          key: 'volunteer',
+          label: t('tracking.contactVolunteer'),
+          sublabel: tracking.volunteer?.full_name || undefined,
+          icon: 'bicycle-outline',
+          onPress: () => {
+            if (contactAction === 'call') void placeCall(tracking.volunteer?.phone_number);
+            else void openChatWith('VOLUNTEER');
+          },
+        },
+        {
+          key: 'donor',
+          label: t('tracking.contactDonor'),
+          sublabel: tracking.donor?.full_name || undefined,
+          icon: 'person-outline',
+          onPress: () => {
+            if (contactAction === 'call') void placeCall(tracking.donor?.phone_number);
+            else void openChatWith('DONOR');
+          },
+        },
+      ]
+    : [];
+
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader title={t('tracking.title')} onBack={() => router.replace('/(tabs)/RECEIVER/home' as any)} />
@@ -515,7 +528,7 @@ export default function ReceiverTrackingScreen() {
             <Ionicons name="person" size={30} color="#fff" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.agentName}>
+            <Text style={styles.agentName} numberOfLines={1}>
               {isViaAgent
                 ? tracking.volunteer?.full_name || t('tracking.waitingForVolunteer')
                 : tracking.donor?.full_name || 'Donor'}
@@ -553,25 +566,21 @@ export default function ReceiverTrackingScreen() {
             <Ionicons name="call-outline" size={16} color={roleUi.colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.msgBtn, chatLoading && { opacity: 0.7 }]} onPress={() => void onOpenChat()} disabled={chatLoading}>
-            <Text style={styles.msgText}>{chatLoading ? t('volunteer.openingChat') : t('tracking.sendMessage')}</Text>
+            <Text style={styles.msgText} numberOfLines={1}>{chatLoading ? t('volunteer.openingChat') : t('tracking.sendMessage')}</Text>
           </TouchableOpacity>
           {(!isViaAgent && !isCompleted) ? (
             <TouchableOpacity style={[styles.tipBtn, actionLoading && { opacity: 0.7 }]} onPress={openSelfPickupCodeModal} disabled={actionLoading}>
-              <Text style={styles.tipText}>{actionLoading ? t('tracking.saving') : t('volunteer.confirm')}</Text>
+              <Text style={styles.tipText} numberOfLines={1}>{actionLoading ? t('tracking.saving') : t('volunteer.confirm')}</Text>
             </TouchableOpacity>
           ) : isAwaitingConfirmation ? (
             <TouchableOpacity style={[styles.tipBtn, actionLoading && { opacity: 0.7 }]} onPress={() => void onConfirmReceived()} disabled={actionLoading}>
-              <Text style={styles.tipText}>{actionLoading ? t('tracking.saving') : t('tracking.confirmReceived')}</Text>
+              <Text style={styles.tipText} numberOfLines={1}>{actionLoading ? t('tracking.saving') : t('tracking.confirmReceived')}</Text>
             </TouchableOpacity>
           ) : isCompleted ? (
             <TouchableOpacity style={styles.tipBtn} onPress={onOpenFeedback}>
-              <Text style={styles.tipText}>{t('tracking.feedback')}</Text>
+              <Text style={styles.tipText} numberOfLines={1}>{t('tracking.feedback')}</Text>
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.tipBtn} onPress={() => Alert.alert(t('tracking.tip'), '')}>
-              <Text style={styles.tipText}>{t('tracking.tip')}</Text>
-            </TouchableOpacity>
-          )}
+          ) : null}
         </View>
 
         {isOnTheWay ? (
@@ -622,6 +631,15 @@ export default function ReceiverTrackingScreen() {
         onClearError={() => setPickupCodeError(null)}
         onSubmit={(code) => void submitSelfPickupCode(code)}
       />
+
+      <ContactChooserModal
+        visible={contactAction !== null}
+        title={t('tracking.contactChooseTitle')}
+        message={t('tracking.contactChooseBody')}
+        options={contactOptions}
+        cancelLabel={t('tracking.contactCancel')}
+        onClose={() => setContactAction(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -663,7 +681,7 @@ const styles = StyleSheet.create({
   iconBtn: { width: 44, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
   msgBtn: { flex: 1, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
   msgText: { fontSize: 12, color: '#333', fontWeight: '500' },
-  tipBtn: { width: 70, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
+  tipBtn: { minWidth: 70, paddingHorizontal: 10, height: 34, borderRadius: 8, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
   tipText: { fontSize: 12, color: '#333', fontWeight: '500' },
   disconnectBtn: {
     marginTop: 12,

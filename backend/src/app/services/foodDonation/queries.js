@@ -108,7 +108,14 @@ async function getDonations(viewer = null, filter = {}, viewerLocationOverride =
     }
 
     if (viewer?.role === 'RECEIVER') {
+        const viewerId = String(viewer.id);
+        const isMine = (d) => d.selected_receiver_id != null && String(d.selected_receiver_id) === viewerId;
         enriched.sort((a, b) => {
+            // Ghim đơn receiver đang kết nối lên đầu (để tiếp tục chọn cách nhận / theo dõi).
+            const am = isMine(a);
+            const bm = isMine(b);
+            if (am !== bm) return am ? -1 : 1;
+            // Cùng nhóm → gần nhất trước (đơn thiếu toạ độ xuống cuối).
             if (a.pickup_distance_km == null && b.pickup_distance_km == null) return 0;
             if (a.pickup_distance_km == null) return 1;
             if (b.pickup_distance_km == null) return -1;

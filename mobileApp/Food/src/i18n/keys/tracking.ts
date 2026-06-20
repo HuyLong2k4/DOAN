@@ -27,7 +27,6 @@ export type TrackingKey =
   | 'tracking.tlComplete'
   | 'tracking.sendMessage'
   | 'tracking.saving'
-  | 'tracking.tip'
   | 'tracking.feedback'
   | 'tracking.confirmReceived'
   | 'tracking.noPhone'
@@ -94,7 +93,6 @@ export const trackingEn: Record<TrackingKey, string> = {
   'tracking.tlComplete': 'Complete order',
   'tracking.sendMessage': 'Send message',
   'tracking.saving': 'Saving...',
-  'tracking.tip': '+ Tip',
   'tracking.feedback': 'Feedback',
   'tracking.confirmReceived': 'Confirm received',
   'tracking.noPhone': 'No phone number',
@@ -162,7 +160,6 @@ export const trackingVi: Record<TrackingKey, string> = {
   'tracking.tlComplete': 'Hoàn tất đơn',
   'tracking.sendMessage': 'Gửi tin nhắn',
   'tracking.saving': 'Đang lưu...',
-  'tracking.tip': '+ Tiền thưởng',
   'tracking.feedback': 'Đánh giá',
   'tracking.confirmReceived': 'Xác nhận đã nhận',
   'tracking.noPhone': 'Không có số điện thoại',

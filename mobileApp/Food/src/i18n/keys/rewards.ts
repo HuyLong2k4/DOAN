@@ -2,6 +2,7 @@ export type RewardsKey =
   | 'rewards.title'
   | 'rewards.leaderboard'
   | 'rewards.viewFull'
+  | 'rewards.viewLeaderboard'
   | 'rewards.titleLevels'
   | 'rewards.progressTo'
   | 'rewards.maxLevel'
@@ -34,6 +35,7 @@ export const rewardsEn: Record<RewardsKey, string> = {
   'rewards.title': 'Achievement',
   'rewards.leaderboard': 'Leader-board',
   'rewards.viewFull': 'View Full Leaderboard →',
+  'rewards.viewLeaderboard': 'View leaderboard',
   'rewards.titleLevels': 'Title Levels',
   'rewards.progressTo': 'Progress to',
   'rewards.maxLevel': 'Max Level',
@@ -67,6 +69,7 @@ export const rewardsVi: Record<RewardsKey, string> = {
   'rewards.title': 'Thành tích',
   'rewards.leaderboard': 'Bảng xếp hạng',
   'rewards.viewFull': 'Xem toàn bộ bảng xếp hạng →',
+  'rewards.viewLeaderboard': 'Xem bảng xếp hạng',
   'rewards.titleLevels': 'Cấp độ danh hiệu',
   'rewards.progressTo': 'Tiến đến',
   'rewards.maxLevel': 'Cấp tối đa',

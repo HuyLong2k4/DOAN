@@ -21,6 +21,7 @@ export default function StackLayout() {
       <Stack.Screen name="RECEIVER/feedback" />
       <Stack.Screen name="VOLUNTEER/historyDelivery" />
       <Stack.Screen name="VOLUNTEER/deliveryDetail" />
+      <Stack.Screen name="VOLUNTEER/requestDetail" />
       <Stack.Screen name="chat/[conversationId]" />
     </Stack>
   );

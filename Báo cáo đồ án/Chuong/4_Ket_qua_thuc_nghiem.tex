@@ -1,0 +1,538 @@
+\IfFileExists{../main.tex}{%
+  \documentclass[../main.tex]{subfiles}%
+}{%
+  \documentclass[main.tex]{subfiles}%
+}
+\begin{document}
+\setcounter{chapter}{4}
+
+% ============================================================================
+\section{Tổng quan}
+
+Chương 3 đã trình bày các công nghệ và nền tảng lý thuyết được lựa chọn cho hệ thống. Trên cơ sở đó, chương này trình bày quá trình phân tích thiết kế, xây dựng, kiểm thử và triển khai hệ thống chia sẻ thực phẩm.
+
+Nội dung chương được tổ chức như sau. Trước tiên là thiết kế kiến trúc phần mềm, gồm việc lựa chọn kiến trúc, biểu đồ gói tổng quan và thiết kế chi tiết theo từng nhóm gói. Tiếp đến là thiết kế chi tiết về giao diện, lớp (kèm biểu đồ tuần tự) và cơ sở dữ liệu. Phần xây dựng ứng dụng liệt kê thư viện, công cụ sử dụng, thống kê kết quả đạt được và minh hoạ các chức năng chính. Cuối cùng, chương trình bày công tác kiểm thử và mô hình triển khai hệ thống.
+
+% ============================================================================
+\section{Thiết kế kiến trúc}
+\label{section:4.1}
+
+\subsection{Lựa chọn kiến trúc phần mềm}
+\label{subsection:4.1.1}
+
+Hệ thống được xây dựng theo kiến trúc ba tầng kinh điển (three-tier): gồm tầng trình diễn, tầng nghiệp vụ và tầng dữ liệu trên nền mô hình Client--Server, kết hợp với kiến trúc phân lớp (Layered Architecture) ở phía máy chủ. Cụ thể, phía máy chủ áp dụng một biến thể mở rộng của mẫu MVC bằng cách bổ sung thêm tầng dịch vụ (Service) thường gọi là MVC + Service (MVCS) nhằm tách biệt rõ ràng logic nghiệp vụ khỏi tầng điều khiển.
+
+Ý tưởng cốt lõi của kiến trúc phân lớp là chia hệ thống thành các tầng có trách nhiệm tách biệt, mỗi tầng chỉ phụ thuộc vào tầng ngay bên dưới nó. Điều này giúp giảm sự ràng buộc (loose coupling), tăng khả năng tái sử dụng, kiểm thử và bảo trì. Mẫu MVC truyền thống gồm ba thành phần: Model (dữ liệu và quy tắc trên dữ liệu), View (trình bày) và Controller (điều phối tương tác).
+
+Áp dụng cụ thể vào hệ thống, các thành phần lý thuyết được ánh xạ thành các thành phần thực tế như sau:
+
+(i) Model (M): gồm 12 lược đồ Mongoose trong gói models. Ví dụ User, FoodDonation, FoodRequest, Delivery, Conversation, Message, Feedback, Notification, OtpSession và ba lược đồ hồ sơ DonorProfile, ReceiverProfile, VolunteerProfile. Đây là nơi định nghĩa cấu trúc dữ liệu và ràng buộc.
+
+(ii) View (V): do phía client đảm nhiệm dùng để ứng dụng di động React Native và trang quản trị React. Vì máy chủ là dịch vụ REST không trạng thái, chỉ trả về dữ liệu JSON để client kết xuất giao diện.
+
+(iii) Controller (C): gồm các lớp trong gói controllers (authController, foodDonationController, foodRequestController, \ldots), chịu trách nhiệm nhận yêu cầu HTTP, kiểm tra đầu vào sơ bộ, gọi tầng dịch vụ và định dạng phản hồi.
+  
+(iv) Service (S): gồm các lớp trong gói services chứa toàn bộ logic nghiệp vụ (ví dụ AuthService, FoodDonationService cùng các mô-đun con donorActions, receiverActions, volunteerActions, \ldots). Việc tách tầng này giúp Controller mỏng, dễ thay đổi nghiệp vụ mà không ảnh hưởng định tuyến.
+
+Bên cạnh đó, hệ thống bổ sung các thành phần xuyên suốt (cross-cutting) so với MVC thuần: gói middlewares (xác thực JWT, phân quyền admin, xử lý tải tệp), gói socket (kênh thời gian thực Socket.IO), gói utils, i18n và config.
+
+Ở phía ứng dụng di động, do đặc thù React, kiến trúc được tổ chức theo hướng thành phần (component-based) kết hợp luồng dữ liệu một chiều kiểu Flux thông qua thư viện quản lý trạng thái Zustand. Các màn hình (app/) đóng vai trò View, tầng src/api đóng vai trò gọi dịch vụ, tầng src/store giữ trạng thái toàn cục, còn src/types định nghĩa kiểu dữ liệu dùng chung.
+
+\subsection{Thiết kế tổng quan}
+\label{subsection:4.1.2}
+
+Hình~\ref{fig:pkg_tongquan} trình bày biểu đồ gói tổng quan theo kiến trúc ba tầng kinh điển (three-tier). Các gói được phân vào ba tầng trình diễn, nghiệp vụ và dữ liệu cùng một nhóm dịch vụ ngoài; mọi quan hệ phụ thuộc (mũi tên nét đứt) đều hướng từ tầng trên xuống tầng dưới.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1\textwidth]{Hinhve/ThietKe/packagehethong.png}
+    \caption{Biểu đồ gói tổng quan của hệ thống}
+    \label{fig:pkg_tongquan}
+\end{figure}
+
+Nhiệm vụ của từng tầng và các gói thành phần:
+
+(i)\textbf{Tầng trình diễn (Presentation):} Mobile App (React Native/Expo) phục vụ ba vai trò người dùng cuối và Admin Web (React/Vite) phục vụ quản trị viên. Mobile gọi REST qua routes và mở kênh WebSocket qua socket; Admin Web gọi REST.
+  
+(ii) \textbf{Tầng nghiệp vụ (Business Logic):} là toàn bộ máy chủ phụ trợ, gồm routes (khai báo điểm cuối), controllers (điều phối request/response), socket (điểm vào thời gian thực), middlewares (xác thực JWT, phân quyền, tải tệp), services chứa logic nghiệp vụ theo từng nhóm chức năng (xác thực, người dùng/hồ sơ, quyên góp \& giao nhận, yêu cầu thực phẩm, trò chuyện, thông báo, đánh giá) và utils/i18n/config (tiện ích dùng chung).
+  
+(iii) \textbf{Tầng dữ liệu (Data):} gồm models (lược đồ Mongoose đóng vai trò truy cập dữ liệu) và cơ sở dữ liệu MongoDB.
+
+(iv) \textbf{Dịch vụ ngoài:} Expo Push (thông báo đẩy) và Google Distance Matrix (khoảng cách đường bộ), được tầng nghiệp vụ gọi tới.
+
+Thiết kế tuân thủ các quy tắc của kiến trúc phân tầng: 
+
+(i) không có phụ thuộc vòng/lẫn nhau giữa các gói; 
+
+(ii) tầng dưới không phụ thuộc tầng trên, mọi mũi tên đều hướng xuống (trình diễn $\rightarrow$ nghiệp vụ $\rightarrow$ dữ liệu); 
+
+(iii) không phụ thuộc bỏ qua tầng: tầng trình diễn không truy cập thẳng tầng dữ liệu mà phải thông qua tầng nghiệp vụ. Các dịch vụ ngoài là hệ thống bên thứ ba, được tầng nghiệp vụ tích hợp qua mạng nên được biểu diễn tách biệt khỏi ba tầng chính.
+
+\subsection{Thiết kế chi tiết gói}
+\label{subsection:4.1.3}
+
+Vì hệ thống gồm nhiều gói, phần thiết kế chi tiết được tổ chức theo nhóm gói liên quan (lát cắt chức năng) thay vì mỗi gói một biểu đồ, gồm ba nhóm: (1)~Quyên góp \& giao nhận, (2)~Đăng ký tài khoản, (3)~Trao đổi qua tin nhắn. Mỗi hình chỉ ghi tên lớp (sắp theo từng gói) và tập trung thể hiện quan hệ giữa các lớp (phụ thuộc, kết hợp, kết tập, hợp thành).
+
+Do phạm vi rộng, nhóm quyên góp giao nhận được tách thành hai biểu đồ: Hình~\ref{fig:pkg_donation} mô tả phần đăng đơn quyên góp, Hình~\ref{fig:pkg_delivery} mô tả phần nhận và giao đơn. Cả hai cùng dùng lớp mặt tiền (facade) FoodDonationService ủy quyền cho các mô-đun chuyên trách, giúp tách một tệp nghiệp vụ rất dài thành nhiều mô-đun nhỏ, mỗi mô-đun một trách nhiệm.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1\textwidth]{Hinhve/ThietKe/donation.png}
+    \caption{Thiết kế chi tiết: đăng đơn quyên góp}
+    \label{fig:pkg_donation}
+\end{figure}
+
+Ở phần đăng đơn quyên góp (Hình~\ref{fig:pkg_donation}): FoodDonationController/FoodRequestController ủy quyền cho facade; donorActions, receiverActions và queries thao tác trên FoodDonation; FoodRequestService quản lý FoodRequest và dùng locationFilter/distance để gợi ý theo vị trí. Các mũi tên nét đứt (controller -- service -- mô-đun -- model) thể hiện quan hệ phụ thuộc. Về quan hệ thực thể: kết hợp (FoodDonation--User theo vai trò người quyên góp, FoodRequest--User theo vai trò người nhận, FoodRequest--FoodDonation khi đơn tạo từ yêu cầu) và kết tập (FoodDonation chứa danh sách gồm các User tồn tại độc lập).
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.85\textwidth]{Hinhve/ThietKe/delivery.png}
+    \caption{Thiết kế chi tiết: Nhận và giao đơn (delivery)}
+    \label{fig:pkg_delivery}
+\end{figure}
+
+Ở phần giao nhận (Hình~\ref{fig:pkg_delivery}): facade ủy quyền cho volunteerActions (nhận/giao đơn), receiverConfirm (xác nhận đã nhận), maintenance (tác vụ tự động: hết hạn, tự xác nhận, ...) và receiverActions (tự lấy hàng). Các mô-đun thao tác trên Delivery, dùng pickupCode để xác thực mã lấy hàng và points để cộng điểm cho User. Quan hệ hợp thành (hình thoi đặc): mỗi FoodDonation sở hữu tối đa một Delivery (bản ghi giao nhận chỉ phát sinh khi người nhận chọn phương thức nhận) và gắn liền vòng đời với đơn --- đơn bị huỷ thì delivery cũng bị huỷ. Miền nghiệp vụ này không dùng quan hệ kế thừa hay thực thi do thiết kế theo mô-đun hàm và lược đồ tài liệu (document); quan hệ tổng quát hoá giữa các vai trò người dùng đã được trình bày ở mô hình use case (Chương 2).
+
+Hình~\ref{fig:pkg_auth} đặc tả nhóm gói đăng ký tài khoản. Mỗi bộ định tuyến gắn authMiddleware rồi gọi controller tương ứng; controller ủy quyền cho service. AuthService dùng otpUtil và thao tác trên User, OtpSession; ProfileService quản lý ba loại hồ sơ. Ba lược đồ hồ sơ có quan hệ kết hợp một--một với User.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1\textwidth]{Hinhve/ThietKe/auth.png}
+    \caption{Thiết kế chi tiết nhóm gói ``Đăng ký tài khoản''}
+    \label{fig:pkg_auth}
+\end{figure}
+
+Hình~\ref{fig:pkg_chat} đặc tả nhóm gói Trao đổi qua tin nhắn. Tin nhắn được gửi qua hai đường: REST (ChatController) và thời gian thực (chatSocket), cùng đi tới ChatService; khi có tin mới, ChatService gọi NotificationService để đẩy thông báo qua Expo Push. Về quan hệ thực thể, một Conversation hợp thành nhiều Message (Message không tồn tại độc lập) và kết hợp với một FoodDonation.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1\textwidth]{Hinhve/ThietKe/chat.png}
+    \caption{Thiết kế chi tiết nhóm gói ``Trao đổi qua tin nhắn''}
+    \label{fig:pkg_chat}
+\end{figure}
+
+Hai gói xuyên suốt middlewares và utils/i18n/config xuất hiện trong nhiều nhóm trên với vai trò hỗ trợ (xác thực, tải tệp, đa ngôn ngữ, cấu hình) nên không vẽ thành biểu đồ chi tiết riêng.
+
+% ============================================================================
+\section{Thiết kế chi tiết}
+\label{section:4.2}
+
+\subsection{Thiết kế giao diện}
+\label{subsection:4.2.1}
+
+\textbf{Màn hình mục tiêu.}
+
+Ứng dụng hướng tới điện thoại thông minh chạy Android, ở chế độ dọc (portrait). Kích thước màn hình phổ biến từ 5.5\textquotedbl{} đến 6.7\textquotedbl{}, độ phân giải từ HD 720$\times$1280 đến FHD+ 1080$\times$2400, mật độ điểm ảnh trải từ hdpi đến xxxhdpi. Nhờ React Native sử dụng đơn vị dp (density-independent pixels), giao diện tự co giãn theo mật độ điểm ảnh nên hiển thị nhất quán trên nhiều thiết bị. Bảng màu sử dụng độ sâu màu 24-bit (hơn 16,7 triệu màu).
+
+\textbf{Các thống nhất khi thiết kế.}
+
+(i) \textbf{Phối màu theo vai trò:} mỗi vai trò (người quyên góp, người nhận, tình nguyện viên) có một màu nhấn riêng được định nghĩa tập trung trong theme/roleUi.ts, giúp người dùng nhận biết ngữ cảnh đang thao tác.
+  
+(ii) \textbf{Điều hướng:} sử dụng thanh tab dưới (bottom tabs) cho các mục chính (Trang chủ, Tin nhắn, Thông báo, Cá nhân) và ngăn xếp (stack) cho các luồng chi tiết, được tổ chức theo cơ chế định tuyến theo thư mục của expo-router.
+
+(iii) \textbf{Nút và điều khiển:} nút bo góc; nút hành động chính tô màu nhấn của vai trò, nút phụ dùng viền; các điều khiển nhập liệu có nhãn và trạng thái lỗi rõ ràng.
+  
+(iv) \textbf{Vị trí thông điệp phản hồi:} thông báo ngắn dùng toast ở phía trên/dưới màn hình; lỗi nhập liệu hiển thị inline ngay dưới trường tương ứng (kèm tô đỏ viền); các xác nhận quan trọng (ví dụ nhập mã lấy hàng) dùng hộp thoại modal.
+
+(v) \textbf{Đa ngôn ngữ:} toàn bộ chuỗi hiển thị lấy từ mô-đun i18n, hỗ trợ Tiếng Việt và Tiếng Anh.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.7\textwidth]{Hinhve/ThietKe/WF_ChiTietBaiUngHo.png}
+    \caption{Khung wireframe chi tiết bài ủng hộ}
+    \label{fig:WF_ChiTietBaiUngHo}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.7\textwidth]{Hinhve/ThietKe/WF_TaoBaiUngHo.png}
+    \caption{Khung wireframe tạo bài ủng hộ thực phẩm}
+    \label{fig:WF_TaoBaiUngHo}
+\end{figure}
+
+\subsection{Thiết kế lớp}
+\label{subsection:4.2.2}
+
+\textbf{a. Thiết kế chi tiết lớp: Nhận và giao đơn}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.8\textwidth]{Hinhve/ThietKe/bieudolopchitietgiao.png}
+    \caption{Biểu đồ lớp chi tiết ``Nhận và giao đơn''}
+    \label{fig:cls_nhan}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1.2\textwidth]{Hinhve/ThietKe/bieudotuantugiao.png}
+    \caption{Biểu đồ tuần tự ``Nhận và giao đơn''}
+    \label{fig:seq_nhan}
+\end{figure}
+
+\textbf{b. Thiết kế chi tiết lớp: Tìm và tự nhận thực phẩm}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1.1\textwidth]{Hinhve/ThietKe/bieudolopchitietnhan.png}
+    \caption{Biểu đồ lớp chi tiết ``Tìm và tự nhận thực phẩm''}
+    \label{fig:cls_giao}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1.1\textwidth]{Hinhve/ThietKe/bieudotuantunhan.png}
+    \caption{Biểu đồ tuần tự ``Tìm và tự nhận thực phẩm''}
+    \label{fig:seq_giao}
+\end{figure}
+
+\textbf{c. Thiết kế chi tiết lớp: Quản lý đơn quyên góp}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.8\textwidth]{Hinhve/ThietKe/bieudolopchitietdang.png}
+    \caption{Biểu đồ lớp chi tiết ``Quản lý đơn quyên góp''}
+    \label{fig:cls_dang}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1.05\textwidth]{Hinhve/ThietKe/bieudotuantudang.png}
+    \caption{Biểu đồ tuần tự ``Quản lý đơn quyên góp''}
+    \label{fig:seq_dang}
+\end{figure}
+
+
+
+\textbf{d. Thiết kế chi tiết lớp: Trao đổi qua tin nhắn}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=1.05\textwidth]{Hinhve/ThietKe/bieudotuantuchat.png}
+    \captionsetup{skip=2pt}
+    \caption{Biểu đồ tuần tự ``Trao đổi qua tin nhắn''}
+    \label{fig:seq_chat}
+\end{figure}
+
+\subsection{Thiết kế cơ sở dữ liệu}
+\label{subsection:4.2.3}
+
+Hệ thống sử dụng cơ sở dữ liệu NoSQL hướng tài liệu MongoDB. Hình~\ref{fig:er} thể hiện biểu đồ thực thể -- liên kết (ER) giữa các tập tài liệu (collection) chính.
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=\textwidth]{Hinhve/ThietKe/thucthelienket.png}
+    \caption{Biểu đồ thực thể -- liên kết (ER)}
+    \label{fig:er}
+\end{figure}
+
+Hình ~\ref{fig:er} là biểu đồ thực thể liên kết, gồm tên bảng và các trường chính trong bảng nhằm trực quan hóa và giúp người dùng dễ dàng hiểu hơn về cấu trúc cơ sở dữ liệu của hệ thống. 
+
+(i) Thực thể USER (Người dùng): Là thực thể trung tâm của hệ thống, lưu thông tin tài khoản chung của mọi người dùng. Mỗi người dùng mang một vai trò (role): người quyên góp (DONOR), người nhận (RECEIVER), tình nguyện viên (VOLUNTEER) hoặc quản trị viên (ADMIN). Các thuộc tính chính gồm thông tin định danh (email, phone\_number, full\_name), vai trò và điểm thưởng (points) tích lũy khi tham gia hoạt động. USER là gốc của hầu hết các liên kết: sở hữu hồ sơ, đăng đơn quyên góp, tạo yêu cầu, thực hiện giao hàng, đánh giá, nhận thông báo và tham gia trò chuyện.
+
+(ii) Thực thể DONOR PROFILE (Hồ sơ người quyên góp): Lưu thông tin chi tiết của người dùng có vai trò quyên góp, bao gồm loại đối tượng (donor\_type: nhà hàng, tiệm bánh, cá nhân), tên cơ sở, địa chỉ và tọa độ. Mỗi hồ sơ gắn 1–1 với một USER.
+
+(iii) Thực thế RECEIVER PROFILE (Hồ sơ người nhận): Lưu thông tin của tổ chức hoặc cá nhân nhận thực phẩm: loại người nhận (receiver\_type), tên tổ chức và địa chỉ. Mỗi hồ sơ gắn 1–1 với một USER.
+
+(iv) Thực thể VOLUNTEER PROFILE (Hồ sơ tình nguyện viên): Lưu thông tin tình nguyện viên vận chuyển: địa chỉ, khung giờ rảnh (availability\_time) và trạng thái sẵn sàng nhận đơn (is\_active). Mỗi hồ sơ gắn 1–1 với một USER.
+
+(v) Thực thể FOOD DONATION (Đơn quyên góp): Đại diện cho một phần thực phẩm được một người quyên góp đăng tải. Lưu tiêu đề, loại thực phẩm (food\_type), số lượng, thời hạn sử dụng và trạng thái vòng đời (status: chờ, đã nhận, đang giao, hoàn tất, hết hạn, đã hủy). Đơn quyên góp liên kết với người đăng (donor), người nhận được chọn, tình nguyện viên phụ trách và chuyến giao tương ứng.
+
+(vi) Thực thể FOOD REQUEST (Yêu cầu nhận): Đại diện cho một yêu cầu thực phẩm do người nhận chủ động tạo khi có nhu cầu. Lưu tiêu đề, số lượng cần (requested\_quantity), loại thực phẩm và trạng thái. Một yêu cầu có thể được một người quyên góp tiếp nhận và liên kết tới một đơn quyên góp đáp ứng.
+
+(vii) Thực thể DELIVERY (Chuyến giao): Quản lý quá trình vận chuyển thực phẩm từ người quyên góp đến người nhận, thông qua tình nguyện viên hoặc do người nhận tự đến lấy. Lưu hình thức giao (delivery\_type), trạng thái, mã lấy hàng (pickup\_code) và các mốc thời gian. Mỗi chuyến giao gắn với một đơn quyên góp (hoặc một yêu cầu) cùng ba bên liên quan: người quyên góp, người nhận và tình nguyện viên.
+
+(viii) Thực thể FEEDBACK (Đánh giá): Lưu đánh giá (số sao từ 1–5) và nhận xét giữa hai người dùng sau khi một chuyến giao hoàn tất. Mỗi đánh giá gắn với một chuyến giao, một người đánh giá (from\_user) và một người được đánh giá (to\_user).
+
+(ix) Thực thế NOTIFICATION (Thông báo): Lưu các thông báo trong ứng dụng gửi tới một người dùng, ví dụ: có đơn mới, cập nhật trạng thái giao hàng, có tin nhắn mới. Mỗi thông báo thuộc về một USER và có cờ đã đọc (is\_read).
+
+(x) Thực thể CONVERSATION (Hội thoại): Đại diện cho một cuộc trò chuyện 1–1 giữa hai người dùng trong bối cảnh một đơn quyên góp cụ thể, dùng để phối hợp việc bàn giao. Lưu cặp người tham gia (participants) và bản xem trước tin nhắn gần nhất.
+
+(xi) Thực thể MESSAGE (Tin nhắn): Mỗi tin nhắn thuộc về một hội thoại và do một người dùng gửi, gồm nội dung văn bản và các tệp đính kèm. Thực thể này ghi nhận toàn bộ lịch sử trao đổi trong từng hội thoại.
+
+(xii) Thực thể OTP\_SESSION (Phiên OTP): Bảng phụ trợ phục vụ xác thực: lưu mã OTP (đã băm) dùng để xác minh số điện thoại khi đăng ký tài khoản hoặc đặt lại mật khẩu, kèm mục đích (purpose), thời hạn hiệu lực và số lần nhập thử. Thực thể này đứng độc lập, không liên kết trực tiếp với thực thể nào (chỉ gắn với người dùng một cách gián tiếp qua số điện thoại).
+
+Một số ràng buộc và chỉ mục đáng chú ý ở tầng cơ sở dữ liệu được thiết lập như sau:
+
+(i)~Định danh duy nhất: hai trường phone\_number và email của USER được đặt unique kết hợp sparse, bảo đảm không trùng lặp nhưng vẫn cho phép để trống. 
+
+(ii)~Quan hệ một--một: mỗi hồ sơ DONOR/RECEIVER/VOLUNTEER ràng buộc user\_id là unique, nên mỗi người dùng chỉ có tối đa một hồ sơ tương ứng với vai trò. 
+
+(iii)~Chống trùng hội thoại: CONVERSATION dùng một chỉ mục ghép unique theo đơn quyên góp và cặp người tham gia, bảo đảm mỗi đơn chỉ tồn tại duy nhất một cuộc trò chuyện 1--1 giữa hai người. 
+
+(iv)~Tự dọn dữ liệu hết hạn: OTP\_SESSION có chỉ mục TTL trên expires\_at, cho phép MongoDB tự động xoá các phiên OTP đã hết hạn. 
+
+(v)~Tối ưu truy vấn tin nhắn: MESSAGE được đánh chỉ mục theo conversation\_id kết hợp thời gian tạo để tải lịch sử trò chuyện nhanh, cùng một chỉ mục phục vụ đếm số tin chưa đọc.
+
+\section{Xây dựng ứng dụng}
+\label{section:4.3}
+
+\subsection{Thư viện và công cụ sử dụng}
+\label{subsection:4.3.1}
+
+Bảng~\ref{tab:cong_cu} liệt kê các công nghệ, thư viện và công cụ chính kèm phiên bản sử dụng.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Thành phần} & \textbf{Công cụ / Thư viện} & \textbf{Phiên bản} \\ \hline
+Máy chủ (runtime)        & Node.js                 & 20.x (LTS) \\ \hline
+Web framework            & Express                 & 5.2.1 \\ \hline
+ODM cơ sở dữ liệu        & Mongoose                & 9.1.5 \\ \hline
+Cơ sở dữ liệu            & MongoDB (Atlas)         & 7.x \\ \hline
+Thời gian thực           & Socket.IO               & 4.8.3 \\ \hline
+Xác thực / Băm           & jsonwebtoken / bcryptjs & 9.0.3 / 3.0.3 \\ \hline
+Tải tệp / Ghi log        & multer / morgan         & 2.1.1 / 1.10.1 \\ \hline
+Ứng dụng di động         & React Native / Expo SDK & 0.81.5 / 54.0.33 \\ \hline
+Định tuyến / Trạng thái  & expo-router / Zustand   & 6.0.23 / 5.0.11 \\ \hline
+Gọi API / Realtime client& Axios / socket.io-client& 1.13.5 / 4.8.3 \\ \hline
+Bản đồ / Định vị         & react-native-maps / expo-location & 1.20.1 / 19.0.8 \\ \hline
+Thông báo / Lưu token    & expo-notifications / expo-secure-store & 0.32.17 / 15.0.8 \\ \hline
+Ngôn ngữ (mobile/web)    & TypeScript              & 5.9.2 / 5.7.2 \\ \hline
+Trang quản trị           & React / Vite            & 18.3.1 / 6.0.7 \\ \hline
+Biểu đồ / Icon (web)     & Recharts / lucide-react & 2.15.0 / 0.469.0 \\ \hline
+IDE                      & Visual Studio Code      & (bản mới nhất) \\ \hline
+Quản lý mã nguồn         & Git / GitHub            & --- \\ \hline
+Kiểm thử API             & Postman                 & (bản mới nhất) \\ \hline
+Đóng gói / Triển khai    & Docker / Railway        & --- \\ \hline
+
+\end{tabular}%
+}
+\caption{Danh sách thư viện và công cụ sử dụng}
+\label{tab:cong_cu}
+\end{table}
+
+\subsection{Kết quả đạt được}
+\label{subsection:4.3.2}
+
+Hệ thống hoàn chỉnh gồm ba sản phẩm được đóng gói:
+
+(i) \textbf{Máy chủ phụ trợ (Backend):} dịch vụ REST API + WebSocket, được đóng gói thành \textit{Docker image} để triển khai.
+  
+(ii) \textbf{Ứng dụng di động (Mobile):} gói cài đặt APK cho Android, phục vụ ba vai trò người dùng.
+
+(iii) \textbf{Trang quản trị (Admin Web):} ứng dụng web tĩnh (Vite build) cho quản trị viên.
+
+Bảng~\ref{tab:thong_ke} thống kê quy mô mã nguồn của từng sản phẩm (không tính thư viện bên thứ ba/node\_modules).
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Sản phẩm} & \textbf{Số tệp mã nguồn} & \textbf{Số dòng lệnh} & \textbf{Dung lượng} \\ \hline
+Backend (Node.js)        & 57  & 5.723  & 277,4 KB \\ \hline
+Mobile (React Native)    & 92  & 16.173 & 662,0 KB \\ \hline
+Admin Web (React)        & 26  & 2.435  & 89,1 KB \\ \hline
+\textbf{Tổng cộng}       & \textbf{175} & \textbf{24.331} & \textbf{$\approx$ 1,0 MB} \\ \hline
+\end{tabular}
+\caption{Thống kê quy mô mã nguồn}
+\label{tab:thong_ke}
+\end{table}
+
+Số liệu trong Bảng~\ref{tab:thong_ke} được thống kê trên phần mã nguồn tự viết (tệp .js, .ts, .tsx trong thư mục nguồn của từng sản phẩm), không tính node\_modules, thư mục build và thư viện bên thứ ba; số dòng lệnh được tính theo số dòng không trống.
+
+Ngoài ra, phía máy chủ định nghĩa 12 lược đồ dữ liệu (model) và được tổ chức thành các nhóm gói: routes, controllers, services (kèm gói con foodDonation), models, middlewares, utils, i18n, config, socket.
+
+\subsection{Minh họa các chức năng chính}
+\label{subsection:4.3.3}
+
+\begin{figure}[H] % Nếu muốn LaTeX tự sắp xếp đẹp hơn, có thể đổi [H] thành [htbp]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/dangnhap.jpg}
+        \caption{Màn đăng nhập của app}
+        \label{fig:man_dang_nhap}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/dangky.jpg}
+        \caption{Màn đăng ký của app}
+        \label{fig:man_dang_ky}
+    \end{subfigure}
+    \caption{Màn đăng nhập và đăng ký của app}
+    \label{fig:man_dang_nhap_dang_ky}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/chonrole.jpg}
+        \caption{Màn chọn vai trò của người dùng}
+        \label{fig:man_chon_vai_tro}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/thietlapdiachinha.jpg}
+        \caption{Màn thiết lập vị trí của người dùng}
+        \label{fig:man_thiet_lap_vi_tri}
+    \end{subfigure}
+    \caption{Màn chọn vai trò và thiết lập vị trí}
+    \label{fig:man_chon_vai_tro_thiet_lap_vi_tri}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/boxchat.jpg}
+        \caption{Màn tin nhắn của người dùng}
+        \label{fig:man_tin_nhan}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/message.jpg}
+        \caption{Màn hội thoại}
+        \label{fig:man_hoi_thoai}
+    \end{subfigure}
+    \caption{Màn tin nhắn và hội thoại}
+    \label{fig:man_tin_nhan_hoi_thoai}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/donation.jpg}
+        \caption{Màn tạo bài quyên góp}
+        \label{fig:man_tao_quyengop}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/donationHistory.jpg}
+        \caption{Màn lịch sử đơn đã quyên góp}
+        \label{fig:man_lichsu_quyengop}
+    \end{subfigure}
+    \caption{Màn tạo bài và lịch sử đơn quyên góp}
+    \label{fig:man_tao_lichsu_quyengop}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/donationdetail.jpg}
+        \caption{Màn xem chi tiết đơn quyên góp}
+        \label{fig:man_chitiet_don}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/chonphuongthuclay.jpg}
+        \caption{Màn chọn phương thức lấy}
+        \label{fig:man_phuongthuc_lay}
+    \end{subfigure}
+    \caption{Màn chi tiết đơn và phương thức lấy}
+    \label{fig:man_chitiet_phuongthuc}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/yeucauthucoham.jpg}
+        \caption{Màn tạo yêu cầu thực phẩm}
+        \label{fig:man_tao_yeucau}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{Hinhve/ThietKe/giaodien/theodoidon.jpg}
+        \caption{Màn theo dõi đơn}
+        \label{fig:man_theodoi_don}
+    \end{subfigure}
+    \caption{Màn tạo yêu cầu và theo dõi đơn}
+    \label{fig:man_tao_yeucau_theodoi}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=\textwidth]{Hinhve/ThietKe/giaodien/quanlynguoidung.png}
+    \caption{Màn hình quản lý người dùng của admin}
+    \label{fig:quan_ly_user}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=\textwidth]{Hinhve/ThietKe/giaodien/quanlynguoidung.png}
+    \caption{Màn hình quản lý đơn quyên góp}
+    \label{fig:quan_ly_donation}
+\end{figure}
+
+% ============================================================================
+\section{Kiểm thử}
+\label{section:4.4}
+
+Do hệ thống chưa tích hợp bộ kiểm thử tự động, công tác kiểm thử được thực hiện chủ yếu theo phương pháp kiểm thử hộp đen (black-box) ở mức chức năng, kết hợp kiểm thử API bằng Postman và kiểm thử thủ công/khám phá trên thiết bị thật và máy ảo Android. Các kỹ thuật thiết kế ca kiểm thử gồm phân hoạch tương đương và phân tích giá trị biên (ví dụ: số lượng $\ge 1$, mật khẩu $\ge 6$ ký tự, OTP tối đa 5 lần thử).
+
+Bảng~\ref{tab:tc_otp} và Bảng~\ref{tab:tc_nhan} trình bày một số ca kiểm thử tiêu biểu cho hai chức năng quan trọng nhất.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|p{4.5cm}|p{4cm}|p{4.5cm}|c|}
+\hline
+\textbf{Mã} & \textbf{Mô tả} & \textbf{Dữ liệu vào} & \textbf{Kết quả mong đợi} & \textbf{KQ} \\ \hline
+TC01 & Đăng ký với dữ liệu hợp lệ & SĐT mới, mật khẩu $\ge 6$ ký tự & Tạo tài khoản, gửi OTP & Đạt \\ \hline
+TC02 & SĐT đã đăng ký \& xác minh & SĐT đã tồn tại & Báo lỗi ``đã được đăng ký'' & Đạt \\ \hline
+TC03 & Mật khẩu quá ngắn & Mật khẩu 3 ký tự & Báo lỗi, không tạo & Đạt \\ \hline
+TC04 & Nhập đúng OTP còn hạn & OTP đúng & Xác minh, trả JWT & Đạt \\ \hline
+TC05 & Nhập sai OTP & OTP sai & Tăng số lần thử, báo còn lại & Đạt \\ \hline
+TC06 & Nhập OTP quá 5 lần & Sai 5 lần & Khoá, yêu cầu mã mới & Đạt \\ \hline
+TC07 & OTP hết hạn (>10 phút) & OTP cũ & Báo hết hạn & Đạt \\ \hline
+\end{tabular}%
+}
+\caption{Ca kiểm thử chức năng ``Đăng ký \& xác minh OTP''}
+\label{tab:tc_otp}
+\end{table}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|p{4.5cm}|p{4cm}|p{4.5cm}|c|}
+\hline
+\textbf{Mã} & \textbf{Mô tả} & \textbf{Dữ liệu vào} & \textbf{Kết quả mong đợi} & \textbf{KQ} \\ \hline
+TC08 & Kết nối đơn PENDING & Người nhận bấm kết nối & Chốt người nhận, báo người quyên góp & Đạt \\ \hline
+TC09 & Hai người nhận kết nối đồng thời & 2 yêu cầu cùng lúc & Chỉ 1 thắng, người kia 409 & Đạt \\ \hline
+TC10 & Kết nối đơn của chính mình & Người quyên góp đồng thời là người nhận & Bị từ chối & Đạt \\ \hline
+TC11 & Tự lấy: nhập đúng mã pickup & Mã đúng & Hoàn tất, cộng 100 điểm cho người quyên góp & Đạt \\ \hline
+TC12 & Tự lấy: nhập sai mã pickup & Mã sai & Báo lỗi, không hoàn tất & Đạt \\ \hline
+TC13 & Báo TNV không đến khi đang giao & Trạng thái ON\_THE\_WAY & Huỷ đơn, báo các bên & Đạt \\ \hline
+\end{tabular}%
+}
+\caption{Ca kiểm thử chức năng ``Tìm và nhận thực phẩm''}
+\label{tab:tc_nhan}
+\end{table}
+
+\textbf{Tổng kết.} 
+
+Đã thực hiện 13 ca kiểm thử tiêu biểu cho hai chức năng trọng yếu (chi tiết các ca khác đặt ở phụ lục), tất cả đều \textbf{Đạt}. Các nhánh xử lý ngoại lệ (tranh chấp đồng thời, sai/hết hạn mã, vượt số lần thử) đều cho kết quả đúng như thiết kế nhờ các phép cập nhật nguyên tử và cơ chế chống dò mã ở tầng dịch vụ.
+
+% ============================================================================
+\section{Triển khai}
+\label{section:4.5}
+
+Hệ thống được triển khai theo mô hình điện toán đám mây với các thành phần tách biệt. (i)~Máy chủ phụ trợ được đóng gói bằng Docker và triển khai trên nền tảng Railway; máy chủ lắng nghe trên 0.0.0.0, đặt trust proxy để hoạt động sau reverse proxy/HTTPS và cung cấp endpoint /health phục vụ giám sát trạng thái, trong khi các tác vụ định kỳ (hết hạn đơn, tự xác nhận, xử lý no-show) chạy ngầm bằng setInterval. (ii)~Cơ sở dữ liệu dùng MongoDB Atlas (dịch vụ đám mây) có sao lưu, kết nối qua chuỗi bí mật trong biến môi trường. (iii)~Ứng dụng di động được biên dịch bằng Expo (EAS Build) thành tệp APK để cài trên thiết bị Android, còn trong quá trình phát triển dùng Expo Go; ứng dụng kết nối tới máy chủ qua HTTPS. (iv)~Trang quản trị được build tĩnh bằng Vite và phục vụ qua máy chủ web/Docker.
+
+Cấu hình được quản lý qua biến môi trường (.env): cổng dịch vụ, chuỗi kết nối MongoDB, JWT\_SECRET, danh sách CORS cho phép, và khóa API Google Distance Matrix. Tệp tải lên (ảnh đại diện, ảnh món ăn, ảnh chat) hiện được lưu cục bộ trên máy chủ và phục vụ qua đường dẫn tĩnh /uploads; đây là phương án ``đủ dùng'' cho quy mô đồ án, có thể thay bằng dịch vụ lưu trữ đối tượng (object storage) khi mở rộng.
+
+\textbf{Kết quả triển khai thử nghiệm.} 
+
+Hệ thống đã được triển khai và chạy ổn định ở môi trường thử nghiệm với các tài khoản mẫu cho cả bốn vai trò, kiểm chứng được trọn vẹn các luồng nghiệp vụ chính (đăng ký/OTP, đăng đơn, kết nối nhận, giao qua tình nguyện viên, xác nhận bằng mã pickup, nhắn tin và thông báo thời gian thực). Thời gian phản hồi của các API thông thường ở mức dưới 1--2 giây trong điều kiện mạng bình thường.
+
+% ============================================================================
+\section{Kết chương}
+Chương này đã trình bày trọn vẹn quá trình hiện thực hoá hệ thống: từ thiết kế kiến trúc ba tầng, thiết kế chi tiết các gói, lớp và cơ sở dữ liệu, đến việc xây dựng ba sản phẩm (máy chủ phụ trợ, ứng dụng di động và trang quản trị), kiểm thử các chức năng trọng yếu và triển khai trên nền tảng đám mây. Kết quả cho thấy hệ thống vận hành ổn định và đáp ứng được các yêu cầu đã đặt ra ở Chương 2. Những giải pháp kỹ thuật nổi bật trong quá trình thiết kế và xây dựn, đặc biệt là cơ chế chống tranh chấp đồng thời và quy trình giao nhận an toàn sẽ được phân tích sâu trong Chương 5.
+
+\ifSubfilesClassLoaded{\printbibliography{}}{}
+\end{document}

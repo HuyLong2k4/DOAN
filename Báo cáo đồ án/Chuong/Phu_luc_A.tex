@@ -1,0 +1,93 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+Phần này đặc tả bổ sung một số use case quan trọng nhưng không thuộc nhóm use case nghiệp vụ chính đã trình bày ở Chương~2, bao gồm chức năng đăng nhập và luồng yêu cầu thực phẩm (người nhận tạo yêu cầu, người quyên góp đáp ứng).
+
+\section{Đặc tả use case ``Đăng nhập''}
+
+\begingroup
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Đăng nhập"}
+\label{tab:uc_dang_nhap}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Đăng nhập \\ \hline
+\textbf{Tác nhân chính} & Người dùng đã có tài khoản (Donor / Receiver / Volunteer / Admin) \\ \hline
+\textbf{Tác nhân phụ} & Hệ thống \\ \hline
+\textbf{Mô tả} & Người dùng đăng nhập bằng số điện thoại hoặc email cùng mật khẩu để truy cập các chức năng theo vai trò. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người dùng chọn chức năng "Đăng nhập" trên màn hình của ứng dụng. \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đã có tài khoản và số điện thoại đã được xác minh. \\ \hline
+\textbf{Hậu điều kiện} & Hệ thống cấp mã truy cập (JWT) và đưa người dùng vào khu vực chức năng tương ứng với vai trò. \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng nhập định danh (số điện thoại hoặc email) và mật khẩu, rồi bấm "Đăng nhập". \newline
+2. Hệ thống tìm tài khoản theo số điện thoại hoặc email. \newline
+3. Hệ thống kiểm tra số điện thoại đã được xác minh. \newline
+4. Hệ thống đối chiếu mật khẩu với giá trị băm đã lưu. \newline
+5. Hệ thống phát JWT (kèm số phiên bản token) và trả về hồ sơ rút gọn. \newline
+6. Hệ thống điều hướng người dùng vào màn hình chính theo vai trò. \\ \hline
+\textbf{Luồng sự kiện thay thế} &
+1a. Người dùng đăng nhập bằng email thay cho số điện thoại: hệ thống xử lý tương tự. \\ \hline
+\textbf{Luồng ngoại lệ} &
+2a, 4a. Sai định danh hoặc mật khẩu: hệ thống báo "Thông tin đăng nhập không đúng" và yêu cầu nhập lại. \newline
+3a. Số điện thoại chưa được xác minh: hệ thống báo lỗi và gợi ý xác minh OTP trước khi đăng nhập. \\ \hline
+\end{longtable}
+\endgroup
+
+\section{Đặc tả use case ``Tạo yêu cầu thực phẩm''}
+
+\begingroup
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Tạo yêu cầu thực phẩm"}
+\label{tab:uc_tao_yeu_cau}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Tạo yêu cầu thực phẩm \\ \hline
+\textbf{Tác nhân chính} & Người nhận (Receiver) \\ \hline
+\textbf{Tác nhân phụ} & Người quyên góp (lân cận), Hệ thống \\ \hline
+\textbf{Mô tả} & Người nhận chủ động đăng một yêu cầu thực phẩm cụ thể khi có nhu cầu để người quyên góp ở gần có thể đáp ứng. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người nhận chọn chức năng "Tạo yêu cầu thực phẩm". \\ \hline
+\textbf{Tiền điều kiện} & Người nhận đã đăng nhập, vai trò là RECEIVER và đã hoàn thiện hồ sơ (có vị trí). \\ \hline
+\textbf{Hậu điều kiện} & Một yêu cầu thực phẩm được tạo ở trạng thái \texttt{PENDING}; những người quyên góp trong bán kính 10 km nhận được thông báo. \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người nhận mở màn hình tạo yêu cầu. \newline
+2. Người nhận nhập tiêu đề, số lượng cần (tối thiểu 1), loại thực phẩm (tuỳ chọn) và thời hạn cần (tuỳ chọn). \newline
+3. Người nhận bấm gửi yêu cầu. \newline
+4. Hệ thống kiểm tra hợp lệ. \newline
+5. Hệ thống tạo yêu cầu ở trạng thái \texttt{PENDING}. \newline
+6. Hệ thống gửi thông báo tới những người quyên góp trong bán kính 10 km. \\ \hline
+\textbf{Luồng ngoại lệ} &
+4a. Thiếu tiêu đề hoặc số lượng nhỏ hơn 1: hệ thống báo lỗi và yêu cầu nhập lại. \newline
+4b. Người dùng không phải vai trò RECEIVER: hệ thống từ chối tạo yêu cầu. \\ \hline
+\end{longtable}
+\endgroup
+
+\section{Đặc tả use case ``Đáp ứng yêu cầu thực phẩm''}
+
+\begingroup
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Đáp ứng yêu cầu thực phẩm"}
+\label{tab:uc_dap_ung_yeu_cau}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Đáp ứng yêu cầu thực phẩm \\ \hline
+\textbf{Tác nhân chính} & Người quyên góp (Donor) \\ \hline
+\textbf{Tác nhân phụ} & Người nhận, Hệ thống \\ \hline
+\textbf{Mô tả} & Người quyên góp xem các yêu cầu đang chờ và chấp nhận một yêu cầu, qua đó sinh ra một đơn quyên góp liên kết để chuyển sang luồng giao nhận. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người quyên góp xem danh sách yêu cầu thực phẩm và chọn "Đáp ứng". \\ \hline
+\textbf{Tiền điều kiện} & Người quyên góp đã đăng nhập; tồn tại ít nhất một yêu cầu ở trạng thái \texttt{PENDING}. \\ \hline
+\textbf{Hậu điều kiện} & Yêu cầu chuyển sang \texttt{ACCEPTED} và được gán cho người quyên góp; một đơn quyên góp liên kết được tạo với người nhận đã chốt; người nhận nhận được thông báo. \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người quyên góp xem danh sách yêu cầu \texttt{PENDING}. \newline
+2. Người quyên góp xem chi tiết một yêu cầu. \newline
+3. Người quyên góp bấm "Đáp ứng". \newline
+4. Hệ thống chốt nguyên tử (chỉ khi yêu cầu vẫn \texttt{PENDING}): chuyển \texttt{ACCEPTED} và gán người quyên góp. \newline
+5. Hệ thống tạo một đơn quyên góp liên kết và chốt người nhận là người đã tạo yêu cầu. \newline
+6. Hệ thống thông báo cho người nhận chọn phương thức nhận hàng. \\ \hline
+\textbf{Luồng ngoại lệ} &
+4a. Yêu cầu vừa được người quyên góp khác đáp ứng hoặc đã đóng: hệ thống báo yêu cầu không còn khả dụng. \\ \hline
+\end{longtable}
+\endgroup
+
+\end{document}

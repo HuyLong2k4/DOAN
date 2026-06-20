@@ -37,13 +37,13 @@ export default function DonationHistoryCard({ d }: { d: Donation }) {
           <Text style={styles.historyId}>ID: {d._id.slice(-6).toUpperCase()}</Text>
           <Text style={styles.historyDate}>{timeAgo(d.createdAt, t)}</Text>
         </View>
-        <Text style={styles.historyTitle}>{d.title}</Text>
+        <Text style={styles.historyTitle} numberOfLines={1}>{d.title}</Text>
         <View style={styles.historyTags}>
           <Text style={styles.historyTag}>{d.quantity} {d.unit}</Text>
         </View>
         <View style={styles.historyBottom}>
           <View style={[styles.completedBadge, { backgroundColor: cfg.bg }]}>
-            <Text style={[styles.completedText, { color: cfg.color }]}>{cfg.label}</Text>
+            <Text style={[styles.completedText, { color: cfg.color }]} numberOfLines={1}>{cfg.label}</Text>
           </View>
           <View style={styles.historyActions}>
             <Ionicons name="share-outline" size={18} color="#999" style={{ marginRight: 12 }} />
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   historyTags: { flexDirection: 'row', justifyContent:'space-between', marginTop: 6, borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 6 },
   historyTag: { fontSize: 11, backgroundColor: '#F5F5F5', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, color: '#555' },
   historyBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  completedBadge: { backgroundColor: roleUi.colors.successSoft, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
+  completedBadge: { backgroundColor: roleUi.colors.successSoft, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, flexShrink: 1, marginRight: 8 },
   completedText: { fontSize: 11, color: roleUi.colors.successText, fontWeight: '600' },
   historyActions: { flexDirection: 'row' },
 });

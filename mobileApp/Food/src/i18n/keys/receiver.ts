@@ -20,6 +20,8 @@ export type ReceiverKey =
   | 'receiver.connectFailedDefault'
   | 'receiver.noNearbyDonors'
   | 'receiver.faqs'
+  | 'receiver.faq.pickup'
+  | 'receiver.faq.multiple'
   | 'receiver.unknownDistance'
   | 'receiver.viewDetails'
   | 'receiver.waitingAgent'
@@ -68,6 +70,8 @@ export const receiverEn: Record<ReceiverKey, string> = {
   'receiver.connectFailedDefault': 'Please try again.',
   'receiver.noNearbyDonors': 'No nearby donors yet',
   'receiver.faqs': 'FAQs',
+  'receiver.faq.pickup': 'Who will pick up the food?',
+  'receiver.faq.multiple': 'Can we perform multiple food requests at once?',
   'receiver.unknownDistance': 'Unknown distance',
   'receiver.viewDetails': 'View Details',
   'receiver.waitingAgent': 'Waiting Agent',
@@ -117,6 +121,8 @@ export const receiverVi: Record<ReceiverKey, string> = {
   'receiver.connectFailedDefault': 'Vui lòng thử lại.',
   'receiver.noNearbyDonors': 'Chưa có người tặng nào gần bạn',
   'receiver.faqs': 'Câu hỏi thường gặp',
+  'receiver.faq.pickup': 'Ai sẽ lấy thực phẩm?',
+  'receiver.faq.multiple': 'Có thể tạo nhiều yêu cầu cùng lúc không?',
   'receiver.unknownDistance': 'Không rõ khoảng cách',
   'receiver.viewDetails': 'Xem chi tiết',
   'receiver.waitingAgent': 'Đang chờ tình nguyện viên',

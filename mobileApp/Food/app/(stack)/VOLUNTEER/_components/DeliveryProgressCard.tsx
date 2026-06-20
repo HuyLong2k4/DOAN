@@ -27,7 +27,7 @@ export function DeliveryProgressCard({
       <View style={styles.deliveryHeadRow}>
         <Text style={styles.deliveryTitle} numberOfLines={1}>{item.title}</Text>
         <View style={[styles.deliveryBadge, isOnTheWay ? styles.deliveryBadgeBlue : styles.deliveryBadgeOrange]}>
-          <Text style={styles.deliveryBadgeText}>
+          <Text style={styles.deliveryBadgeText} numberOfLines={1}>
             {isOnTheWay ? t('volunteer.onTheWay') : t('volunteer.assigned')}
           </Text>
         </View>
@@ -39,7 +39,7 @@ export function DeliveryProgressCard({
 
       <View style={styles.deliveryActionRow}>
         <TouchableOpacity style={styles.deliveryMapBtn} onPress={onOpenMap} disabled={busy}>
-          <Text style={styles.deliveryMapBtnText}>{t('volunteer.openMap')}</Text>
+          <Text style={styles.deliveryMapBtnText} numberOfLines={1}>{t('volunteer.openMap')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -47,7 +47,7 @@ export function DeliveryProgressCard({
           onPress={onAction}
           disabled={busy}
         >
-          <Text style={styles.deliveryMainBtnText}>
+          <Text style={styles.deliveryMainBtnText} numberOfLines={1}>
             {isOnTheWay ? t('volunteer.deliverDone') : t('volunteer.pickUp')}
           </Text>
         </TouchableOpacity>
@@ -59,7 +59,7 @@ export function DeliveryProgressCard({
         disabled={busy || chatBusy}
       >
         <Ionicons name="chatbubble-ellipses-outline" size={14} color={roleUi.colors.primaryStrong} />
-        <Text style={styles.deliveryChatBtnText}>
+        <Text style={styles.deliveryChatBtnText} numberOfLines={1}>
           {chatBusy ? t('volunteer.openingChat') : t('volunteer.chatWithDonor')}
         </Text>
       </TouchableOpacity>
@@ -75,7 +75,7 @@ export function DeliveryProgressCard({
           ) : (
             <Ionicons name="return-up-back-outline" size={14} color={roleUi.colors.dangerText} />
           )}
-          <Text style={styles.deliveryReleaseBtnText}>
+          <Text style={styles.deliveryReleaseBtnText} numberOfLines={1}>
             {releasing ? t('volunteer.release.releasing') : t('volunteer.release.button')}
           </Text>
         </TouchableOpacity>

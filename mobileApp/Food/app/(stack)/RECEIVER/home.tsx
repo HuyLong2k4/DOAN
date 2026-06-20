@@ -112,10 +112,24 @@ function getFoodTypeLabelFromRequest(t: (key: any) => string, foodType?: Request
   return key ? t(key) : t('receiver.foodTypeNotSpecified');
 }
 
-const FAQS = [
-  'Who will pick up the food?',
-  'Can we perform multiple food request at once?',
-];
+// Icon + màu theo loại thực phẩm — dùng cho thumbnail "Bài đăng của tôi" (yêu cầu
+// không có ảnh nên hiển thị icon loại thay vì ô ảnh trống).
+const FOOD_TYPE_VISUAL: Record<
+  NonNullable<RequestItem['food_type']>,
+  { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }
+> = {
+  COOKED:   { icon: 'restaurant-outline', color: '#E07B39', bg: '#FBEEE2' },
+  RAW:      { icon: 'leaf-outline',       color: '#43A047', bg: '#E8F5E9' },
+  FROZEN:   { icon: 'snow-outline',       color: '#1E88E5', bg: '#E3F2FD' },
+  PACKAGED: { icon: 'cube-outline',       color: '#8D6E63', bg: '#EFEBE9' },
+};
+
+function getFoodTypeVisual(foodType?: RequestItem['food_type']) {
+  return (foodType && FOOD_TYPE_VISUAL[foodType])
+    || { icon: 'fast-food-outline' as keyof typeof Ionicons.glyphMap, color: '#9E9E9E', bg: '#F0F0F0' };
+}
+
+const FAQ_KEYS = ['receiver.faq.pickup', 'receiver.faq.multiple'] as const;
 
 export default function HomeReceiverScreen() {
   const router = useRouter();
@@ -214,10 +228,19 @@ export default function HomeReceiverScreen() {
     }
   }, [fetchData, applyData]);
 
+  const isConnectedToMe = (d: DonationItem) =>
+    normalizeObjectId(d.selected_receiver_id) !== '' &&
+    normalizeObjectId(d.selected_receiver_id) === currentUserId;
   const nearDonors = donorPosts.slice(0, 2);
   const donorFeedPosts = donorPosts
     .slice()
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .sort((a, b) => {
+      // Ghim đơn đang kết nối với mình lên đầu, sau đó mới tới mới nhất.
+      const am = isConnectedToMe(a);
+      const bm = isConnectedToMe(b);
+      if (am !== bm) return am ? -1 : 1;
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    })
     .slice(0, 3);
   const donorTabCount = donorPosts.length;
 
@@ -339,7 +362,7 @@ export default function HomeReceiverScreen() {
               style={[styles.tabButton, activeTab === 'my' && styles.tabButtonActive]}
               activeOpacity={0.8}
             >
-              <Text style={[styles.tabText, activeTab === 'my' && styles.tabTextActive]}>{t('receiver.myPost')}</Text>
+              <Text style={[styles.tabText, activeTab === 'my' && styles.tabTextActive]} numberOfLines={1}>{t('receiver.myPost')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -348,7 +371,7 @@ export default function HomeReceiverScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.tabWithBadge}>
-                <Text style={[styles.tabText, activeTab === 'donors' && styles.tabTextActive]}>{t('receiver.donorsPosts')}</Text>
+                <Text style={[styles.tabText, activeTab === 'donors' && styles.tabTextActive]} numberOfLines={1}>{t('receiver.donorsPosts')}</Text>
                 <View style={styles.countBadge}><Text style={styles.countBadgeText}>{String(donorTabCount)}</Text></View>
               </View>
             </TouchableOpacity>
@@ -465,14 +488,14 @@ export default function HomeReceiverScreen() {
           </View>
 
           <Text style={styles.sectionTitle}>{t('receiver.faqs')}</Text>
-          {FAQS.map((faq, index) => (
+          {FAQ_KEYS.map((faqKey, index) => (
             <TouchableOpacity
-              key={faq}
+              key={faqKey}
               style={styles.faqItem}
               onPress={() => setOpenFaq(openFaq === index ? null : index)}
               activeOpacity={0.75}
             >
-              <Text style={styles.faqQuestion}>{faq}</Text>
+              <Text style={styles.faqQuestion}>{t(faqKey)}</Text>
               <Ionicons name={openFaq === index ? 'chevron-up' : 'chevron-down'} size={20} color="#333" />
             </TouchableOpacity>
           ))}
@@ -584,6 +607,7 @@ function MyRequestCard({
     ? new Date(item.needed_before).toLocaleDateString(locale)
     : t('receiver.notSpecified');
   const foodTypeLabel = getFoodTypeLabelFromRequest(t, item.food_type);
+  const foodVisual = getFoodTypeVisual(item.food_type);
   const statusMeta = requestStatusMeta[status] || requestStatusMeta.PENDING;
   const isAccepted = status === 'ACCEPTED';
   const isExpired = status === 'PENDING'
@@ -608,8 +632,8 @@ function MyRequestCard({
         </TouchableOpacity>
       </View>
       <View style={styles.myRequestContentRow}>
-        <View style={styles.myRequestThumb}>
-          <Ionicons name="camera-outline" size={22} color="#333" />
+        <View style={[styles.myRequestThumb, { backgroundColor: foodVisual.bg, borderColor: foodVisual.bg }]}>
+          <Ionicons name={foodVisual.icon} size={26} color={foodVisual.color} />
         </View>
         <View style={styles.myRequestCenter}>
           <Text style={styles.myRequestType}>{foodTypeLabel}</Text>
@@ -676,8 +700,8 @@ const styles = StyleSheet.create({
     borderColor: c.border,
     borderRadius: r.lg,
   },
-  statItem: { alignItems: 'center' },
-  statLabel: { fontSize: 10, color: c.textMuted, marginBottom: 2 },
+  statItem: { flex: 1, alignItems: 'center' },
+  statLabel: { fontSize: 10, color: c.textMuted, marginBottom: 2, textAlign: 'center', paddingHorizontal: 4 },
   statValue: { fontSize: 22, color: c.textPrimary, fontWeight: '700' },
   tabsRow: {
     flexDirection: 'row',
@@ -685,11 +709,11 @@ const styles = StyleSheet.create({
     borderBottomColor: c.divider,
     marginBottom: 10,
   },
-  tabButton: { paddingBottom: 10, marginRight: 22 },
+  tabButton: { paddingBottom: 10, marginRight: 16, flexShrink: 1 },
   tabButtonActive: { borderBottomWidth: 2, borderBottomColor: c.textPrimary },
-  tabText: { fontSize: 14, color: c.textMuted, fontWeight: '500' },
+  tabText: { fontSize: 14, color: c.textMuted, fontWeight: '500', flexShrink: 1 },
   tabTextActive: { color: c.textPrimary, fontWeight: '700' },
-  tabWithBadge: { flexDirection: 'row', alignItems: 'center' },
+  tabWithBadge: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
   countBadge: {
     marginLeft: 6,
     width: 17,
@@ -786,7 +810,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
-  pendingText: { marginLeft: 8, fontSize: 13, color: '#4D4120', fontWeight: '600' },
+  pendingText: { marginLeft: 8, fontSize: 13, color: '#4D4120', fontWeight: '600', flexShrink: 1 },
   continuePickupBtn: {
     marginTop: 10,
     borderWidth: 1,
@@ -860,14 +884,13 @@ const styles = StyleSheet.create({
   donorContent: { flex: 1, marginLeft: 10 },
   donorName: { fontSize: 15, color: c.textPrimary, fontWeight: '600' },
   donorDistance: { fontSize: 13, color: c.textSecondary, marginTop: 2 },
-  donorActions: { flexDirection: 'row', marginTop: 6, alignItems: 'center' },
+  donorActions: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, alignItems: 'center', gap: 8 },
   viewButton: {
     borderWidth: 1,
     borderColor: c.divider,
     borderRadius: r.full,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    marginRight: 8,
     backgroundColor: c.surfaceAlt,
   },
   viewButtonText: { fontSize: 11, color: c.textPrimary },

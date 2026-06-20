@@ -301,7 +301,7 @@ export default function DonorDonationDetailScreen() {
                   disabled={!receiverPhone}
                 >
                   <Ionicons name="call-outline" size={15} color={receiverPhone ? roleUi.colors.primaryStrong : '#8A8A8A'} />
-                  <Text style={[styles.donorActionText, !receiverPhone && { color: '#8A8A8A' }]}>
+                  <Text style={[styles.donorActionText, !receiverPhone && { color: '#8A8A8A' }]} numberOfLines={1}>
                     {t('donationDetail.callReceiver')}
                   </Text>
                 </TouchableOpacity>

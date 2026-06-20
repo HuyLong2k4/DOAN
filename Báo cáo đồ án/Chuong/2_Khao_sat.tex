@@ -1,0 +1,440 @@
+\IfFileExists{../main.tex}{%
+  \documentclass[../main.tex]{subfiles}%
+}{%
+  \documentclass[main.tex]{subfiles}%
+}
+\begin{document}
+\setcounter{chapter}{2}
+\section{Tổng quát}
+\label{section:2.1}
+Chương 1 đã trình bày bối cảnh, mục tiêu và định hướng giải pháp cho bài toán kết nối chia sẻ thực phẩm dư thừa. Để có cơ sở vững chắc cho việc thiết kế và xây dựng hệ thống, chương này tập trung khảo sát hiện trạng và phân tích yêu cầu một cách chi tiết.
+
+Trước tiên, mục~\ref{section:2.2} khảo sát nhu cầu thực tế từ ba nhóm người dùng mục tiêu cùng các hệ thống và ứng dụng tương tự đang tồn tại, từ đó rút ra tập yêu cầu mà hệ thống cần đáp ứng. Tiếp đến, mục~\ref{section:2.3} mô tả tổng quan chức năng thông qua biểu đồ use case tổng quát, các biểu đồ use case phân rã và quy trình nghiệp vụ trung tâm của hệ thống. Mục~\ref{section:2.4} đặc tả chi tiết một số use case quan trọng nhất về luồng sự kiện, tiền điều kiện và hậu điều kiện. Cuối cùng, mục~\ref{section:2.5} trình bày các yêu cầu phi chức năng về hiệu năng, độ tin cậy, tính dễ sử dụng, dễ bảo trì, bảo mật và kỹ thuật.
+
+\section{Khảo sát hiện trạng}
+\label{section:2.2}
+
+\subsection{Khảo sát từ người dùng và các hệ thống hiện có}
+\label{subsection:2.2.1}
+Để xác định nhu cầu thực tế, tác giả đã tiến hành khảo sát thông qua phỏng vấn trực tiếp với ba nhóm đối tượng mục tiêu: người quyên góp thực phẩm, người/tổ chức có nhu cầu nhận, và tình nguyện viên vận chuyển.
+
+\textbf{Nhóm người quyên góp (Donor)}: Qua khảo sát, phần lớn người quyên góp tiềm năng (nhà hàng, hộ gia đình, đơn vị tổ chức sự kiện) cho biết họ thường xuyên có thực phẩm dư nhưng gặp khó khăn trong việc tìm đầu ra phù hợp. Các vấn đề chính được ghi nhận: (i) Không biết ai cần, không có kênh để biết tổ chức hoặc cá nhân nào đang cần thực phẩm ở gần mình. (ii) Lo ngại về an toàn vệ sinh, e ngại trách nhiệm pháp lý nếu thực phẩm gây hại cho người nhận. (iii) Không có thời gian vận chuyển, muốn tặng nhưng không thể tự giao, đặc biệt với các nhà hàng trong giờ cao điểm. (iv) Thiếu sự ghi nhận, muốn biết phần quyên góp của mình đã đến đúng người.
+
+\textbf{Nhóm người/tổ chức nhận (Receiver)}: Các mái ấm, trung tâm bảo trợ và cá nhân khó khăn được khảo sát phản ánh: (i) Nguồn thực phẩm không ổn định, phụ thuộc vào mối quan hệ cá nhân, không có lịch cố định. (ii) Khó tiếp cận người quyên góp, không biết ai đang có thực phẩm dư ở gần mình. (iii) Không có phương tiện đến lấy, nhiều tổ chức nhỏ không có xe, phụ thuộc vào việc người quyên góp tự mang đến. (iv) Muốn đặt yêu cầu trước, có thể lên kế hoạch bữa ăn tốt hơn nếu biết trước nguồn thực phẩm.
+
+\textbf{Nhóm tình nguyện viên (Volunteer)}: (i) Khó biết khi nào có đơn, hiện tại phải theo dõi thủ công qua các nhóm mạng xã hội. (ii) Cần thông tin rõ ràng: địa chỉ lấy hàng, loại thực phẩm, khoảng cách trước khi quyết định nhận. (iii) Muốn được ghi nhận đóng góp: mong có hệ thống điểm, cấp độ, hoặc chứng nhận tình nguyện.
+
+Bên cạnh đó, trước khi có các ứng dụng chuyên biệt, việc kết nối chia sẻ thực phẩm tại Việt Nam chủ yếu vận hành qua hai hình thức sau: (i) Nhóm mạng xã hội (Facebook, Zalo), (ii) Điều phối qua điện thoại (mô hình Foodbank), (iii) Bếp ăn/điểm phát cố định.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|l|c|c|}
+\hline
+\textbf{Tiêu chí} & \textbf{Nhóm MXH} & \textbf{Foodbank} & \textbf{Điểm phát cố định} \\ \hline
+Thời gian phản hồi & Tùy người dùng & Chậm & Theo lịch \\ \hline
+Phạm vi địa lý & Rộng & Hạn chế & Rất hạn chế \\ \hline
+Khả năng mở rộng & Thấp & Thấp        & Thấp              \\ \hline
+Theo dõi trạng thái & Không & Thủ công  & Không             \\ \hline
+Xác thực người dùng & Không & Có (thủ công)  & Có (thủ công)     \\ \hline
+Hỗ trợ vận chuyển   & Không & Có (hạn chế)    & Không             \\ \hline
+Chi phí vận hành    & Thấp & Cao (nhân sự)   & Tùy mặt bằng    \\ \hline
+\end{tabular}%
+}
+\caption{Đánh giá các hình thức điều phối hiện có tại Việt Nam}
+\label{tab:danh_gia_hinh_thuc_dieu_phoi}
+\end{table}
+
+Từ bảng \ref{tab:danh_gia_hinh_thuc_dieu_phoi} ta thấy (i) Hình thức nhóm mạng xã hội (Facebook, Zalo): Người quyên góp đăng bài trong nhóm cộng đồng, người cần quan tâm và nhắn tin riêng để nhận. Quy trình hoàn toàn thủ công: thỏa thuận giờ gặp, địa điểm qua tin nhắn, không có cơ chế xác nhận hoàn tất hay theo dõi trạng thái. Ưu điểm là dễ triển khai, không cần cài thêm gì. Nhược điểm: bài đăng bị trôi, thông tin trùng lặp, không lọc được theo vị trí, dễ bị lợi dụng. (ii) Hình thức điều phối qua điện thoại (mô hình Foodbank): Tổ chức như Foodbank Vietnam đóng vai trò trung gian: tiếp nhận thông tin người quyên góp qua điện thoại/email, lên lịch thu gom, phân phối đến các đơn vị đã đăng ký. Ưu điểm: có kiểm soát chất lượng, đáng tin cậy. Nhược điểm: phụ thuộc vào nhân sự điều phối, không mở rộng được quy mô, giờ hoạt động hạn chế, thời gian phản hồi chậm. (iii) Hình thức bếp ăn/điểm phát cố định: Các tổ chức từ thiện vận hành địa điểm phát thực phẩm theo lịch cố định (bếp ăn 0 đồng, suất cơm từ thiện...). Ưu điểm: ổn định, người nhận biết địa điểm. Nhược điểm: không linh hoạt, không tiếp cận được người cần ở xa điểm phát, lãng phí nếu ngày đó ít người đến.
+
+Trên thế giới cũng có một số ứng dụng tương tự như: (i) Too Good To Go: Ra mắt năm 2016 tại Đan Mạch, Too Good To Go cho phép các nhà hàng, siêu thị, tiệm bánh đóng gói thực phẩm dư cuối ngày thành một túi thực phẩm bí mật và bán với giá giảm 50–70\% cho người dùng gần đó. Hình thức tương tự như việc chúng ta chơi trò chơi bóc túi mù. Ứng dụng cũng đã có mặt tại 21 quốc gia với hơn 120 triệu người dùng đăng ký \cite{TooGoodToGo}. Ưu điểm: UX đơn giản, quy trình thanh toán tích hợp, có hệ thống đánh giá. Nhược điểm: Là mô hình thương mại — người nhận phải trả tiền, không phục vụ nhóm thực sự khó khăn. Không có vai trò tình nguyện viên, không hỗ trợ tổ chức từ thiện, không cho phép người nhận (Receiver) đăng yêu cầu. Chưa có mặt tại Việt Nam.
+(ii) OLIO: Ra mắt năm 2015 tại Anh, OLIO là nền tảng chia sẻ cộng đồng hoàn toàn miễn phí, bao gồm cả thực phẩm lẫn đồ vật. Người dùng đăng ảnh món đồ, người gần đó yêu cầu và đến lấy trực tiếp \cite{Olio}. Ưu điểm: Miễn phí, đa dạng danh mục (không chỉ thực phẩm), giao diện thân thiện, có tính năng ``Food Waste Heroes'' — tình nguyện viên thu gom từ cửa hàng về đăng lại. Nhược điểm: Không có luồng vận chuyển có tổ chức (người nhận phải tự đến lấy). Chưa triển khai tại Việt Nam.
+
+Từ những khảo sát trên, có thể thấy hệ thống cần tập trung phát triển khả năng kết nối nhanh giữa người quyên góp và người nhận, đồng thời giải quyết được các vấn đề về điều phối, minh bạch và vận chuyển thực phẩm. Hệ thống cần đáp ứng các yêu cầu sau:
+
+(i) Quản lý tài khoản và phân quyền: Hệ thống cần hỗ trợ bốn vai trò độc lập gồm người quyên góp (Donor), người nhận (Receiver), tình nguyện viên (Volunteer) và quản trị viên (Admin), với quy trình đăng ký, xác thực danh tính và phân quyền truy cập riêng biệt cho từng nhóm.
+(ii) Quản lý đơn quyên góp: Người quyên góp cần đăng thực phẩm kèm hình ảnh, loại thực phẩm, số lượng và hạn sử dụng. Hệ thống cần hiển thị danh sách đơn đang mở, ưu tiên theo khoảng cách địa lý đến vị trí người xem. (iii) Luồng yêu cầu thực phẩm (Food Request): Người nhận cần có khả năng chủ động đăng yêu cầu thực phẩm cụ thể (loại, số lượng, thời hạn cần). Người quyên góp duyệt và chấp nhận yêu cầu, kích hoạt luồng giao nhận tương tự đơn thông thường. (iv) Điều phối vận chuyển: Khi người nhận chọn nhờ tình nguyện viên giao, hệ thống thông báo đến các tình nguyện viên đang bật trạng thái trực tuyến trong bán kính xác định. Tình nguyện viên tự chọn nhận đơn theo cơ chế ai nhận trước thì được, và có thể bật/tắt trạng thái nhận đơn linh hoạt. (v) Theo dõi và xác nhận giao nhận: Cả hai bên cần theo dõi trạng thái đơn theo thời gian thực (đang chờ, tình nguyện viên đang đến, đã lấy hàng, đã giao). Sử dụng mã xác nhận (pickup code) để đảm bảo giao nhận đúng người. (vi) Ghi nhận đóng góp: Hệ thống cần ghi nhận điểm thưởng cho người quyên góp và tình nguyện viên sau mỗi giao nhận thành công, kèm thống kê cá nhân (số đơn, số khẩu phần, cấp độ đóng góp) để tạo động lực tham gia bền vững. (vii) Quản trị hệ thống: Quản trị viên cần có giao diện web để giám sát hoạt động toàn nền tảng, duyệt hồ sơ tình nguyện viên, xử lý vi phạm và theo dõi các chỉ số tổng thể.
+
+\section{Tổng quan chức năng}
+\label{section:2.3}
+
+\subsection{Biểu đồ use case tổng quát}
+\label{subsection:2.3.1}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/KhaoSat/tongquan.png}
+    \caption{Use case tổng quan}
+    \label{fig:usecase_tong_quat}
+\end{figure}
+
+Hình~\ref{fig:usecase_tong_quat} miêu tả 5 tác nhân chính của hệ thống là: người dùng (User), người quyên góp (Donor), người nhận (Receiver), tình nguyện viên (Volunteer) và quản trị viên (Admin). Trong đó người dùng là tác nhân trừu tượng thể hiện đặc điểm chung của người dùng đã đăng nhập. Ba vai trò người quyên góp, người nhận và tình nguyện viên đều kế thừa từ người dùng.
+
+Tác nhân người dùng đại diện cho mọi người dùng đã có tài khoản trong hệ thống. Sở hữu các chức năng dùng chung như xác thực tài khoản, quản lý hồ sơ, trao đổi tin nhắn và xem thành tựu.
+
+Tác nhân người quyên góp (Donor): Có vai trò như cá nhân hoặc đơn vị có thực phẩm dư thừa muốn chia sẻ. Đăng tin quyên góp, cung cấp thông tin về loại thực phẩm, số lượng, thời hạn sử dụng và địa điểm nhận.
+
+Tác nhân người nhận (Receiver): Có vai trò như cá nhân hoặc tổ chức có nhu cầu nhận thực phẩm. Tìm kiếm các bài quyên góp phù hợp, gửi yêu cầu nhận, lựa chọn hình thức nhận (tự lấy hoặc nhờ nhân viên tình nguyện giao) và đánh giá người quyên góp sau khi nhận.
+
+Tác nhân tình nguyện viên (Volunteer): Là người hỗ trợ vận chuyển thực phẩm từ người quyên góp đến người nhận. Bật trạng thái sẵn sàng, nhận đơn vận chuyển phù hợp với vị trí và lịch trình của mình, cập nhật tiến trình giao hàng.
+
+Tác nhân quản trị viên (Admin): Quản lý toàn bộ hệ thống thông qua giao diện web. Phê duyệt tài khoản tình nguyện viên, theo dõi hoạt động quyên góp, xử lý phản hồi và đảm bảo chất lượng dịch vụ.
+
+Các use case được chia theo từng nhóm tác nhân để dễ quản lý:
+
+Nhóm use case chung dành cho mọi người dùng gồm các chức năng: (i) Đăng ký tài khoản: Cho phép người dùng mới tạo tài khoản, chọn vai trò muốn xác minh danh tính hợp lệ trước khi sử dụng hệ thống.(ii) Đăng nhập và đăng xuất: Cấp quyền truy cập phiên làm việc an toàn. (iii) Quản lý tài khoản: Cập nhật các thông tin cơ bản, ảnh đại diện. (iv) Trao đổi qua tin nhắn: Kênh giao tiếp trực tiếp giữa các người dùng với nhau (ví dụ để hẹn giờ giao/nhận). (v) Tiếp nhận thông báo: Theo dõi các cập nhật quan trọng từ hệ thống hoặc trạng thái của các đơn hàng/yêu cầu. (vi) Xem xếp hạng và điểm thưởng: Theo dõi đóng góp cá nhân và bảng xếp hạng của mình trên hệ thống để tăng thêm động lực tham gia các hoạt động từ thiện cộng đồng.
+
+Nhóm use case của người quyên góp (Donor) gồm các chức năng: (i) Quản lý đơn quyên góp: Tạo mới, chỉnh sửa, hoặc theo dõi trạng thái các bài đăng/đơn thực phẩm mình muốn cho đi. (ii)Đáp ứng yêu cầu thực phẩm: Xem xét và quyết định chấp nhận hoặc từ chối các yêu cầu từ người nhận.
+
+Nhóm use case của người nhận (Receiver) gồm các chức năng: (i) Tạo yêu cầu thực phẩm: Đăng tải nhu cầu cụ thể khi cần hỗ trợ lương thực. (ii) Tìm và nhận thực phẩm: Tìm kiếm các nguồn thực phẩm có sẵn trên hệ thống (đặc biệt là ở gần) và thao tác nhận đơn. (iii) Đánh giá và phản hồi: Viết nhận xét về chất lượng thực phẩm hoặc quá trình giao dịch sau khi hoàn tất.
+
+Nhóm use case của tình nguyện viên (Volunteer) gồm các chức năng: (i) Nhận và giao đơn: Tiếp nhận các yêu cầu vận chuyển từ hệ thống và thực hiện giao thực phẩm đến tay người nhận. (ii) Quản lý trạng thái hoạt động: Bật/tắt trạng thái sẵn sàng làm việc để hệ thống biết có nên phân phối đơn vận chuyển hay không.
+
+Nhóm use case của quản trị viên (Admin): (i) Quản lý người dùng: Theo dõi, phân quyền, kiểm duyệt hoặc khóa các tài khoản vi phạm. (ii) Xem phản hồi hệ thống: giám sát chất lượng dịch vụ qua phản hồi của người nhận.
+
+
+\subsection{Biểu đồ use case phân rã ``Quản lý đơn quyên góp''}
+\label{section:2.3.2}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/KhaoSat/quanlydonquyengop.png}
+    \caption{Biểu đồ use case phân rã ``Quản lý đơn quyên góp''}
+    \label{fig:usecase_don_quyen_gop}
+\end{figure}
+
+Hình \ref{fig:usecase_don_quyen_gop} mô tả phân rã use case "Quản lý đơn quyên góp", trình bày chi tiết các thao tác mà người quyên góp (Donor) có thể thực hiện trong suốt vòng đời của một đơn hàng. Trong phân hệ này, tác nhân tương tác trực tiếp với ba chức năng chính: Đăng đơn quyên góp, Xem chi tiết đơn và Xem danh sách đơn quyên góp.
+
+Cụ thể, luồng nghiệp vụ được phân rã như sau:
+
+Chức năng Đăng đơn quyên góp: Để hoàn tất việc tạo đơn, hệ thống bắt buộc người dùng phải thực hiện bước Nhập thông tin thực phẩm (bao gồm tiêu đề, loại, số lượng và hạn sử dụng). Điều này được thể hiện qua quan hệ <<include>>.
+
+Chức năng Xem chi tiết đơn: Tại màn hình chi tiết, hệ thống cung cấp thêm tính năng tùy chọn Xem mã lấy hàng (thể hiện qua quan hệ <<extend>>) để phục vụ cho khâu xác thực khi giao nhận thực phẩm.
+
+Chức năng Xem danh sách đơn quyên góp: Từ giao diện danh sách, hệ thống cung cấp thêm hai ngã rẽ nghiệp vụ mở rộng (thể hiện qua quan hệ <<extend>>) phụ thuộc vào trạng thái thực tế của đơn:
+
+(i) Hủy đơn: Chỉ khả dụng khi đơn hàng vẫn đang ở trạng thái chờ người nhận kết nối.
+
+(ii) Thu hồi người nhận: Người quyên góp được phép thu hồi người nhận khỏi đơn nếu người nhận đã chốt đơn nhưng quá 30 phút vẫn chưa đến lấy hàng.
+
+\subsection{Biểu đồ use case phân rã ``Tìm và nhận thực phẩm''}
+\label{section:2.3.3}
+
+\noindent\begin{minipage}{\textwidth}
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/KhaoSat/timvanhanthucpham.png}
+    \captionof{figure}{Biểu đồ use case phân rã ``Tìm và nhận thực phẩm''}
+    \label{fig:usecase_tim_va_nhan_thuc_pham}
+\end{minipage}
+\vspace{-0.5\baselineskip}
+\noindent
+
+Hình \ref{fig:usecase_tim_va_nhan_thuc_pham} mô tả chi tiết quá trình tiếp nhận thực phẩm của tác nhân người nhận (Receiver). Trong biểu đồ này, người nhận tương tác trực tiếp với ba chức năng chính: Tìm kiếm và xem đơn quyên góp, Kết nối nhận đơn và Theo dõi đơn hàng.
+
+Từ chức năng Tìm kiếm và xem đơn quyên góp, người dùng có thể thực hiện Kết nối nhận đơn dưới dạng quan hệ mở rộng (<<extend>>). Khi thực hiện kết nối, hệ thống bắt buộc (<<include>>) người dùng phải Chọn hình thức nhận. Chức năng này có hai phương án mở rộng (<<extend>>) là: Nhận qua tình nguyện viên hoặc Tự nhận hàng. Đặc biệt, nếu chọn Tự nhận hàng, luồng này bắt buộc (<<include>>) đi kèm với việc Xác thực mã nhận hàng.
+
+Ở giai đoạn Theo dõi đơn hàng, hệ thống hỗ trợ bốn luồng xử lý dưới dạng quan hệ mở rộng (<<extend>>) tùy theo tình huống thực tế, bao gồm: Báo tình nguyện viên không đến, Ngắt kết nối và hủy nhận hàng, Đánh giá sau khi nhận, và Xác nhận đã nhận.
+
+\subsection{Biểu đồ use case phân rã ``Nhận và giao đơn''}
+\label{section:2.3.4}
+
+\noindent\begin{minipage}{\textwidth}
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/KhaoSat/nhanvagiaodon.png}
+    \captionof{figure}{Biểu đồ use case phân rã ``Nhận và giao đơn''}
+    \label{fig:usecase_nhan_va_giao_don}
+\end{minipage}
+\vspace{-0.5\baselineskip}
+
+\noindent
+Hình \ref{fig:usecase_nhan_va_giao_don} mô tả biểu đồ phân rã use case "Nhận và giao đơn" mô tả nghiệp vụ vận chuyển của tác nhân tình nguyện viên (Volunteer). Tình nguyện viên thực hiện chuỗi chức năng chính theo trình tự: Xem đơn cần giao, Nhận đơn giao, Xác nhận đã lấy hàng và Báo đã giao hàng. Đồng thời có thể Xem vị trí lấy hàng để định vị điểm hẹn và Trả lại đơn đã nhận giao khi không thể tiếp tục. Khi duyệt danh sách, hệ thống cho phép luồng mở rộng từ chối hoặc bỏ qua đơn trong trường hợp tình nguyện viên không nhận. Đặc biệt, "Báo đã giao hàng" chỉ đưa đơn về trạng thái chờ xác nhận; điểm thưởng chỉ được cộng sau khi người nhận xác nhận đã nhận hàng, thể hiện ràng buộc chặt chẽ và tính toàn vẹn của quy trình giao – nhận.
+
+\subsection{Biểu đồ use case phân rã ``Đăng ký tài khoản''}
+\label{section:2.3.5}
+
+\noindent\begin{minipage}{\textwidth}
+    \centering
+    \chaptergraphic[width=0.95\textwidth]{Hinhve/KhaoSat/dangkyvaxacthuc.png}
+    \captionof{figure}{Biểu đồ use case phân rã ``Đăng ký tài khoản''}
+    \label{fig:usecase_dang_ky_tai_khoan}
+\end{minipage}
+\vspace{-0.5\baselineskip}
+\noindent
+
+Hình \ref{fig:usecase_dang_ky_tai_khoan} thể hiện use case phân rã "Đăng ký tài khoản" mô tả các chức năng nền tảng giúp tác nhân người dùng (User) thiết lập và bảo vệ tài khoản. Use case "Đăng ký tài khoản" bắt đầu khi người dùng mở ứng dụng và chọn chức năng Đăng ký tài khoản, cung cấp số điện thoại, mật khẩu và họ tên. Hệ thống khởi tạo tài khoản và phát sinh mã OTP để xác minh số điện thoại\footnote{Trong phạm vi đồ án, mã OTP được sinh ở phía máy chủ và phát qua kênh mô phỏng (ghi ra nhật ký máy chủ) phục vụ kiểm thử; việc tích hợp dịch vụ gửi tin nhắn SMS thực tế như Twilio hoặc Firebase Phone Authentication là một hướng phát triển.} — kích hoạt bước Xác minh OTP. Người dùng nhập mã OTP trong thời hạn quy định; nếu mã hết hạn hoặc chưa nhận được, người dùng có thể chọn Gửi lại OTP để nhận mã mới. Khi mã hợp lệ, hệ thống xác nhận số điện thoại là chính chủ, cấp quyền truy cập và điều hướng người dùng sang bước Chọn vai trò (Donor / Receiver / Volunteer) để hoàn tất hồ sơ. Ở những lần sử dụng sau, người dùng truy cập hệ thống thông qua chức năng Đăng nhập bằng tài khoản đã được xác thực. Trong trường hợp quên mật khẩu, người dùng chọn Đặt lại mật khẩu; hệ thống tiếp tục yêu cầu Xác minh OTP để xác thực danh tính trước khi cho phép thiết lập mật khẩu mới. Như vậy, toàn bộ luồng hoạt động xoay quanh cơ chế xác thực bằng OTP dùng chung cho cả đăng ký và khôi phục mật khẩu, bảo đảm tính bảo mật và toàn vẹn của quá trình quản lý tài khoản.
+
+\subsection{Quy trình nghiệp vụ}
+\label{subsection:2.3.6}
+
+\begin{figure}[H]
+    \centering
+    \chaptergraphic[width=\textwidth]{Hinhve/KhaoSat/activitydiagram.png}
+    \caption{Quy trình nghiệp vụ ``Quyên góp - Giao - Nhận thực phẩm''}
+    \label{fig:activity_quyen_gop_giao_nhan}
+\end{figure}
+
+Hình \ref{fig:activity_quyen_gop_giao_nhan} Đây là quy trình nghiệp vụ trung tâm của hệ thống. Một người quyên góp có thực phẩm dư sẽ đăng đơn quyên góp lên hệ thống. Người nhận ở gần tìm thấy đơn và kết nối để nhận. Hệ thống tự động chốt theo cơ chế "ai kết nối trước thì được". Sau khi được chốt, người nhận chọn một trong hai phương thức nhận hàng: (i) Tự đến lấy: người nhận tự đến chỗ người quyên góp lấy thực phẩm. (ii) Ủy thác tình nguyện viên: Hệ thống phát thông báo cho các tình nguyện viên gần đó. Tình nguyện viên nào nhận đơn trước sẽ đi lấy hàng tại người quyên góp rồi giao đến người nhận. Để chống gian lận, hệ thống sinh mã pickup 4 chữ số: người quyên góp đọc mã cho người đến lấy (người nhận hoặc tình nguyện viên), người lấy nhập đúng mã thì giao dịch mới được xác nhận. Với luồng ủy thác tình nguyện viên, sau khi tình nguyện viên báo đã giao, người nhận phải xác nhận đã nhận hoặc hệ thống tự xác nhận sau 24 giờ thì đơn mới hoàn tất. Khi đơn hoàn tất, hệ thống cộng 100 điểm cho người quyên góp (và 100 điểm cho tình nguyện viên nếu đi qua tình nguyện viên). Hai bên có thể đánh giá lẫn nhau.
+
+\section{Đặc tả chức năng}
+\label{section:2.4}
+
+\subsection{Đặc tả use case Đăng đơn quyên góp}
+\label{section:2.4.1}
+
+\begingroup
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Đăng đơn quyên góp"}
+\label{tab:usecase_dang_don_quyen_gop}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Đăng đơn quyên góp \\ \hline
+\textbf{Tác nhân chính} & Người quyên góp (Donor) \\ \hline
+\textbf{Mô tả} & Người quyên góp đăng một đơn quyên góp thực phẩm dư lên hệ thống để người nhận ở gần có thể tìm thấy và nhận. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người quyên góp chọn chức năng đăng đơn quyên góp từ màn hình chính của ứng dụng. \\ \hline
+\textbf{Tiền điều kiện} & Người quyên góp đã đăng nhập với vai trò DONOR và đã hoàn thiện hồ sơ (có địa chỉ/toạ độ lấy hàng). \\ \hline
+\textbf{Hậu điều kiện} & Một đơn quyên góp mới được tạo với trạng thái \texttt{PENDING}, chưa có người nhận; đơn hiển thị trong danh sách đơn khả dụng của những người nhận ở gần (sắp xếp theo khoảng cách gần nhất trước). \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người quyên góp mở màn hình "Tạo đơn quyên góp". \newline
+2. Người quyên góp nhập tiêu đề, mô tả (tuỳ chọn), chọn loại thực phẩm, số lượng suất (mặc định 5, tối thiểu 1) và hạn sử dụng (ngày bắt buộc, giờ tuỳ chọn). \newline
+3. Người quyên góp tải lên 0--6 ảnh món ăn (tuỳ chọn). \newline
+4. Người quyên góp tích chọn ô cam kết đảm bảo chất lượng thực phẩm. \newline
+5. Người quyên góp bấm "Đăng đơn". \newline
+6. Nếu có ảnh: hệ thống lưu ảnh và trả về URL. \newline
+7. Hệ thống kiểm tra hợp lệ (đủ trường bắt buộc, số lượng $\ge$ 1, hạn sử dụng phải ở thời điểm trong tương lai). \newline
+8. Hệ thống tạo đơn với trạng thái \texttt{PENDING}. \newline
+9. Hệ thống hiển thị thông báo tạo đơn thành công cho người quyên góp, kèm tuỳ chọn "Đăng lại" hoặc "Xem bài đăng của tôi". \\ \hline
+\textbf{Luồng sự kiện thay thế} &
+3a. Tải ảnh thất bại: Hệ thống báo lỗi tải ảnh; người quyên góp có thể chọn bỏ qua bước này và tiếp tục đăng đơn không kèm ảnh hoặc thử tải lại. \\ \hline
+\textbf{Luồng ngoại lệ} &
+5a. Thiếu thông tin bắt buộc (tiêu đề, hạn sử dụng, chưa tích cam kết chất lượng) hoặc số lượng < 1: Hệ thống báo lỗi, bôi đỏ các trường thiếu và yêu cầu nhập lại; tiến trình quay về bước 2. \\ \hline
+\end{longtable}
+\endgroup
+
+
+\subsection{Đặc tả use case Tìm và nhận thực phẩm}
+\label{section:2.4.2}
+
+\begingroup
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Tìm và nhận thực phẩm"}
+\label{tab:usecase_tim_va_nhan_thuc_pham}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Tìm và nhận thực phẩm \\ \hline
+\textbf{Tác nhân chính} & Người nhận (Receiver) \\ \hline
+\textbf{Tác nhân phụ} & Người quyên góp, tình nguyện viên, Hệ thống \\ \hline
+\textbf{Mô tả} & Người nhận tìm kiếm đơn quyên góp phù hợp ở gần, kết nối để được gán nhận, chọn phương thức nhận hàng (tự đến lấy hoặc uỷ thác tình nguyện viên) và hoàn tất việc nhận thực phẩm. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người nhận chọn chức năng tìm kiếm \& kết nối đơn quyên góp trên ứng dụng. \\ \hline
+\textbf{Tiền điều kiện} & Người nhận đã đăng nhập, vai trò là RECEIVER và đã hoàn thiện hồ sơ (có vị trí để tính khoảng cách). Tồn tại ít nhất một đơn quyên góp ở trạng thái \texttt{PENDING}, chưa được gán cho người nhận nào. \\ \hline
+\textbf{Hậu điều kiện} &
+\textbf{Thành công:} Người nhận nhận được thực phẩm; hệ thống cộng 100 điểm cho người quyên góp (và thêm 100 điểm cho tình nguyện viên nếu nhận qua tình nguyện viên); người nhận có thể đánh giá. \newline
+\textbf{Thất bại hoặc huỷ bỏ:} Người nhận chưa nhận được hàng; đơn giữ nguyên hoặc được mở lại cho người khác. \\ \hline
+\textbf{Luồng sự kiện chính (Tự đến lấy)} &
+1. Người nhận mở màn hình danh sách đơn quyên góp. \newline
+2. Hệ thống hiển thị các đơn \texttt{PENDING} ở gần, sắp xếp theo khoảng cách. \newline
+3. Người nhận xem chi tiết một đơn (loại món, số lượng, hạn sử dụng, khoảng cách). \newline
+4. Người nhận bấm "Kết nối". \newline
+5. Hệ thống gán đơn cho người nhận, ghi mốc thời gian gán đơn, thông báo cho người quyên góp. \newline
+6. Người nhận chọn phương thức nhận hàng là Tự đến lấy. \newline
+7. Hệ thống sinh mã xác nhận 4 chữ số. \newline
+8. Người nhận đến địa điểm người quyên góp và nhận thực phẩm. \newline
+9. Người quyên góp đọc mã xác nhận cho người nhận. \newline
+10. Người nhận nhập mã và bấm "Xác nhận đã nhận". \newline
+11. Hệ thống đối chiếu mã khớp, hoàn tất đơn (\texttt{COMPLETED}) và cộng 100 điểm cho người quyên góp. \\ \hline
+\textbf{Luồng sự kiện thay thế} &
+2a. Không có đơn phù hợp ở gần: Danh sách rỗng; người nhận có thể chủ động đăng yêu cầu nhận thực phẩm hoặc thử lại sau. \newline
+6a. Nếu người nhận chọn "Uỷ thác tình nguyện viên": \newline
+\hspace*{1em}6a.1. Hệ thống sinh mã pickup và phát thông báo tìm tình nguyện viên trong bán kính 20 km. \newline
+\hspace*{1em}6a.2. Một tình nguyện viên nhận và giao hàng thành công đến người nhận. \newline
+\hspace*{1em}6a.3. Người nhận nhận thông báo trên ứng dụng và bấm "Xác nhận đã nhận hàng". \newline
+\hspace*{1em}6a.4. Hệ thống cộng 100 điểm cho người quyên góp và 100 điểm cho tình nguyện viên. Kết thúc luồng. \newline
+\hspace*{1em}6a.3-1. Người nhận không phản hồi trong 24 giờ: Hệ thống tự động xác nhận hoàn tất đơn và cộng điểm. \newline
+\textbullet\ Người nhận rút khỏi đơn (chỉ trước khi tình nguyện viên bắt đầu lấy hàng): đơn người quyên góp tự đăng được đưa về \texttt{PENDING} để mở cho người nhận khác; nếu đơn sinh từ một yêu cầu thì đơn bị huỷ và yêu cầu liên kết được mở lại. \newline
+\textbullet\ Báo tình nguyện viên không đến: khi đơn đang được giao (tình nguyện viên đã lấy hàng), người nhận có thể báo bất cứ lúc nào; hệ thống huỷ đơn và chuyến giao, thông báo cho người quyên góp và tình nguyện viên. \\ \hline
+\textbf{Luồng ngoại lệ (Exception flow)} &
+4a. Đơn vừa bị người khác kết nối: Hệ thống báo "Đơn đã được kết nối"; quay về bước 1. \newline
+4b. Đơn của chính người nhận: Hệ thống từ chối "Bạn không thể kết nối đơn của chính mình". \newline
+6b. Phương thức nhận không hợp lệ: Hệ thống báo lỗi; quay về bước 6. \newline
+10a. Mã pickup không khớp: Hệ thống báo lỗi kèm số lần thử còn lại; người nhận nhờ người quyên góp đọc lại và nhập lại (quay về bước 9). \newline
+10b. Nhập sai mã quá 5 lần liên tiếp: Hệ thống tạm khoá xác thực 10 phút; chờ hết thời gian khoá rồi nhờ người quyên góp đọc lại mã. \newline
+6a.3-2. Tình nguyện viên chưa báo đã giao: Hệ thống báo "Chưa thể xác nhận"; tiến trình dừng chờ tình nguyện viên cập nhật. \\ \hline
+\end{longtable}
+\endgroup
+
+\subsection{ Đặc tả use case Nhận và giao đơn}
+\label{section:2.4.3}
+
+\begingroup
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Nhận và giao đơn"}
+\label{tab:usecase_nhan_va_giao_don}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Nhận và giao đơn \\ \hline
+\textbf{Tác nhân chính} & Tình nguyện viên (Volunteer) \\ \hline
+\textbf{Tác nhân phụ} & Người quyên góp, người nhận, Hệ thống \\ \hline
+\textbf{Mô tả} & Tình nguyện viên xem các đơn cần giao ở gần, nhận đơn, đến lấy hàng tại người quyên góp (xác thực mã lấy hàng), giao tới người nhận và báo đã giao. Điểm được cộng sau khi người nhận xác nhận đã nhận. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi tình nguyện viên bật trạng thái hoạt động và mở danh sách đơn cần giao trên ứng dụng. \\ \hline
+\textbf{Tiền điều kiện} & Tình nguyện viên đã đăng nhập, vai trò là VOLUNTEER, đã hoàn thiện hồ sơ (có vị trí để tính khoảng cách) và đang bật trạng thái hoạt động. Tồn tại đơn \texttt{VIA\_AGENT} đã có người nhận, đang chờ tình nguyện viên (\texttt{WAITING\_AGENT}). Tình nguyện viên chưa đạt giới hạn 3 đơn đang giao. \\ \hline
+\textbf{Hậu điều kiện} &
+\textbf{Thành công:} Hàng được giao tới người nhận; sau khi người nhận xác nhận (hoặc hệ thống tự động xác nhận sau 24 giờ), đơn chuyển \texttt{COMPLETED} và tình nguyện viên được cộng 100 điểm (người quyên góp được cộng 100 điểm). \newline
+\textbf{Thất bại hoặc huỷ bỏ:} Tình nguyện viên trả lại đơn $\to$ đơn quay về tìm tình nguyện viên khác; hoặc người nhận báo không đến $\to$ đơn bị huỷ. \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Tình nguyện viên bật trạng thái hoạt động (online). \newline
+2. Hệ thống hiển thị các đơn cần giao ở gần (\texttt{VIA\_AGENT}, đã có người nhận), sắp xếp theo khoảng cách. \newline
+3. Tình nguyện viên xem địa chỉ lấy hàng, có thể mở bản đồ chỉ đường đến điểm lấy. \newline
+4. Tình nguyện viên bấm "Nhận đơn". \newline
+5. Hệ thống kiểm tra đơn còn khả dụng và tình nguyện viên chưa quá 3 đơn; gán tình nguyện viên cho đơn (đơn $\to$ \texttt{ACCEPTED}, chuyến giao $\to$ \texttt{AGENT\_ASSIGNED}). \newline
+6. Tình nguyện viên đến địa điểm người quyên góp và mở ô nhập mã lấy hàng. \newline
+7. Người quyên góp đọc mã 4 chữ số; tình nguyện viên nhập và bấm "Xác nhận đã lấy hàng". \newline
+8. Hệ thống xác thực mã; chuyển chuyến giao $\to$ \texttt{ON\_THE\_WAY}, đơn $\to$ \texttt{PICKED\_UP}; thông báo cho người nhận. \newline
+9. Tình nguyện viên giao hàng đến người nhận và bấm "Báo đã giao hàng". \newline
+10. Hệ thống chuyển chuyến giao $\to$ \texttt{AWAITING\_CONFIRMATION} và thông báo người nhận xác nhận \textit{(chưa cộng điểm)}. \newline
+11. Người nhận xác nhận đã nhận (hoặc hệ thống tự xác nhận sau 24 giờ): đơn $\to$ \texttt{COMPLETED}, cộng 100 điểm cho tình nguyện viên và 100 điểm cho người quyên góp. \\ \hline
+\textbf{Luồng sự kiện thay thế} &
+2a. Tình nguyện viên tắt trạng thái hoạt động (offline): hệ thống không hiển thị và không giao đơn nào cho tình nguyện viên; danh sách rỗng. \newline
+3a. Từ chối hoặc bỏ qua đơn: Tình nguyện viên bấm "Từ chối"; hệ thống ẩn đơn khỏi danh sách của tình nguyện viên này (đơn vẫn tìm tình nguyện viên khác). \newline
+5a. Trả lại đơn đã nhận (chỉ trước khi lấy hàng): Tình nguyện viên bấm "Trả đơn"; đơn quay về \texttt{PENDING}, chuyến giao về \texttt{WAITING\_AGENT} để tìm tình nguyện viên khác; thông báo cho người quyên góp và người nhận. \\ \hline
+\textbf{Luồng ngoại lệ (Exception flow)} &
+4a. Đơn vừa được tình nguyện viên khác nhận: Hệ thống báo "Đơn đã được nhận"; quay về bước 2. \newline
+4b. Tình nguyện viên đang có 3 đơn chưa hoàn tất: Hệ thống từ chối, yêu cầu giao xong bớt trước khi nhận thêm. \newline
+7a. Mã lấy hàng không khớp: Hệ thống báo lỗi kèm số lần thử còn lại; tình nguyện viên nhờ người quyên góp đọc lại và nhập lại (quay về bước 7). \newline
+7b. Nhập sai mã quá 5 lần liên tiếp: Hệ thống tạm khoá xác thực 10 phút; chờ hết thời gian khoá rồi nhờ người quyên góp đọc lại mã. \newline
+9a. Báo đã giao khi chưa xác nhận lấy hàng (chuyến giao chưa \texttt{ON\_THE\_WAY}): Hệ thống báo "cần xác nhận đã lấy hàng trước". \newline
+5b. Trả đơn khi đã bắt đầu giao: Hệ thống từ chối "chỉ có thể trả đơn khi chưa bắt đầu giao". \\ \hline
+\end{longtable}
+\endgroup
+
+
+\subsection{ Đặc tả use case Đăng ký tài khoản}
+\label{section:2.4.4}
+
+\begingroup
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Đăng ký tài khoản"}
+\label{tab:usecase_dang_ky_tai_khoan}\\
+\hline
+\textbf{Use case} & \textbf{Nội dung} \\ \hline
+\textbf{Tên use case} & Đăng ký tài khoản \\ \hline
+\textbf{Tác nhân chính} & Người dùng (User) chưa có tài khoản \\ \hline
+\textbf{Tác nhân phụ} & Hệ thống \\ \hline
+\textbf{Mô tả} & Người dùng tạo tài khoản, xác thực số điện thoại qua OTP, chọn vai trò và hoàn thiện hồ sơ để có một tài khoản sẵn sàng sử dụng. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người dùng chưa có tài khoản chọn chức năng "Đăng ký" trên màn hình của ứng dụng. \\ \hline
+\textbf{Tiền điều kiện} & Người dùng chưa đăng nhập và có số điện thoại hợp lệ nhận được OTP. \\ \hline
+\textbf{Hậu điều kiện} & Tài khoản được tạo, số điện thoại đã xác minh, đã chọn vai trò và hồ sơ hoàn tất, người dùng vào được khu vực chức năng theo vai trò. \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng nhập họ tên, số điện thoại, mật khẩu, xác nhận mật khẩu và bấm "Đăng ký". \newline
+2. Hệ thống kiểm tra hợp lệ (số điện thoại 9–15 chữ số, mật khẩu $\ge$ 6 ký tự, mật khẩu khớp). \newline
+3. Hệ thống tạo tài khoản, sinh OTP có hạn trong 10 phút và mở màn hình nhập OTP. \newline
+4. Người dùng nhập OTP và bấm "Xác nhận". \newline
+5. Hệ thống kiểm tra OTP đúng và còn hạn.
+6. Hệ thống hiển thị màn hình chọn vai trò; người dùng chọn Donor / Receiver / Volunteer. \newline
+7. Hệ thống lưu vai trò, mở biểu mẫu hồ sơ tương ứng với vai trò. \newline
+8. Người dùng nhập thông tin hồ sơ (loại đối tượng, địa chỉ, thành phố, toạ độ…) và gửi. \newline
+9. Hệ thống kiểm tra các trường bắt buộc, lưu hồ sơ. \newline
+10. Hệ thống đưa người dùng vào màn hình chính theo vai trò; use case kết thúc. \\ \hline
+\textbf{Luồng sự kiện thay thế} &
+3b. Số điện thoại đã đăng ký nhưng chưa xác minh: Hệ thống cập nhật mật khẩu và gửi lại OTP (sang bước 4). \newline
+5b. Sai quá 5 lần / OTP hết hạn: Hệ thống yêu cầu lấy mã mới; người dùng bấm "Gửi lại mã" $\rightarrow$ hệ thống sinh OTP mới. \newline
+* Người dùng thoát giữa chừng: Lần đăng nhập sau, hệ thống đưa người dùng quay lại đúng bước còn dang dở (xác minh OTP / chọn vai trò / hoàn thiện hồ sơ). \\ \hline
+\textbf{Luồng ngoại lệ} &
+2a. Dữ liệu đăng ký không hợp lệ: Hệ thống báo lỗi; quay về bước 1. \newline
+3a. Số điện thoại đã đăng ký và đã xác minh: Hệ thống báo "Số điện thoại đã được đăng ký", gợi ý đăng nhập; kết thúc luồng. \newline
+5a. OTP sai: Tăng số lần thử, báo số lần còn lại; nhập lại (về bước 4). \newline
+9a. Thiếu trường hồ sơ bắt buộc (loại đối tượng / địa chỉ / thành phố): Hệ thống báo lỗi; quay về bước 8. \\ \hline
+\end{longtable}
+\endgroup
+
+\subsection{ Đặc tả use case Trao đổi qua tin nhắn}
+\label{section:2.4.5}
+
+\begingroup
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3.5cm}|p{11.5cm}|}
+\caption{Bảng đặc tả use case "Trao đổi qua tin nhắn"}
+\label{tab:usecase_trao_doi_tin_nhan}\\
+\hline
+
+\textbf{Tên use case} & Trao đổi qua tin nhắn \\ \hline
+\textbf{Tác nhân chính} & Người dùng là thành viên của đơn (người quyên góp / người nhận / tình nguyện viên) \\ \hline
+\textbf{Mô tả} & Trong phạm vi một đơn quyên góp, hai bên liên quan trao đổi tin nhắn (văn bản, tệp đính kèm) để phối hợp việc lấy, giao thực phẩm. \\ \hline
+\textbf{Điều kiện kích hoạt} & Khi người dùng mở chi tiết đơn và chọn chức năng "Nhắn tin" với đối tác tương ứng. \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đã đăng nhập. \newline Người dùng là một bên của đơn: người quyên góp chủ đơn, người nhận đã được chốt, hoặc tình nguyện viên đã được gán; và đối tác trò chuyện đã tồn tại. \\ \hline
+\textbf{Hậu điều kiện} & Tin nhắn được lưu và hiển thị cho cả hai bên; hội thoại cập nhật tin nhắn cuối; người nhận nhận được thông báo.\\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở chi tiết đơn và bấm "Nhắn tin" với đối tác (người quyên góp / người nhận / tình nguyện viên). \newline
+2. Hệ thống xác định đối tác hợp lệ theo vai trò và phương thức giao hàng, rồi lấy hoặc tạo cuộc trò chuyện 1–1 gắn với đơn. \newline
+3. Hệ thống hiển thị lịch sử tin nhắn (phân trang) và đánh dấu các tin của đối tác là đã đọc. \newline
+4. Người dùng nhập nội dung và/hoặc đính kèm tệp (tối đa 5 tệp), rồi bấm "Gửi". \newline
+5. Hệ thống kiểm tra hợp lệ: có nội dung hoặc tệp đính kèm; văn bản $\le$ 2000 ký tự; người gửi là thành viên. \newline
+6. Hệ thống lưu tin nhắn, cập nhật "tin nhắn cuối" của hội thoại, đánh dấu người gửi đã xem tin của mình. \newline
+7. Hệ thống gửi thông báo cho người nhận. \newline
+8. Người nhận mở hội thoại, đọc tin $\rightarrow$ hệ thống cập nhật trạng thái đã đọc và số tin chưa đọc. \\ \hline
+\textbf{Luồng sự kiện thay thế\newline(Alternative flow)} &
+4a. Tải tệp đính kèm thất bại: Hệ thống báo lỗi tải tệp; người dùng có thể chọn bỏ qua và gửi tin chỉ gồm văn bản. \\ \hline
+\textbf{Luồng ngoại lệ\newline(Exception flow)} &
+5a. Tin nhắn rỗng (không văn bản, không tệp): Hệ thống báo "Tin nhắn cần có nội dung hoặc tệp đính kèm"; yêu cầu nhập lại. \newline
+5b. Văn bản quá 2000 ký tự: Hệ thống báo lỗi; người dùng rút gọn văn bản và gửi lại. \newline
+5c. Hội thoại đã đóng (đơn đã hoàn tất hoặc huỷ): Hệ thống từ chối gửi; hội thoại chỉ còn có thể xem lại lịch sử. \\ \hline
+\end{longtable}
+\endgroup
+
+\section{Yêu cầu phi chức năng}
+\label{section:2.5}
+
+\subsection{Về hiệu năng}
+\label{section:2.5.1}
+
+Hệ thống được thiết kế nhằm đảm bảo hiệu năng đáp ứng trong điều kiện vận hành thông thường. Các dịch vụ API cốt lõi như xác thực người dùng, truy vấn dữ liệu và quản lý hồ sơ được yêu cầu có thời gian phản hồi trung bình trong khoảng 1–2 giây. Các chức năng yêu cầu tính thời gian thực như trao đổi tin nhắn và thông báo được triển khai với mục tiêu giảm thiểu độ trễ cảm nhận của người dùng.
+
+Bên cạnh đó, các truy vấn liên quan đến tìm kiếm và lọc theo khoảng cách được tối ưu hóa nhằm đảm bảo khả năng xử lý hiệu quả trên tập dữ liệu lớn. Hệ thống hỗ trợ cơ chế phân trang để hạn chế tải toàn bộ dữ liệu trong một lần truy vấn. Đồng thời, việc xử lý và truyền tải dữ liệu đa phương tiện như hình ảnh được tối ưu nhằm giảm thiểu băng thông và thời gian tải. Kiến trúc hệ thống cũng được thiết kế theo hướng có khả năng mở rộng ngang để đáp ứng tải cao khi số lượng người dùng tăng lên.
+
+\subsection{Về độ tin cậy}
+\label{section:2.5.2}
+
+Hệ thống được xây dựng với mục tiêu đảm bảo độ sẵn sàng cao, với mức uptime kỳ vọng từ 99\% trở lên. Các thực thể nghiệp vụ chính, đặc biệt là đơn quyên góp, được quản lý thông qua cơ chế trạng thái tự động nhằm đảm bảo tính nhất quán và giảm thiểu sai lệch dữ liệu theo thời gian.
+
+Dữ liệu được lưu trữ trên hệ quản trị cơ sở dữ liệu có hỗ trợ sao lưu và phục hồi, nhằm giảm thiểu rủi ro mất mát dữ liệu. Hệ thống cũng được thiết kế để có khả năng suy giảm chức năng an toàn trong trường hợp các dịch vụ bên ngoài không khả dụng. Các dữ liệu đầu vào được kiểm tra tính hợp lệ nhằm hạn chế sai sót trong quá trình xử lý. Đồng thời, cơ chế xử lý lỗi được chuẩn hóa nhằm đảm bảo hệ thống duy trì hoạt động ổn định trong các tình huống bất thường.
+
+\subsection{Về tính dễ sử dụng}
+\label{section:2.5.3}
+
+Hệ thống hỗ trợ đa ngôn ngữ nhằm đáp ứng nhu cầu của nhiều nhóm người dùng khác nhau. Giao diện người dùng được thiết kế theo hướng ưu tiên thiết bị di động (mobile-first), đồng thời phân tách luồng tương tác theo vai trò người dùng để đảm bảo tính trực quan và dễ sử dụng.
+
+Các cơ chế thông báo thời gian thực, bao gồm thông báo đẩy và thông báo nội bộ, được tích hợp nhằm cung cấp thông tin kịp thời cho người dùng. Việc tích hợp bản đồ và dịch vụ định vị giúp cải thiện khả năng nhận biết không gian và hỗ trợ các thao tác dựa trên vị trí. Quy trình xác thực người dùng được thiết kế đơn giản hóa nhưng vẫn đảm bảo an toàn thông qua cơ chế OTP. Ngoài ra, hệ thống cung cấp thông báo lỗi mang tính mô tả, giúp người dùng dễ dàng nhận diện và xử lý tình huống phát sinh.
+
+\subsection{Về tính dễ bảo trì}
+\label{section:2.5.4}
+
+Hệ thống được xây dựng theo kiến trúc phân lớp nhằm tách biệt rõ ràng giữa các thành phần giao diện, logic nghiệp vụ và truy cập dữ liệu. Cách tiếp cận này giúp tăng khả năng mở rộng và giảm độ phức tạp trong bảo trì hệ thống.
+
+Các chức năng nghiệp vụ được tổ chức thành các module độc lập theo từng nhóm chức năng nhằm tăng tính tái sử dụng và khả năng mở rộng. Toàn bộ cấu hình hệ thống được tách biệt khỏi mã nguồn, cho phép linh hoạt trong quá trình triển khai. Hệ thống cũng tích hợp cơ chế ghi log phục vụ theo dõi hoạt động và hỗ trợ gỡ lỗi. Bên cạnh đó, mã nguồn được chuẩn hóa theo quy ước thống nhất nhằm đảm bảo tính nhất quán và khả năng đọc hiểu.
+
+\subsection{Về tính bảo mật và phân quyền}
+\label{section:2.5.5}
+
+Hệ thống áp dụng nhiều cơ chế bảo mật nhằm đảm bảo tính toàn vẹn, bảo mật và xác thực của dữ liệu. Mật khẩu người dùng được mã hóa trước khi lưu trữ trong cơ sở dữ liệu. Quá trình xác thực được thực hiện thông qua cơ chế JSON Web Token (JWT).
+
+Hệ thống triển khai mô hình phân quyền dựa trên vai trò (Role-Based Access Control – RBAC), cho phép kiểm soát truy cập theo từng nhóm người dùng. Tài khoản người dùng có thể được vô hiệu hóa thay vì xóa nhằm đảm bảo tính toàn vẹn dữ liệu lịch sử. Cơ chế xác thực OTP được áp dụng trong quá trình đăng ký và khôi phục tài khoản nhằm tăng cường độ tin cậy của định danh người dùng.
+
+Ngoài ra, token được lưu trữ an toàn trên thiết bị người dùng, và các cơ chế bảo vệ tầng truyền tải như HTTPS và CORS được áp dụng nhằm đảm bảo an toàn trong trao đổi dữ liệu. Các quy trình nghiệp vụ quan trọng được xác minh thông qua mã giao dịch nhằm hạn chế gian lận. Đồng thời, hệ thống kiểm soát chặt chẽ các tệp tải lên để giảm thiểu nguy cơ tấn công từ dữ liệu đầu vào.
+
+\subsection{Về yêu cầu kỹ thuật}
+\label{section:2.5.6}
+
+Hệ thống được xây dựng theo mô hình client–server, trong đó ứng dụng phía khách hàng giao tiếp với máy chủ thông qua giao thức REST API và WebSocket nhằm hỗ trợ cả các chức năng đồng bộ và thời gian thực.
+
+Phía máy chủ được phát triển trên nền tảng Node.js kết hợp Express, hỗ trợ các chức năng xử lý API, xác thực, quản lý tệp và giao tiếp thời gian thực. Dữ liệu được lưu trữ trên hệ quản trị cơ sở dữ liệu MongoDB theo mô hình NoSQL và được truy xuất thông qua Mongoose.
+
+Ứng dụng di động được phát triển bằng React Native kết hợp Expo, cung cấp các chức năng như bản đồ, định vị và thông báo đẩy. Hệ thống tích hợp các dịch vụ bên ngoài phục vụ chức năng bản đồ và thông báo. Kiến trúc triển khai hỗ trợ môi trường cloud hoặc container hóa, đồng thời cung cấp cơ chế giám sát trạng thái hệ thống. Nhờ sử dụng nền tảng đa nền tảng, ứng dụng về mặt kỹ thuật có thể chạy trên cả Android và iOS; trong phạm vi đồ án, ứng dụng được xây dựng và thử nghiệm trên Android. Hệ thống yêu cầu kết nối Internet và một số quyền truy cập cơ bản để đảm bảo đầy đủ chức năng.
+
+\section{Kết chương}
+\label{section:2.6}
+Chương này đã khảo sát hiện trạng việc chia sẻ thực phẩm dư thừa tại Việt Nam từ ba nhóm người dùng mục tiêu và các hệ thống, ứng dụng tương tự, qua đó xác định tập yêu cầu chức năng và phi chức năng mà hệ thống cần đáp ứng. Trên cơ sở đó, chức năng tổng quan của hệ thống đã được mô hình hoá bằng biểu đồ use case tổng quát cùng các biểu đồ use case phân rã, kèm quy trình nghiệp vụ trung tâm ``Quyên góp -- Giao -- Nhận thực phẩm''. Một số use case quan trọng nhất đã được đặc tả chi tiết về luồng sự kiện, tiền điều kiện và hậu điều kiện; đồng thời các yêu cầu phi chức năng cũng đã được làm rõ. Những phân tích trong chương là cơ sở để lựa chọn nền tảng lý thuyết và công nghệ phù hợp, được trình bày trong Chương 3.
+
+\ifSubfilesClassLoaded{\printbibliography{}}{}
+\end{document}
