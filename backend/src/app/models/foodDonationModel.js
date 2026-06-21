@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const FOOD_TYPE       = ['COOKED', 'RAW', 'FROZEN', 'PACKAGED'];
+// Điều kiện bảo quản khuyến nghị do donor khai báo, giúp receiver/volunteer
+// nắm yêu cầu nhiệt độ khi lấy/giao, giảm rủi ro mất an toàn thực phẩm.
+const STORAGE_CONDITION = ['ROOM', 'COOL', 'FROZEN'];
+// ROOM   : Nhiệt độ thường
+// COOL   : Bảo quản mát (ngăn mát tủ lạnh)
+// FROZEN : Đông lạnh
 const DONATION_STATUS = ['PENDING', 'ACCEPTED', 'PICKED_UP', 'COMPLETED', 'EXPIRED', 'CANCELLED'];
 // PENDING   : Đã đăng, chờ ghép cặp Receiver / Volunteer
 // ACCEPTED  : Receiver hoặc Volunteer đã nhận đơn, sắp đến lấy
@@ -17,6 +23,7 @@ const CANCEL_REASON = [
     'RECEIVER_DISCONNECTED',  // Receiver tự rút khỏi đơn (đơn từ food request)
     'VOLUNTEER_NO_SHOW',      // Receiver báo volunteer đã lấy hàng nhưng không giao đến
     'AUTO_NO_SHOW',           // Cron tự huỷ khi delivery kẹt ON_THE_WAY quá lâu
+    'ADMIN_REMOVED',          // Quản trị viên gỡ đơn khi xử lý báo cáo vi phạm
 ];
 
 const FoodDonationSchema = new mongoose.Schema({
@@ -33,6 +40,7 @@ const FoodDonationSchema = new mongoose.Schema({
     description: { type: String, default: null },
 
     food_type:       { type: String, enum: FOOD_TYPE, required: true },
+    storage_condition: { type: String, enum: STORAGE_CONDITION, default: 'ROOM' },
 
     quantity: { type: Number, required: true, min: 1 },
     unit:     { type: String, default: 'portion' },

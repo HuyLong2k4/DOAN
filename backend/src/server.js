@@ -39,6 +39,7 @@ const foodDonationRoutes = require('./app/routes/foodDonationRoutes');
 const foodRequestRoutes  = require('./app/routes/foodRequestRoutes');
 const chatRoutes         = require('./app/routes/chatRoutes');
 const feedbackRoutes     = require('./app/routes/feedbackRoutes');
+const reportRoutes       = require('./app/routes/reportRoutes');
 const notificationRoutes = require('./app/routes/notificationRoutes');
 
 app.use('/api/auth',            authRoutes);
@@ -48,6 +49,7 @@ app.use('/api/food-donations',  foodDonationRoutes);
 app.use('/api/food-requests',   foodRequestRoutes);
 app.use('/api/chat',            chatRoutes);
 app.use('/api/feedback',        feedbackRoutes);
+app.use('/api/reports',         reportRoutes);
 app.use('/api/notifications',   notificationRoutes);
 
 app.get('/', (_, res) => res.send('Hello world'));

@@ -124,6 +124,33 @@ const DICT = {
     vi: { title: 'Bạn nhận được đánh giá mới', body: '{receiverName} đánh giá {rating}/5 sao cho đơn "{title}". "{comment}"' },
     en: { title: 'You received a new review', body: '{receiverName} rated {rating}/5 stars for "{title}". "{comment}"' },
   },
+
+  // ── Report / kiểm duyệt ───────────────────────────────────────
+  'report.warned': {
+    vi: { title: 'Cảnh báo từ quản trị viên', body: 'Đơn "{title}" của bạn bị phản ánh về an toàn thực phẩm. Vui lòng tuân thủ quy định khi đăng đơn.' },
+    en: { title: 'Warning from admin', body: 'Your donation "{title}" was reported for a food-safety concern. Please follow the rules when posting.' },
+  },
+  'report.warnedUser': {
+    vi: { title: 'Cảnh báo từ quản trị viên', body: 'Tài khoản của bạn bị phản ánh vi phạm quy định. Vui lòng tuân thủ quy định khi sử dụng hệ thống.' },
+    en: { title: 'Warning from admin', body: 'Your account was reported for a policy violation. Please follow the platform rules.' },
+  },
+  'report.donationRemoved': {
+    vi: { title: 'Đơn đã bị gỡ', body: 'Đơn "{title}" của bạn đã bị gỡ do vi phạm quy định an toàn thực phẩm.' },
+    en: { title: 'Donation removed', body: 'Your donation "{title}" was removed for violating food-safety rules.' },
+  },
+  'report.accountLocked': {
+    vi: { title: 'Tài khoản đã bị khoá', body: 'Tài khoản của bạn đã bị tạm khoá do vi phạm quy định. Vui lòng liên hệ quản trị viên.' },
+    en: { title: 'Account locked', body: 'Your account has been locked for violating the rules. Please contact the administrator.' },
+  },
+  // Thông báo kết quả cho NGƯỜI GỬI báo cáo (chỉ nêu kết quả tổng quát).
+  'report.reviewer.resolved': {
+    vi: { title: 'Báo cáo của bạn đã được xử lý', body: 'Cảm ơn bạn. Quản trị viên đã xem xét và xử lý báo cáo của bạn.' },
+    en: { title: 'Your report was handled', body: 'Thank you. An administrator reviewed and acted on your report.' },
+  },
+  'report.reviewer.dismissed': {
+    vi: { title: 'Báo cáo của bạn đã được xem xét', body: 'Quản trị viên đã xem xét nhưng chưa thấy đủ căn cứ vi phạm. Cảm ơn bạn đã phản ánh.' },
+    en: { title: 'Your report was reviewed', body: 'An administrator reviewed it but found insufficient grounds. Thank you for reporting.' },
+  },
 };
 
 const DEFAULT_LANG = 'vi';

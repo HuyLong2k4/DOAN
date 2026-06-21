@@ -15,6 +15,7 @@ const NotificationService = require('../notificationService');
 const { archiveDonationConversations } = require('./archiveConversations');
 
 const VALID_FOOD_TYPE = ['COOKED', 'RAW', 'FROZEN', 'PACKAGED'];
+const VALID_STORAGE_CONDITION = ['ROOM', 'COOL', 'FROZEN'];
 
 const STALE_PICKUP_MS = 30 * 60 * 1000;
 const STALE_DELIVERY_STATUSES = new Set(['WAITING_AGENT', 'SELF_PICKUP_READY', 'AGENT_ASSIGNED']);
@@ -67,6 +68,7 @@ async function createDonation(donorId, data) {
     const {
         title, description,
         food_type,
+        storage_condition,
         quantity, unit,
         expiration_datetime,
         images,
@@ -79,6 +81,10 @@ async function createDonation(donorId, data) {
 
     if (!VALID_FOOD_TYPE.includes(food_type)) {
         throw _error(`food_type không hợp lệ. Các giá trị hợp lệ: ${VALID_FOOD_TYPE.join(', ')}`);
+    }
+
+    if (storage_condition && !VALID_STORAGE_CONDITION.includes(storage_condition)) {
+        throw _error(`storage_condition không hợp lệ. Các giá trị hợp lệ: ${VALID_STORAGE_CONDITION.join(', ')}`);
     }
 
     const expirationDate = new Date(expiration_datetime);
@@ -102,6 +108,7 @@ async function createDonation(donorId, data) {
         title,
         description:        description || null,
         food_type,
+        storage_condition:  storage_condition || 'ROOM',
         quantity,
         unit:               unit || 'portion',
         expiration_datetime: expirationDate,
