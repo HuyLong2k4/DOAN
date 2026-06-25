@@ -4,6 +4,8 @@ import { listFeedback } from '../api/endpoints';
 import { getErrorMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import { Spinner } from '../components/Spinner';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
@@ -72,6 +74,11 @@ export function FeedbackPage() {
     });
   }, [feedbacks, keyword, ratingFilter]);
 
+  const { page, setPage, pageSize, total, totalPages, pageItems } = usePagination(filtered, {
+    pageSize: 10,
+    resetKey: `${keyword}|${ratingFilter}`,
+  });
+
   return (
     <>
       <PageHeader
@@ -118,6 +125,7 @@ export function FeedbackPage() {
         ) : filtered.length === 0 ? (
           <EmptyState icon={<Star size={28} />} title="Không có feedback phù hợp" description="Thử bỏ filter hoặc tìm kiếm khác." />
         ) : (
+          <>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
@@ -131,7 +139,7 @@ export function FeedbackPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((f) => {
+                {pageItems.map((f) => {
                   const from = f.from_user_id;
                   const to = f.to_user_id;
                   return (
@@ -185,6 +193,14 @@ export function FeedbackPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onChange={setPage}
+          />
+          </>
         )}
       </section>
 

@@ -96,6 +96,12 @@ export type DonorKey =
   | 'donor.donate.fruitsVegetables'
   | 'donor.donate.packagedFood'
   | 'donor.donate.frozenFood'
+  | 'donor.donate.storageCondition'
+  | 'donor.donate.storageRoom'
+  | 'donor.donate.storageCool'
+  | 'donor.donate.storageFrozen'
+  | 'donor.donate.safetyPolicyTitle'
+  | 'donor.donate.safetyPolicyText'
   | 'donor.donate.foodQuantity'
   | 'donor.donate.photos'
   | 'donor.donate.addMore'
@@ -214,6 +220,12 @@ export const donorEn: Record<DonorKey, string> = {
   'donor.donate.fruitsVegetables': 'Fruits & Vegetables',
   'donor.donate.packagedFood': 'Packaged Food',
   'donor.donate.frozenFood': 'Frozen Food',
+  'donor.donate.storageCondition': 'Storage Condition',
+  'donor.donate.storageRoom': 'Room temperature',
+  'donor.donate.storageCool': 'Keep cool (fridge)',
+  'donor.donate.storageFrozen': 'Frozen',
+  'donor.donate.safetyPolicyTitle': 'Food safety rules',
+  'donor.donate.safetyPolicyText': 'Allowed: food still within its expiry, intact and hygienically stored. Not allowed: spoiled or expired food, leftovers already served, alcoholic drinks, or food of unknown origin.',
   'donor.donate.foodQuantity': 'Food Quantity',
   'donor.donate.photos': 'Photos:',
   'donor.donate.addMore': '+Add more',
@@ -333,6 +345,12 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.donate.fruitsVegetables': 'Trái cây & Rau quả',
   'donor.donate.packagedFood': 'Thực phẩm đóng gói',
   'donor.donate.frozenFood': 'Thực phẩm đông lạnh',
+  'donor.donate.storageCondition': 'Điều kiện bảo quản',
+  'donor.donate.storageRoom': 'Nhiệt độ thường',
+  'donor.donate.storageCool': 'Bảo quản mát (ngăn mát)',
+  'donor.donate.storageFrozen': 'Đông lạnh',
+  'donor.donate.safetyPolicyTitle': 'Quy định an toàn thực phẩm',
+  'donor.donate.safetyPolicyText': 'Được phép: thực phẩm còn hạn, còn nguyên vẹn, được bảo quản hợp vệ sinh. Không được phép: thực phẩm đã hỏng/ôi thiu, quá hạn, đồ ăn đã dùng dở, đồ uống có cồn hoặc thực phẩm không rõ nguồn gốc.',
   'donor.donate.foodQuantity': 'Số lượng thực phẩm',
   'donor.donate.photos': 'Hình ảnh:',
   'donor.donate.addMore': '+Thêm nhiều hơn',

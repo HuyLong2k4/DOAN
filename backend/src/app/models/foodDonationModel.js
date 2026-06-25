@@ -59,4 +59,22 @@ const FoodDonationSchema = new mongoose.Schema({
     timestamps: true,
 });
 
+// Feed của receiver/volunteer lọc theo status rồi sắp theo thời gian đăng mới nhất
+// (queries.js: find({ status: {$in:[...]} }).sort({ createdAt: -1 })).
+FoodDonationSchema.index(
+    { status: 1, createdAt: -1 },
+    { name: 'idx_status_created_at' },
+);
+// Cron dọn đơn quá hạn quét status='PENDING' kèm expiration_datetime < now
+// (maintenance.js). Chỉ mục ghép giúp lọc nhanh các đơn cần chuyển EXPIRED.
+FoodDonationSchema.index(
+    { status: 1, expiration_datetime: 1 },
+    { name: 'idx_status_expiration' },
+);
+// Danh sách đơn của một donor, sắp theo thời gian đăng (queries.js: getDonorDonations).
+FoodDonationSchema.index(
+    { donor_id: 1, createdAt: -1 },
+    { name: 'idx_donor_created_at' },
+);
+
 module.exports = mongoose.model('FoodDonation', FoodDonationSchema);

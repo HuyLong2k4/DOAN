@@ -4,6 +4,8 @@ import { deleteUser, listUsers, updateUser } from '../api/endpoints';
 import { getErrorMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import { Spinner } from '../components/Spinner';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
@@ -92,6 +94,11 @@ export function UsersPage() {
       return ratingSort === 'asc' ? diff : -diff;
     });
   }, [users, keyword, roleFilter, ratingFilter, ratingSort]);
+
+  const { page, setPage, pageSize, total, totalPages, pageItems } = usePagination(filtered, {
+    pageSize: 10,
+    resetKey: `${keyword}|${roleFilter}|${ratingFilter}|${ratingSort}`,
+  });
 
   const onDelete = async (user: AdminUser) => {
     const display = user.full_name || user.email || user.phone_number || user._id;
@@ -184,6 +191,7 @@ export function UsersPage() {
             description="Thử bỏ filter hoặc tìm kiếm khác."
           />
         ) : (
+          <>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
@@ -204,7 +212,7 @@ export function UsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((user) => (
+                {pageItems.map((user) => (
                   <tr key={user._id}>
                     <td>
                       <div className="user-cell">
@@ -270,6 +278,14 @@ export function UsersPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onChange={setPage}
+          />
+          </>
         )}
       </section>
 

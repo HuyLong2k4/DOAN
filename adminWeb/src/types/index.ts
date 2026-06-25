@@ -95,6 +95,32 @@ export interface FeedbackRecord {
   createdAt?: string;
 }
 
+export type ReportReason =
+  | 'SPOILED'
+  | 'EXPIRED_UNSAFE'
+  | 'WRONG_INFO'
+  | 'FRAUD'
+  | 'INAPPROPRIATE'
+  | 'OTHER';
+
+export type ReportStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED';
+
+export type ReportAction = 'NONE' | 'WARN' | 'LOCK_USER' | 'REMOVE_DONATION';
+
+export interface ReportRecord {
+  _id: string;
+  reporter_id?: { _id?: string; full_name?: string; avatar_url?: string; role?: UserRole };
+  reported_user_id?: { _id?: string; full_name?: string; avatar_url?: string; role?: UserRole; is_active?: boolean } | null;
+  donation_id?: { _id?: string; title?: string; status?: DonationStatus; food_type?: FoodType } | null;
+  reason?: ReportReason;
+  description?: string | null;
+  status?: ReportStatus;
+  admin_note?: string | null;
+  action_taken?: ReportAction;
+  resolved_at?: string | null;
+  createdAt?: string;
+}
+
 export interface ApiEnvelope<T> {
   success?: boolean;
   message?: string;

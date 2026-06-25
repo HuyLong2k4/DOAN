@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LockKeyhole, ServerCog, UserRound } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, UserRound } from 'lucide-react';
 import { login } from '../api/endpoints';
 import { getErrorMessage, normalizeBaseUrl, resolveDefaultApiBaseUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -49,48 +49,14 @@ export function LoginPage() {
 
   return (
     <div className="login-screen">
-      <div className="login-orb login-orb-a" />
-      <div className="login-orb login-orb-b" />
-
       <div className="login-card">
-        <div className="login-side">
-          <div className="login-brand">
-            <div className="brand-mark brand-mark-lg">FR</div>
-            <div>
-              <p className="brand-sub">Food Rescue Platform</p>
-              <h2>Admin Console</h2>
-            </div>
-          </div>
-
-          <p className="login-tagline">
-            Quản lý người dùng, đơn quyên góp và yêu cầu nhận thực phẩm — tất cả trong một bảng điều khiển.
-          </p>
-
-          <ul className="login-bullets">
-            <li>Theo dõi tổng quan hoạt động hệ thống theo thời gian thực.</li>
-            <li>Phân quyền người dùng và xử lý báo cáo nhanh chóng.</li>
-            <li>Lọc đơn quyên góp / yêu cầu theo trạng thái.</li>
-          </ul>
+        <div className="login-head">
+          <img src="/avatarApp.png" alt="Food 4 life" className="login-logo" />
+          <h1>Food 4 life</h1>
+          <p className="login-sub">Bảng điều khiển quản trị</p>
         </div>
 
         <form className="login-form" onSubmit={onSubmit}>
-          <h1>Đăng nhập Admin</h1>
-          <p className="login-desc">Sử dụng tài khoản có vai trò ADMIN để truy cập.</p>
-
-          <label className="field">
-            <span className="field-label">API URL</span>
-            <span className="field-input">
-              <ServerCog size={16} />
-              <input
-                type="text"
-                placeholder="http://localhost:5000/api"
-                value={apiBaseUrl}
-                onChange={(event) => setApiBaseUrl(event.target.value)}
-                required
-              />
-            </span>
-          </label>
-
           <label className="field">
             <span className="field-label">Email hoặc số điện thoại</span>
             <span className="field-input">
@@ -132,9 +98,9 @@ export function LoginPage() {
           <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
             {submitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
-
-          <p className="login-foot">© {new Date().getFullYear()} Food Rescue Platform</p>
         </form>
+
+        <p className="login-foot">© {new Date().getFullYear()} Food 4 life · Admin</p>
       </div>
     </div>
   );

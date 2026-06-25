@@ -23,6 +23,9 @@ const WRITE_AMOUNT = Number(process.env.BENCH_N_WRITE || 50); // tổng request 
 
 const DONOR = process.env.BENCH_DONOR || '0905100001';
 const RECEIVER = process.env.BENCH_RECEIVER || '0906200001';
+const COOLDOWN = Number(process.env.BENCH_COOLDOWN || 4000); // ms nghỉ giữa các phép đo để server hồi
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Bọc autocannon ở dạng Promise (dùng callback để chạy đúng với mọi phiên bản).
 function run(opts) {
@@ -44,7 +47,7 @@ async function main() {
         url: `${BASE}/auth/login`, method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: RECEIVER, password: PASSWORD }),
-        amount: WRITE_AMOUNT,
+        amount: Math.max(WRITE_AMOUNT, VU),
       },
     },
     {
@@ -67,7 +70,7 @@ async function main() {
           title: 'Benchmark donation', food_type: 'COOKED', storage_condition: 'ROOM',
           quantity: 5, unit: 'suất', expiration_datetime: futureISO(12), images: [],
         }),
-        amount: WRITE_AMOUNT,
+        amount: Math.max(WRITE_AMOUNT, VU),
       },
     },
   ];
@@ -77,7 +80,7 @@ async function main() {
     process.stdout.write(`Đang đo: ${c.name} ... `);
     const r = await run(c.opts);
     const sent = r.requests.sent || r.requests.total || 0;
-    const errs = (r.non2xx || 0) + (r.errors || 0) + (r.timeouts || 0);
+    const twoxx = r['2xx'] || 0;
     rows.push({
       endpoint: c.name,
       VU,
@@ -86,9 +89,10 @@ async function main() {
       'p97.5_ms': r.latency.p97_5,
       p99_ms: r.latency.p99,
       'req/s': r.requests.average,
-      'loi_%': sent ? +((errs / sent) * 100).toFixed(2) : 0,
+      'loi_%': sent ? +(((sent - twoxx) / sent) * 100).toFixed(2) : 0,
     });
     console.log('xong');
+    await sleep(COOLDOWN);
   }
 
   console.log(`\n=== API latency (autocannon, VU=${VU}) ===`);

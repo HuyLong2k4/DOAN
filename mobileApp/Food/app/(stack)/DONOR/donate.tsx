@@ -20,6 +20,12 @@ const FOOD_TYPES = [
   { label: 'donor.donate.frozenFood',         value: 'FROZEN'   },
 ];
 
+const STORAGE_CONDITIONS = [
+  { label: 'donor.donate.storageRoom',   value: 'ROOM'   },
+  { label: 'donor.donate.storageCool',   value: 'COOL'   },
+  { label: 'donor.donate.storageFrozen', value: 'FROZEN' },
+];
+
 export default function DonateScreen() {
   const router = useRouter();
   const { t } = useI18n();
@@ -28,6 +34,8 @@ export default function DonateScreen() {
   const [description, setDesc]          = useState('');
   const [foodType, setFoodType]         = useState(FOOD_TYPES[0]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [storage, setStorage]           = useState(STORAGE_CONDITIONS[0]);
+  const [showStorageDropdown, setShowStorageDropdown] = useState(false);
   const [qty, setQty]                   = useState(5);
   const [expiryDate, setExpiryDate]     = useState<Date | null>(null);
   const [expiryTime, setExpiryTime]     = useState<Date | null>(null);
@@ -106,6 +114,7 @@ export default function DonateScreen() {
         title:                title.trim(),
         description:          description.trim() || undefined,
         food_type:            foodType.value,
+        storage_condition:    storage.value,
         quantity:             qty,
         unit:                 'portion',
         expiration_datetime:  expDatetime.toISOString(),
@@ -131,6 +140,7 @@ export default function DonateScreen() {
           <TouchableOpacity style={styles.submitBtn} onPress={() => {
             setTitle(''); setDesc(''); setQty(5);
             setExpiryDate(null); setExpiryTime(null);
+            setStorage(STORAGE_CONDITIONS[0]);
             setPhotos([]); setAssured(false); setSuccess(false);
           }}>
             <Text style={styles.submitBtnText}>{t('donor.donate.donateAgain')}</Text>
@@ -190,6 +200,28 @@ export default function DonateScreen() {
                 >
                   <Text style={[styles.dropdownItemText, foodType.label === type.label && styles.dropdownItemTextActive]}>
                     {t(type.label as any)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* ── Storage Condition dropdown ── */}
+          <Text style={styles.label}>{t('donor.donate.storageCondition')}</Text>
+          <TouchableOpacity style={styles.dropdown} onPress={() => setShowStorageDropdown(!showStorageDropdown)} activeOpacity={0.8}>
+            <Text style={styles.dropdownText} numberOfLines={1}>{t(storage.label as any)}</Text>
+            <Ionicons name="chevron-down" size={20} color="#555" />
+          </TouchableOpacity>
+          {showStorageDropdown && (
+            <View style={styles.dropdownList}>
+              {STORAGE_CONDITIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.label}
+                  style={[styles.dropdownItem, storage.label === opt.label && styles.dropdownItemActive]}
+                  onPress={() => { setStorage(opt); setShowStorageDropdown(false); }}
+                >
+                  <Text style={[styles.dropdownItemText, storage.label === opt.label && styles.dropdownItemTextActive]}>
+                    {t(opt.label as any)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -267,6 +299,12 @@ export default function DonateScreen() {
             />
           )}
 
+          {/* ── Food safety policy ── */}
+          <View style={styles.policyBox}>
+            <Text style={styles.policyTitle}>{t('donor.donate.safetyPolicyTitle')}</Text>
+            <Text style={styles.policyText}>{t('donor.donate.safetyPolicyText')}</Text>
+          </View>
+
           {/* ── Quality assurance ── */}
           <TouchableOpacity style={styles.assuranceRow} onPress={() => setAssured(!assured)} activeOpacity={0.8}>
             <View style={[styles.checkboxBox, assured && styles.checkboxChecked]}>
@@ -330,7 +368,10 @@ const styles = StyleSheet.create({
   addMoreText:           { fontSize: 13, color: '#888' },
   dateRow:               { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: c.divider, borderRadius: r.sm, height: 48, paddingHorizontal: 14 },
   dateInput:             { flex: 1, fontSize: 14, color: c.textPrimary },
-  assuranceRow:          { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 18, marginBottom: 8 },
+  policyBox:             { backgroundColor: c.primarySoft, borderRadius: r.sm, padding: 12, marginTop: 18 },
+  policyTitle:           { fontSize: 13, fontWeight: '700', color: c.primary, marginBottom: 4 },
+  policyText:            { fontSize: 12.5, color: c.textSecondary, lineHeight: 18 },
+  assuranceRow:          { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 16, marginBottom: 8 },
   assuranceText:         { flex: 1, fontSize: 13, color: '#555', lineHeight: 18 },
   error:                 { color: c.danger, fontSize: 13, marginTop: 10 },
   footer:                { padding: 16, paddingBottom: Platform.OS === 'ios' ? 28 : 16, borderTopWidth: 1, borderTopColor: '#F0F0F0', backgroundColor: c.surface },

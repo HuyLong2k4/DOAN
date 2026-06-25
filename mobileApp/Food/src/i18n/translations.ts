@@ -9,6 +9,7 @@ import { type RewardsKey, rewardsEn, rewardsVi } from './keys/rewards';
 import { type RequestKey, requestEn, requestVi } from './keys/request';
 import { type ListsKey, listsEn, listsVi } from './keys/lists';
 import { type CommonKey, commonEn, commonVi } from './keys/common';
+import { type ReportKey, reportEn, reportVi } from './keys/report';
 
 /**
  * TranslationKey aggregates all per-namespace keys.
@@ -24,7 +25,8 @@ export type TranslationKey =
   | RewardsKey
   | RequestKey
   | ListsKey
-  | CommonKey;
+  | CommonKey
+  | ReportKey;
 
 const en: Record<TranslationKey, string> = {
   ...authEn,
@@ -37,6 +39,7 @@ const en: Record<TranslationKey, string> = {
   ...requestEn,
   ...listsEn,
   ...commonEn,
+  ...reportEn,
 };
 
 const vi: Record<TranslationKey, string> = {
@@ -50,6 +53,7 @@ const vi: Record<TranslationKey, string> = {
   ...requestVi,
   ...listsVi,
   ...commonVi,
+  ...reportVi,
 };
 
 const dictionaries: Record<AppLanguage, Record<TranslationKey, string>> = {

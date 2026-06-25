@@ -10,6 +10,7 @@ import { DonationsPage } from './pages/DonationsPage';
 import { RequestsPage } from './pages/RequestsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { FeedbackPage } from './pages/FeedbackPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="donations" element={<DonationsPage />} />
               <Route path="requests" element={<RequestsPage />} />
               <Route path="feedback" element={<FeedbackPage />} />
+              <Route path="reports" element={<ReportsPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />

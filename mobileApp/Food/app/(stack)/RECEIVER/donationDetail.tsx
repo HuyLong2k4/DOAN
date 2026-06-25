@@ -14,12 +14,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOrCreateDonationConversation } from '../../../src/api/chat.api';
 import { http } from '../../../src/api/http';
+import { submitReport, type ReportReason } from '../../../src/api/report.api';
 import type { TranslationKey } from '../../../src/i18n/translations';
 import { useI18n } from '../../../src/i18n/useI18n';
 import { useAuthStore } from '../../../src/store/authStore';
@@ -44,6 +46,7 @@ type DonationDetail = {
   title: string;
   description?: string | null;
   food_type?: string;
+  storage_condition?: string;
   quantity?: number;
   unit?: string;
   expiration_datetime?: string | null;
@@ -76,6 +79,14 @@ const FOOD_TYPE_KEY: Record<string, TranslationKey> = {
   PACKAGED: 'request.packagedFood',
 };
 
+const STORAGE_KEY: Record<string, TranslationKey> = {
+  ROOM:   'donor.donate.storageRoom',
+  COOL:   'donor.donate.storageCool',
+  FROZEN: 'donor.donate.storageFrozen',
+};
+
+const REPORT_REASONS: ReportReason[] = ['SPOILED', 'EXPIRED_UNSAFE', 'WRONG_INFO', 'FRAUD', 'INAPPROPRIATE', 'OTHER'];
+
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   PENDING:   { bg: roleUi.colors.warningSoft, fg: roleUi.colors.warningText },
   ACCEPTED:  { bg: roleUi.colors.primarySoft, fg: roleUi.colors.primaryStrong },
@@ -105,6 +116,10 @@ export default function ReceiverDonationDetailScreen() {
   const [data, setData] = useState<DonationDetail | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
+  const [reportDesc, setReportDesc] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const loadDetail = useCallback(async () => {
     if (!donationId) return;
@@ -156,6 +171,9 @@ export default function ReceiverDonationDetailScreen() {
   const addressText = [data?.pickup_address_line, data?.pickup_city].filter(Boolean).join(', ') || t('donorList.addressNotAvailable');
   const foodTypeText = data?.food_type && FOOD_TYPE_KEY[data.food_type] ? t(FOOD_TYPE_KEY[data.food_type]) : t('receiver.foodTypeNotSpecified');
   const quantityText = `${data?.quantity ?? 0} ${data?.unit || 'meals'}`;
+  const storageText = data?.storage_condition && STORAGE_KEY[data.storage_condition]
+    ? t(STORAGE_KEY[data.storage_condition])
+    : '';
   const distanceKmValue = typeof data?.pickup_distance_km === 'number' ? data.pickup_distance_km : null;
 
   const expirationInfo = useMemo(() => {
@@ -316,6 +334,29 @@ export default function ReceiverDonationDetailScreen() {
     }
   };
 
+  const onSubmitReport = async () => {
+    if (!reportReason) {
+      Alert.alert(t('report.failedTitle'), t('report.reasonRequired'));
+      return;
+    }
+    try {
+      setReportSubmitting(true);
+      await submitReport({
+        donation_id: donationId,
+        reason: reportReason,
+        description: reportDesc.trim() || undefined,
+      });
+      setReportVisible(false);
+      setReportReason(null);
+      setReportDesc('');
+      Alert.alert(t('report.successTitle'), t('report.successMsg'));
+    } catch (err: any) {
+      Alert.alert(t('report.failedTitle'), err?.response?.data?.message || '');
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -458,6 +499,9 @@ export default function ReceiverDonationDetailScreen() {
 
         <View style={styles.infoCard}>
           <InfoRow icon="restaurant-outline" label={t('donationDetail.quantity')} value={quantityText} />
+          {storageText ? (
+            <InfoRow icon="thermometer-outline" label={t('donor.donate.storageCondition')} value={storageText} />
+          ) : null}
           <ExpirationRow
             label={t('donationDetail.expires')}
             value={expirationInfo.label}
@@ -490,6 +534,13 @@ export default function ReceiverDonationDetailScreen() {
             <Text style={styles.primaryBtnText} numberOfLines={1}>{primaryActionLabel}</Text>
           </TouchableOpacity>
         </View>
+
+        {selectedForMe ? (
+          <TouchableOpacity style={styles.reportLink} onPress={() => setReportVisible(true)}>
+            <Ionicons name="flag-outline" size={15} color={roleUi.colors.dangerText} />
+            <Text style={styles.reportLinkText}>{t('report.button')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
 
       {/* Fullscreen image viewer */}
@@ -526,6 +577,66 @@ export default function ReceiverDonationDetailScreen() {
               )}
             />
           ) : null}
+        </View>
+      </Modal>
+
+      {/* Report violation modal */}
+      <Modal
+        visible={reportVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportVisible(false)}
+      >
+        <View style={styles.reportBackdrop}>
+          <View style={styles.reportSheet}>
+            <Text style={styles.reportTitle}>{t('report.modalTitle')}</Text>
+
+            <Text style={styles.reportLabel}>{t('report.reasonLabel')}</Text>
+            {REPORT_REASONS.map((reason) => (
+              <TouchableOpacity
+                key={reason}
+                style={styles.reportOption}
+                onPress={() => setReportReason(reason)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={reportReason === reason ? 'radio-button-on' : 'radio-button-off'}
+                  size={18}
+                  color={reportReason === reason ? roleUi.colors.primary : '#999'}
+                />
+                <Text style={styles.reportOptionText}>{t(`report.reason.${reason}` as TranslationKey)}</Text>
+              </TouchableOpacity>
+            ))}
+
+            <Text style={styles.reportLabel}>{t('report.descLabel')}</Text>
+            <TextInput
+              style={styles.reportInput}
+              placeholder={t('report.descPlaceholder')}
+              placeholderTextColor="#bbb"
+              multiline
+              value={reportDesc}
+              onChangeText={setReportDesc}
+            />
+
+            <View style={styles.reportActions}>
+              <TouchableOpacity
+                style={[styles.reportBtn, styles.reportBtnCancel]}
+                onPress={() => setReportVisible(false)}
+                disabled={reportSubmitting}
+              >
+                <Text style={styles.reportBtnCancelText}>{t('report.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.reportBtn, styles.reportBtnSubmit, reportSubmitting && { opacity: 0.7 }]}
+                onPress={onSubmitReport}
+                disabled={reportSubmitting}
+              >
+                {reportSubmitting
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Text style={styles.reportBtnSubmitText}>{t('report.submit')}</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -827,4 +938,50 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '85%',
   },
+
+  reportLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 14,
+    paddingVertical: 8,
+  },
+  reportLinkText: { color: roleUi.colors.dangerText, fontSize: 13, fontWeight: '600' },
+  reportBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  reportSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 18,
+    paddingBottom: 28,
+  },
+  reportTitle: { fontSize: 16, fontWeight: '700', color: '#111', marginBottom: 8 },
+  reportLabel: {
+    fontSize: 11,
+    color: '#666',
+    fontWeight: '700',
+    marginTop: 12,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  reportOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
+  reportOptionText: { fontSize: 14, color: '#222' },
+  reportInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    minHeight: 70,
+    padding: 10,
+    fontSize: 14,
+    color: '#111',
+    textAlignVertical: 'top',
+  },
+  reportActions: { flexDirection: 'row', gap: 10, marginTop: 16 },
+  reportBtn: { flex: 1, height: 46, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  reportBtnCancel: { backgroundColor: '#F0F0F0' },
+  reportBtnCancelText: { color: '#444', fontWeight: '700', fontSize: 14 },
+  reportBtnSubmit: { backgroundColor: roleUi.colors.danger },
+  reportBtnSubmitText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });

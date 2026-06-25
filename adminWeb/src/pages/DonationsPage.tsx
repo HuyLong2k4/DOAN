@@ -4,6 +4,8 @@ import { listDonations } from '../api/endpoints';
 import { getErrorMessage, resolveAssetUrl } from '../api/client';
 import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import { Spinner } from '../components/Spinner';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
@@ -63,6 +65,11 @@ export function DonationsPage() {
     });
   }, [donations, keyword]);
 
+  const { page, setPage, pageSize, total, totalPages, pageItems } = usePagination(filtered, {
+    pageSize: 10,
+    resetKey: `${keyword}|${statusFilter}`,
+  });
+
   return (
     <>
       <PageHeader
@@ -115,6 +122,7 @@ export function DonationsPage() {
             description="Hãy thử bộ lọc khác hoặc xoá từ khoá tìm kiếm."
           />
         ) : (
+          <>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
@@ -130,7 +138,7 @@ export function DonationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((donation) => (
+                {pageItems.map((donation) => (
                   <tr key={donation._id}>
                     <td>
                       <div className="cell-strong">{donation.title || '(Không tiêu đề)'}</div>
@@ -161,6 +169,14 @@ export function DonationsPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onChange={setPage}
+          />
+          </>
         )}
       </section>
 

@@ -48,18 +48,26 @@ async function main() {
   });
   console.log(`Bắt tay (handshake) + xác thực JWT: ${Date.now() - connectStart} ms`);
 
-  if (!CONVERSATION_ID) {
-    console.log('\nChưa đặt BENCH_CONVERSATION_ID → chỉ đo handshake.');
-    console.log('Đặt biến này bằng id một hội thoại mà user là thành viên (mở một cuộc chat trong app hoặc lấy từ collection conversations) để đo RTT gửi tin nhắn.');
+  // Tự lấy một hội thoại mà user là thành viên nếu chưa chỉ định.
+  let convId = CONVERSATION_ID;
+  if (!convId) {
+    const res = await fetch(`${BASE}/chat/conversations`, { headers: { Authorization: `Bearer ${user.token}` } });
+    const j = await res.json().catch(() => ({}));
+    const list = j.data || j.conversations || [];
+    convId = list[0]?.id || list[0]?._id || '';
+  }
+
+  if (!convId) {
+    console.log('\nKhông tìm thấy hội thoại nào của user → chỉ đo handshake. Mở một cuộc chat trong app hoặc đặt BENCH_CONVERSATION_ID.');
     socket.close();
     return;
   }
 
-  await emitTimed(socket, 'chat:join', { conversation_id: CONVERSATION_ID });
+  await emitTimed(socket, 'chat:join', { conversation_id: convId });
 
   const rtts = [];
   for (let i = 0; i < SAMPLES; i++) {
-    const ms = await emitTimed(socket, 'chat:send', { conversation_id: CONVERSATION_ID, text: `bench ${Date.now()}` });
+    const ms = await emitTimed(socket, 'chat:send', { conversation_id: convId, text: `bench ${Date.now()}` });
     rtts.push(ms);
   }
   const s = summarize(rtts);

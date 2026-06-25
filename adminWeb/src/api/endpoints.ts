@@ -1,4 +1,4 @@
-import type { AdminUser, ApiEnvelope, AuthUser, DonationRecord, FeedbackRecord, RequestRecord } from '../types';
+import type { AdminUser, ApiEnvelope, AuthUser, DonationRecord, FeedbackRecord, ReportAction, ReportRecord, RequestRecord } from '../types';
 import { buildClient, getActiveClient, type ApiClient } from './client';
 
 export interface LoginPayload {
@@ -72,4 +72,23 @@ export async function listRequests(status?: string): Promise<RequestRecord[]> {
 export async function listFeedback(): Promise<FeedbackRecord[]> {
   const res = await getActiveClient().get<ApiEnvelope<FeedbackRecord[]>>('/feedback');
   return res.data.data || [];
+}
+
+export async function listReports(status?: string): Promise<ReportRecord[]> {
+  const params = status ? { status } : undefined;
+  const res = await getActiveClient().get<ApiEnvelope<ReportRecord[]>>('/reports', { params });
+  return res.data.data || [];
+}
+
+export async function resolveReport(
+  id: string,
+  status: 'RESOLVED' | 'DISMISSED',
+  adminNote?: string,
+  action: ReportAction = 'NONE',
+): Promise<void> {
+  await getActiveClient().patch<ApiEnvelope<unknown>>(`/reports/${id}`, {
+    status,
+    admin_note: adminNote,
+    action,
+  });
 }

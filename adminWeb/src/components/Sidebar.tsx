@@ -6,6 +6,7 @@ import {
   LogOut,
   MessageSquare,
   Settings,
+  ShieldAlert,
   Users,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { to: '/donations', label: 'Donations', icon: HandHeart },
   { to: '/requests', label: 'Requests', icon: HeartHandshake },
   { to: '/feedback', label: 'Feedback', icon: MessageSquare },
+  { to: '/reports', label: 'Báo cáo vi phạm', icon: ShieldAlert },
   { to: '/profile', label: 'Tài khoản', icon: Settings },
 ];
 
@@ -28,10 +30,10 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-mark">FR</div>
+        <img src="/avatarApp.png" alt="Food 4 life" className="brand-logo" />
         <div>
-          <p className="brand-name">Food Rescue</p>
-          <p className="brand-sub">Admin Console</p>
+          <p className="brand-name">Food 4 life</p>
+          <p className="brand-sub">Quản trị hệ thống</p>
         </div>
       </div>
 

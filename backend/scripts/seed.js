@@ -33,6 +33,12 @@ const PASSWORD = '123456';
 const H   = (h) => new Date(Date.now() + h * 3600 * 1000); // tương lai
 const code4 = () => String(Math.floor(1000 + Math.random() * 9000));
 
+// Hạn cho đơn/yêu cầu còn hiệu lực: neo vào tháng 8/2026 để dữ liệu demo không
+// hết hạn sớm. Vẫn cộng `exp` (giờ) để giữ thứ tự "sắp hết hạn trước" và trải đều.
+// Đơn EXPIRED (exp âm) giữ nguyên mốc quá khứ tính từ hiện tại.
+const AUG_BASE = new Date('2026-08-25T08:00:00+07:00').getTime();
+const expDate = (exp) => (exp < 0 ? H(exp) : new Date(AUG_BASE + exp * 3600 * 1000));
+
 // Toạ độ trung tâm các quận Hà Nội (đều trong ~10km quanh Hoàn Kiếm).
 const DISTRICT = {
   HoanKiem:   [21.0285, 105.8542],
@@ -149,12 +155,12 @@ const DONATIONS = [
   { donor: '0905100010', title: 'Xôi gấc & giò',                description: 'Xôi gấc và giò lụa, suất ăn sáng.',             food_type: 'COOKED',   quantity: 45, unit: 'suất', exp: 6,   status: 'COMPLETED', receiver: '0906200009', volunteer: '0907300009' },
   { donor: '0905100001', title: 'Trái cây: chuối, táo',         description: 'Chuối và táo còn tươi.',                        food_type: 'RAW',      quantity: 18, unit: 'kg',   exp: 20,  status: 'PENDING' },
   { donor: '0905100002', title: 'Bánh kem dư tiệc',             description: 'Bánh kem nguyên vẹn dư từ đặt hàng.',           food_type: 'PACKAGED', quantity: 12, unit: 'cái',  exp: 6,   status: 'ACCEPTED',  receiver: '0906200005', volunteer: '0907300002' },
-  { donor: '0905100003', title: 'Cháo dinh dưỡng nóng',         description: 'Cháo thịt bằm, dùng ngay trong chiều.',         food_type: 'COOKED',   quantity: 35, unit: 'suất', exp: -2,  status: 'EXPIRED' },
+  { donor: '0905100003', title: 'Cháo dinh dưỡng nóng',         description: 'Cháo thịt bằm, dùng ngay trong chiều.',         food_type: 'COOKED',   quantity: 35, unit: 'suất', exp: 6,   status: 'PENDING' },
   { donor: '0905100004', title: 'Mì gói & đồ khô',              description: 'Mì gói, miến, bún khô dự trữ.',                 food_type: 'PACKAGED', quantity: 60, unit: 'gói',  exp: 72,  status: 'PENDING' },
   { donor: '0905100005', title: 'Bánh quy hộp',                 description: 'Bánh quy đóng hộp còn hạn dài.',                food_type: 'PACKAGED', quantity: 20, unit: 'hộp',  exp: 10,  status: 'CANCELLED' },
   { donor: '0905100006', title: 'Cơm tấm sườn',                 description: 'Cơm tấm sườn nướng, suất đầy đặn.',             food_type: 'COOKED',   quantity: 25, unit: 'suất', exp: 5,   status: 'PENDING' },
   { donor: '0905100007', title: 'Cá hồi tươi',                  description: 'Phi lê cá hồi tươi, bảo quản lạnh.',           food_type: 'RAW',      quantity: 8,  unit: 'kg',   exp: 12,  status: 'PENDING' },
-  { donor: '0905100008', title: 'Phở bò còn dư',                description: 'Phở bò buổi sáng còn dư.',                      food_type: 'COOKED',   quantity: 30, unit: 'suất', exp: -1,  status: 'EXPIRED' },
+  { donor: '0905100008', title: 'Phở bò còn dư',                description: 'Phở bò buổi sáng còn dư.',                      food_type: 'COOKED',   quantity: 30, unit: 'suất', exp: 8,   status: 'PENDING' },
   { donor: '0905100009', title: 'Hải sản đông lạnh',            description: 'Tôm, mực đông lạnh đóng túi.',                  food_type: 'FROZEN',   quantity: 15, unit: 'kg',   exp: 48,  status: 'PENDING' },
   { donor: '0905100010', title: 'Sữa hộp & bánh',               description: 'Sữa tươi hộp và bánh quy cho trẻ.',             food_type: 'PACKAGED', quantity: 40, unit: 'hộp',  exp: 36,  status: 'PENDING' },
   // ── Bổ sung đợt 2 ──
@@ -177,7 +183,7 @@ const DONATIONS = [
   { donor: '0905100010', title: 'Bánh mì & pate',              description: 'Bánh mì kẹp pate, tự đến lấy.',                 food_type: 'PACKAGED', quantity: 35, unit: 'cái',  exp: 8,   status: 'ACCEPTED',  receiver: '0906200008', selfPickup: true },
   { donor: '0905100003', title: 'Súp gà & cháo',               description: 'Súp gà và cháo nóng cho người ốm.',             food_type: 'COOKED',   quantity: 30, unit: 'suất', exp: 4,   status: 'PICKED_UP', receiver: '0906200009', volunteer: '0907300007' },
   { donor: '0905100007', title: 'Bún bò Huế',                  description: 'Bún bò Huế đậm đà, đóng hộp.',                  food_type: 'COOKED',   quantity: 28, unit: 'suất', exp: 5,   status: 'PICKED_UP', receiver: '0906200006', volunteer: '0907300009' },
-  { donor: '0905100001', title: 'Xôi đỗ buổi sáng',            description: 'Xôi đỗ xanh, suất ăn sáng.',                    food_type: 'COOKED',   quantity: 20, unit: 'suất', exp: -3,  status: 'EXPIRED' },
+  { donor: '0905100001', title: 'Xôi đỗ buổi sáng',            description: 'Xôi đỗ xanh, suất ăn sáng.',                    food_type: 'COOKED',   quantity: 20, unit: 'suất', exp: 6,   status: 'PENDING' },
   { donor: '0905100004', title: 'Bánh kem để lâu',             description: 'Bánh kem dư, huỷ do để lâu.',                   food_type: 'PACKAGED', quantity: 10, unit: 'cái',  exp: 8,   status: 'CANCELLED' },
   // ── Đợt 3: phủ nốt các trạng thái Delivery còn thiếu ──
   // WAITING_AGENT: receiver đã nhận đơn (VIA_AGENT) nhưng chưa có volunteer tới lấy.
@@ -391,7 +397,7 @@ async function run() {
       food_type: d.food_type,
       quantity: d.quantity,
       unit: d.unit,
-      expiration_datetime: H(d.exp),
+      expiration_datetime: expDate(d.exp),
       status: d.status,
       // Gán lý do huỷ cho đơn CANCELLED để admin thấy ngữ cảnh (no-show vs huỷ thường).
       cancel_reason: d.status === 'CANCELLED'
@@ -464,7 +470,7 @@ async function run() {
       requested_quantity: r.quantity,
       unit: r.unit,
       food_type: r.food_type,
-      needed_before: H(r.need),
+      needed_before: expDate(r.need),
       status: r.status,
       accepted_by_donor_id: r.accepted ? id(r.accepted) : null,
       linked_donation_id: r.linkDonationIndex != null ? donationDocs[r.linkDonationIndex]?._id : null,
@@ -532,7 +538,6 @@ async function run() {
     { user_id: id('0906200007'), title: 'Tin nhắn mới',           message: 'TNV Phạm Quốc Bảo: "Anh tới cổng rồi nhé."',                  type: 'NEW_MESSAGE',       related_entity_type: 'Conversation', is_read: false },
     { user_id: id('0906200006'), title: 'Chờ bạn xác nhận',       message: 'TNV báo đã giao "Cơm trưa văn phòng". Hãy xác nhận đã nhận.',  type: 'VOLUNTEER_DELIVERY_AWAITING_CONFIRM', related_entity_type: 'Delivery', is_read: false },
     { user_id: id('0905100003'), title: 'Bạn nhận đánh giá 5★',   message: 'Người nhận vừa đánh giá đơn của bạn.',                        type: 'FEEDBACK_RECEIVED', related_entity_type: 'FoodDonation', is_read: true },
-    { user_id: id('0905100003'), title: 'Đơn đã hết hạn',         message: '"Cháo dinh dưỡng nóng" hết hạn mà chưa có người nhận.',        type: 'DONATION_EXPIRED',  related_entity_type: 'FoodDonation', is_read: true },
     { user_id: id('0906200004'), title: 'Yêu cầu được chấp nhận', message: 'Donor đã chấp nhận yêu cầu suất ăn tối của bạn.',              type: 'FOOD_REQUEST_ACCEPTED', related_entity_type: 'FoodDonation', is_read: false },
     { user_id: id('0906200006'), title: 'Đã kết nối đơn',         message: 'Bạn đã được kết nối với đơn "Cơm trưa chờ tình nguyện viên".', type: 'DONATION_CONNECTED_AUTO', related_entity_type: 'FoodDonation', is_read: true },
   );
