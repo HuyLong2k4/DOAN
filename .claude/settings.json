@@ -258,7 +258,8 @@
       "Bash(echo \"\\(KHONG co lstlisting.tex - \\\\\\\\include se bo qua\\)\")",
       "Bash(grep -nE \"\\\\\\\\\\\\\\\\caption\\\\{|\\\\\\\\\\\\\\\\label\\\\{alg:\" Chuong/5_Giai_phap_dong_gop.tex)",
       "Bash(node -e \"console.log\\(new Date\\(\\).toString\\(\\)\\); console.log\\('ISO:', new Date\\(\\).toISOString\\(\\)\\)\")",
-      "Bash(awk '{print $1}')"
+      "Bash(awk '{print $1}')",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "d:\\Đồ án\\docs"
