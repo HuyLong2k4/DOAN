@@ -1,111 +1,61 @@
 # Food 4 life — Hệ thống chia sẻ thực phẩm dư thừa
 
-Nền tảng kết nối **người quyên góp** thực phẩm dư thừa với **người nhận** (mái ấm, bếp ăn từ thiện, cá nhân khó khăn) thông qua đội ngũ **tình nguyện viên** giao nhận. Hệ thống gồm ứng dụng di động cho ba vai trò người dùng, trang quản trị web và backend API thời gian thực.
+Nền tảng kết nối **người quyên góp** thực phẩm dư thừa với **người nhận** thông qua đội ngũ **tình nguyện viên** giao nhận. Hệ thống gồm app di động (ba vai trò), trang quản trị web và backend API thời gian thực.
 
-## Kiến trúc
-
-| Thành phần | Công nghệ | Cổng mặc định |
-|------------|-----------|----------------|
-| **Backend** (API + real-time) | Node.js, Express 5, Mongoose, Socket.IO | `5000` |
-| **Admin Web** (trang quản trị) | React + Vite + TypeScript | `5173` |
-| **Mobile App** (người quyên góp / người nhận / tình nguyện viên) | React Native (Expo) | — |
+| Thành phần | Công nghệ | Cổng |
+|------------|-----------|------|
+| Backend (API + real-time) | Node.js, Express, Mongoose, Socket.IO | `5000` |
+| Admin Web | React + Vite + TypeScript | `5173` |
+| Mobile App | React Native (Expo) | — |
 
 Cơ sở dữ liệu dùng **MongoDB Atlas** (đám mây), không cần cài MongoDB cục bộ.
-
-```
-Đồ án/
-├── backend/        # API Node.js + Socket.IO
-├── adminWeb/       # Trang quản trị (Vite/React)
-├── mobileApp/Food/ # Ứng dụng di động (Expo)
-├── database/       # schema.dbml (sơ đồ CSDL)
-└── docker-compose.yml
-```
 
 ---
 
 # Hướng dẫn cài đặt
 
-## 1. Yêu cầu môi trường
+## 1. Yêu cầu
 
-Cài sẵn các phần mềm sau:
-
-- **Node.js ≥ 20 LTS** và **npm** (kiểm tra: `node -v`, `npm -v`).
-- **Git**.
+- **Node.js ≥ 20 LTS** + **npm**, và **Git**.
 - Một tài khoản **MongoDB Atlas** (miễn phí) — xem mục 2.
-- **Riêng cho Mobile App:**
-  - **Expo CLI** (chạy qua `npx`, không cần cài toàn cục).
-  - Ứng dụng **Expo Go** trên điện thoại, hoặc **Android Studio / Xcode** nếu chạy máy ảo.
-  - Điện thoại và máy tính chạy backend phải **cùng một mạng LAN/Wi-Fi**.
-- **Tùy chọn:** **Docker Desktop** nếu muốn chạy bằng Docker (mục 7).
+- Mobile App: ứng dụng **Expo Go** (hoặc Android Studio / Xcode); điện thoại và máy chạy backend phải **cùng mạng Wi-Fi**.
 
----
+## 2. Cơ sở dữ liệu (MongoDB Atlas)
 
-## 2. Chuẩn bị cơ sở dữ liệu (MongoDB Atlas)
-
-1. Tạo tài khoản tại [mongodb.com/atlas](https://www.mongodb.com/atlas) → tạo một **Cluster** miễn phí (M0).
-2. Vào **Database Access** → tạo user/mật khẩu cho database.
-3. Vào **Network Access** → **Add IP Address** → thêm `0.0.0.0/0` (cho phép mọi IP — chỉ dùng khi học tập/demo).
-4. Bấm **Connect → Drivers** để lấy chuỗi kết nối, dạng:
+1. Tạo một **Cluster** miễn phí (M0) tại [mongodb.com/atlas](https://www.mongodb.com/atlas).
+2. **Database Access** → tạo user/mật khẩu.
+3. **Network Access** → thêm `0.0.0.0/0` (chỉ dùng khi học tập/demo).
+4. **Connect → Drivers** → lấy chuỗi kết nối, giữ nguyên tên database **`Food`**:
    ```
    mongodb+srv://<user>:<password>@<cluster>.mongodb.net/Food?retryWrites=true&w=majority
    ```
-   > Lưu ý tên database là **`Food`** (đặt ngay sau `.net/`). Giữ nguyên cho khớp với code.
 
----
-
-## 3. Cài đặt Backend (API)
+## 3. Backend
 
 ```bash
 cd backend
 npm install
+cp .env.example .env        # Windows: copy .env.example .env
 ```
 
-Tạo file cấu hình `.env` từ mẫu:
+Điền `backend/.env` — bắt buộc 2 biến:
+
+```
+MONGO_URI=<chuỗi kết nối Atlas ở mục 2>
+JWT_SECRET=<chuỗi ngẫu nhiên dài>
+```
+
+> Các biến khác (`PORT`, `ALLOWED_ORIGINS`, `GOOGLE_MAPS_API_KEY`…) để trống là chạy được khi dev.
+
+Chạy `npm run dev` → log hiện `Server listening on port 5000`. Kiểm tra: `http://localhost:5000/health`.
+
+## 4. Nạp dữ liệu mẫu
 
 ```bash
-cp .env.example .env      # Windows PowerShell: copy .env.example .env
+cd backend && node scripts/seed.js
 ```
 
-Mở `backend/.env` và điền:
-
-| Biến | Bắt buộc | Ý nghĩa |
-|------|:--------:|---------|
-| `PORT` | | Cổng backend (mặc định `5000`). |
-| `NODE_ENV` | | `development` khi chạy local. |
-| `MONGO_URI` | ✅ | Chuỗi kết nối Atlas ở mục 2. |
-| `JWT_SECRET` | ✅ | Chuỗi ngẫu nhiên dài để ký token. Sinh bằng `openssl rand -hex 64`. |
-| `ALLOWED_ORIGINS` | | Danh sách origin cho phép gọi API, phân tách bằng dấu phẩy. **Để trống** khi dev → cho phép tất cả. |
-| `GOOGLE_MAPS_API_KEY` | | Khoá Google Distance Matrix để tính quãng đường thực tế. **Để trống** → tự dùng công thức Haversine (đường chim bay). |
-
-Chạy backend:
-
-```bash
-npm run dev     # nodemon, tự reload khi sửa code
-# hoặc
-npm start       # chạy thường
-```
-
-Kiểm tra thành công:
-- Log hiện `Server listening on port 5000`.
-- Mở trình duyệt vào `http://localhost:5000/health` → trả về `{"status":"ok",...}`.
-
-> **API gốc:** `http://localhost:5000/api` · **Ảnh upload:** `http://localhost:5000/uploads` · **Real-time (chat/thông báo):** Socket.IO cùng cổng `5000`.
-> Backend tự chạy các tác vụ định kỳ (hết hạn đơn, tự xác nhận, xử lý TNV không tới) — không cần thao tác thêm.
-
----
-
-## 4. Nạp dữ liệu mẫu (seed)
-
-Để có sẵn tài khoản, đơn quyên góp, yêu cầu, hội thoại… cho demo:
-
-```bash
-cd backend
-node scripts/seed.js
-```
-
-Script **idempotent** (chạy lại nhiều lần không nhân đôi), chỉ tác động tới các tài khoản demo. Sau khi chạy sẽ in danh sách tài khoản và mật khẩu.
-
-**Tài khoản demo** (mật khẩu chung: `123456`):
+Tài khoản demo (mật khẩu chung `123456`):
 
 | Vai trò | Số điện thoại |
 |---------|---------------|
@@ -114,131 +64,43 @@ Script **idempotent** (chạy lại nhiều lần không nhân đôi), chỉ tá
 | Người nhận (Receiver) | `0906200001` → `0906200010` |
 | Tình nguyện viên (Volunteer) | `0907300001` → `0907300010` |
 
----
-
-## 5. Cài đặt Admin Web (trang quản trị)
+## 5. Admin Web
 
 ```bash
 cd adminWeb
 npm install
-cp .env.example .env       # Windows: copy .env.example .env
+cp .env.example .env        # Windows: copy .env.example .env
+npm run dev                 # http://localhost:5173
 ```
 
-File `adminWeb/.env`:
+File `adminWeb/.env`: `VITE_API_URL=http://localhost:5000/api`. Đăng nhập bằng Admin `0900000001` / `123456`.
 
-```
-VITE_API_URL=http://localhost:5000/api
-```
-
-Chạy:
-
-```bash
-npm run dev        # mở http://localhost:5173
-```
-
-Đăng nhập bằng tài khoản **Admin** `0900000001` / `123456`.
-
-Build bản tĩnh để triển khai:
-
-```bash
-npm run build      # xuất ra thư mục dist/
-npm run preview    # xem thử bản build
-```
-
----
-
-## 6. Cài đặt Mobile App (Expo)
+## 6. Mobile App (Expo)
 
 ```bash
 cd mobileApp/Food
 npm install
 ```
 
-Tạo file `mobileApp/Food/.env` với địa chỉ API trỏ về **IP LAN của máy chạy backend** (không dùng `localhost` vì điện thoại không hiểu):
-
-```
-EXPO_PUBLIC_API_URL=http://<IP_LAN_MÁY_BACKEND>:5000/api
-```
-
-Lấy IP LAN trên Windows bằng lệnh `ipconfig` → dòng **IPv4 Address** (ví dụ `192.168.1.10`). Khi đó:
+Tạo `mobileApp/Food/.env` trỏ về **IP LAN của máy backend** (không dùng `localhost`):
 
 ```
 EXPO_PUBLIC_API_URL=http://192.168.1.10:5000/api
 ```
 
-Chạy:
+> Lấy IP LAN bằng `ipconfig` → dòng **IPv4 Address**.
 
-```bash
-npx expo start
-```
+Chạy `npx expo start`, quét mã QR bằng **Expo Go** (hoặc nhấn `a` / `i` cho emulator).
 
-Quét mã QR bằng **Expo Go**, hoặc nhấn `a` (Android emulator) / `i` (iOS simulator).
-
-> **Lưu ý quan trọng:**
-> - Điện thoại và máy backend phải **cùng mạng Wi-Fi**; mở **firewall** cho cổng `5000` trên máy backend.
-> - App sử dụng các module gốc (bản đồ `react-native-maps`, thông báo đẩy, chọn ngày giờ…) và bật **New Architecture** + `expo-dev-client`. Một số tính năng (đặc biệt là **bản đồ**) **không chạy đầy đủ trên Expo Go**. Để chạy đầy đủ, hãy tạo **development build**:
->   ```bash
->   npx expo run:android      # cần Android Studio
->   npx expo run:ios          # cần Xcode (macOS)
->   ```
-
----
+> Bản đồ và một số module gốc không chạy đầy đủ trên Expo Go. Để chạy đầy đủ, tạo development build: `npx expo run:android` (cần Android Studio) hoặc `npx expo run:ios` (cần Xcode).
 
 ## 7. Chạy bằng Docker (tùy chọn)
 
-Cách này dựng **Backend + Admin Web** trong container (CSDL vẫn dùng Atlas). Mobile App vẫn chạy thủ công như mục 6.
-
-1. Đảm bảo đã có `backend/.env` (mục 3) — Docker đọc trực tiếp file này.
-2. Ở thư mục gốc, tạo `.env`:
-   ```bash
-   cp .env.example .env       # Windows: copy .env.example .env
-   ```
-   Nội dung mặc định: `ADMIN_API_URL=http://localhost:5000/api`.
-3. Dựng và chạy:
-   ```bash
-   docker compose up --build -d
-   ```
-
-Kết quả:
-- Backend: `http://localhost:5000`
-- Admin Web: `http://localhost:8080`
-
-Dừng:
+Dựng Backend + Admin Web trong container (CSDL vẫn dùng Atlas; cần `backend/.env` ở mục 3):
 
 ```bash
-docker compose down
+cp .env.example .env        # thư mục gốc; Windows: copy .env.example .env
+docker compose up --build -d
 ```
 
----
-
-## 8. Xử lý sự cố thường gặp
-
-| Triệu chứng | Nguyên nhân & cách xử lý |
-|-------------|--------------------------|
-| Backend không kết nối được DB | Sai `MONGO_URI`; chưa mở IP trong **Network Access** của Atlas; sai user/mật khẩu. |
-| Admin Web gọi API lỗi CORS | Khi dev nên **để trống** `ALLOWED_ORIGINS` trong `backend/.env`, hoặc thêm `http://localhost:5173`. |
-| Admin Web không tải dữ liệu | Sai `VITE_API_URL`; backend chưa chạy. Sau khi sửa `.env` phải **khởi động lại** `npm run dev`. |
-| Mobile App không gọi được API | `EXPO_PUBLIC_API_URL` đang để `localhost`; điện thoại khác mạng; firewall chặn cổng `5000`. Dùng IP LAN và cùng Wi-Fi. |
-| Bản đồ trên mobile trắng/không hiện | Đang chạy trên Expo Go — cần **development build** (mục 6). |
-| Đăng nhập không được | Chưa chạy seed (mục 4), hoặc nhập sai SĐT/mật khẩu (`123456`). |
-| Sửa `.env` nhưng không có tác dụng | Mọi thay đổi `.env` đều cần **khởi động lại** tiến trình tương ứng. |
-
----
-
-## 9. Tóm tắt lệnh nhanh
-
-```bash
-# 1) Backend
-cd backend && npm install && cp .env.example .env   # rồi điền MONGO_URI, JWT_SECRET
-node scripts/seed.js                                # nạp dữ liệu demo
-npm run dev
-
-# 2) Admin Web (cửa sổ terminal khác)
-cd adminWeb && npm install && cp .env.example .env
-npm run dev                                         # http://localhost:5173
-
-# 3) Mobile App (cửa sổ terminal khác)
-cd mobileApp/Food && npm install
-# tạo .env: EXPO_PUBLIC_API_URL=http://<IP_LAN>:5000/api
-npx expo start
-```
+Backend `http://localhost:5000` · Admin Web `http://localhost:8080`. Dừng: `docker compose down`.
