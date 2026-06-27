@@ -12,7 +12,30 @@ Cơ sở dữ liệu dùng **MongoDB Atlas** (đám mây), không cần cài Mon
 
 ---
 
-# Hướng dẫn cài đặt
+# Bản đã triển khai (dùng ngay — không cần cài đặt)
+
+Hệ thống đã chạy sẵn trên cloud (Railway). Để chấm/demo nhanh, **không cần** cài MongoDB hay dựng server — chỉ cần truy cập:
+
+| Thành phần | Truy cập |
+|------------|----------|
+| **Admin Web** | https://adminweb-production-ba29.up.railway.app/login |
+| **Backend API** | https://doan-production-de5f.up.railway.app/api (kiểm tra: `/health`) |
+| **Mobile App (Android)** | Cài file APK qua bản build nội bộ EAS — mở [link cài đặt](https://expo.dev/accounts/maihuylong102/projects/Food/builds/558f3e9f-3330-4325-a084-4a9ba6ac293e) rồi quét mã QR / bấm tải trên trang đó |
+
+**Tài khoản demo** (mật khẩu chung `123456`):
+
+| Vai trò | Số điện thoại |
+|---------|---------------|
+| Quản trị viên (Admin) | `0900000001` |
+| Người quyên góp (Donor) | `0905100001` → `0905100010` |
+| Người nhận (Receiver) | `0906200001` → `0906200010` |
+| Tình nguyện viên (Volunteer) | `0907300001` → `0907300010` |
+
+> Admin Web đăng nhập bằng tài khoản **Admin**; app di động đăng nhập bằng Donor / Receiver / Volunteer.
+
+---
+
+# Cài đặt cục bộ (cho nhà phát triển)
 
 ## 1. Yêu cầu
 
@@ -55,14 +78,7 @@ Chạy `npm run dev` → log hiện `Server listening on port 5000`. Kiểm tra:
 cd backend && node scripts/seed.js
 ```
 
-Tài khoản demo (mật khẩu chung `123456`):
-
-| Vai trò | Số điện thoại |
-|---------|---------------|
-| Quản trị viên (Admin) | `0900000001` |
-| Người quyên góp (Donor) | `0905100001` → `0905100010` |
-| Người nhận (Receiver) | `0906200001` → `0906200010` |
-| Tình nguyện viên (Volunteer) | `0907300001` → `0907300010` |
+Script tạo các tài khoản demo (xem bảng ở mục **Bản đã triển khai**, mật khẩu chung `123456`), idempotent — chạy lại không nhân đôi.
 
 ## 5. Admin Web
 
