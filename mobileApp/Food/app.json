@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Food",
+    "name": "Food 4 life",
     "slug": "Food",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/avatarApp.png",
+    "icon": "./assets/images/icon-1024.png",
     "scheme": "food",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,10 +14,8 @@
     "android": {
       "package": "com.yourname.foodapp",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/avatarApp.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#fdfdfd",
+        "foregroundImage": "./assets/images/adaptive-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
