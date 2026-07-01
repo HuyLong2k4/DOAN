@@ -28,7 +28,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Healthcheck cho Docker / load balancer
+// Healthcheck cho Docker
 app.get('/health', (_, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
 
 // ========== Routes ==========
@@ -109,7 +109,7 @@ const runNoShowSweep = () => {
     .catch((err) => console.error('[no-show-cron] error:', err?.message || err));
 };
 
-// Chạy lần đầu sau 60s (đợi DB connect ổn định).
+
 setTimeout(runExpireSweep, 60 * 1000);
 setTimeout(runAutoConfirmSweep, 90 * 1000);
 setTimeout(runNoShowSweep, 120 * 1000);

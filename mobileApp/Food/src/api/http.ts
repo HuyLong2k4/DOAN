@@ -15,7 +15,6 @@ http.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // DEBUG: log để soi token có truyền không. Xoá sau khi xác định lỗi.
   if (__DEV__) {
     console.log(
       `[http] ${(config.method || 'GET').toUpperCase()} ${config.baseURL}${config.url} — token=${token ? token.slice(0, 12) + '...' : 'NULL'}`,

@@ -83,7 +83,7 @@ class FoodDonationService {
         return queries.getReceiverTracking(donationId, receiverId);
     }
 
-    // ── Cron tasks ────────────────────────────────────────────────────────
+    // Cron tasks: đơn quá hạn
     static expireOverdueDonations() {
         return maintenance.expireOverdueDonations();
     }
