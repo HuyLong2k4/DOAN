@@ -25,9 +25,10 @@ import type {
   ReceiverFoodRequest,
 } from './_components/types';
 
-const FAQS = [
-  { q: 'Who will pick up the food?' },
-  { q: 'Can we perform one-time donations?' },
+const FAQS: { q: TranslationKey; a: TranslationKey }[] = [
+  { q: 'help.q1', a: 'help.a1' },
+  { q: 'help.q2', a: 'help.a2' },
+  { q: 'help.q3', a: 'help.a3' },
 ];
 
 // Volunteer đã thực sự nhận đơn (để donor biết "đang chờ tìm" vs "volunteer đang đến").
@@ -57,7 +58,7 @@ export default function HomeScreen() {
   const { t }     = useI18n();
 
   const [activeTab, setActiveTab]         = useState<'my' | 'requests'>('my');
-  const [openFaq, setOpenFaq]             = useState<number | null>(null);
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [donations, setDonations]         = useState<DonorDonation[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
@@ -576,12 +577,29 @@ export default function HomeScreen() {
 
         {/* ── FAQs ── */}
         <Text style={styles.sectionTitle}>{t('donor.faq.title')}</Text>
-        {FAQS.map((_faq, i) => (
-          <TouchableOpacity key={i} style={styles.faqItem} onPress={() => setOpenFaq(openFaq === i ? null : i)} activeOpacity={0.7}>
-            <Text style={styles.faqQ}>{i === 0 ? t('donor.faq.pickup') : t('donor.faq.oneTime')}</Text>
-            <Ionicons name={openFaq === i ? 'chevron-up' : 'chevron-down'} size={20} color="#666" />
-          </TouchableOpacity>
-        ))}
+        <View style={styles.card}>
+                  {FAQS.map((item, idx) => {
+                    const open = openIdx === idx;
+                    const isLast = idx === FAQS.length - 1;
+                    return (
+                      <View key={item.q} style={[styles.faqItem, isLast && styles.faqItemLast]}>
+                        <TouchableOpacity
+                          style={styles.faqHead}
+                          onPress={() => setOpenIdx(open ? null : idx)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.faqQ}>{t(item.q)}</Text>
+                          <Ionicons
+                            name={open ? 'chevron-up' : 'chevron-down'}
+                            size={18}
+                            color="#666"
+                          />
+                        </TouchableOpacity>
+                        {open && <Text style={styles.faqA}>{t(item.a)}</Text>}
+                      </View>
+                    );
+                  })}
+                </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -738,4 +756,8 @@ const styles = StyleSheet.create({
   sectionTitle:    { fontSize: 15, fontWeight: '700', color: '#111', paddingHorizontal: 18, marginTop: 8 },
   faqItem:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.surface, marginHorizontal: 18, marginBottom: 8, borderRadius: r.md, paddingHorizontal: 14, paddingVertical: 16, borderWidth: 1, borderColor: c.border },
   faqQ:            { fontSize: 14, color: '#111', flex: 1, marginRight: 8 },
+  card:            { backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#EEE', overflow: 'hidden' },
+  faqHead:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  faqItemLast:      { borderBottomWidth: 0 },
+  faqA:             { fontSize: 13, color: '#555', lineHeight: 19, marginTop: 8 }
 });

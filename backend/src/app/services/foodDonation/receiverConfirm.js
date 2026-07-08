@@ -1,16 +1,3 @@
-/**
- * Receiver xác nhận đã nhận hàng (VIA_AGENT).
- *
- * Trước đây volunteer tự `markDelivered` → status COMPLETED + cộng điểm. Vấn đề:
- *   volunteer có thể fake "đã giao" mà chưa giao. Giờ flow chia 2 bước:
- *
- *   1. Volunteer markDelivered → delivery.status = AWAITING_CONFIRMATION
- *      (donation vẫn PICKED_UP, chưa cộng điểm)
- *   2. Receiver confirmDeliveryReceived → delivery.status = DELIVERED,
- *      donation.status = COMPLETED, cộng điểm donor + volunteer
- *   3. Cron auto-confirm sau 24h nếu receiver không phản hồi
- */
-
 const FoodDonation = require('../../models/foodDonationModel');
 const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');

@@ -1,15 +1,3 @@
-/**
- * Distance helpers — ước lượng khoảng cách hai tầng + toạ độ viewer.
- *
- *  - Tầng chính:    Google Distance Matrix (quãng đường đường bộ thực tế) khi có
- *                   GOOGLE_MAPS_API_KEY.
- *  - Tầng dự phòng: công thức Haversine (đường chim bay) khi không có khoá,
- *                   API lỗi, timeout hoặc mất mạng.
- *
- * Kết quả đường bộ được cache in-memory (TTL 10 phút, khoá là cặp toạ độ đã làm
- * tròn ~111 m) để nhiều người ở gần nhau dùng chung, giảm mạnh số lượt gọi API.
- */
-
 const DonorProfile = require('../../models/donorProfileModel');
 const ReceiverProfile = require('../../models/receiverProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
@@ -18,8 +6,7 @@ function toRad(value) {
     return (value * Math.PI) / 180;
 }
 
-// (0,0) là default lúc seed → Vịnh Guinea, không phải vị trí thật. Reject để
-// tránh tính khoảng cách sai hàng nghìn km.
+// (0,0) là default lúc seed → Vịnh Guinea, không phải vị trí thật.
 function isValidCoord(lat, lon) {
     if (lat == null || lon == null) return false;
     if (typeof lat !== 'number' || typeof lon !== 'number') return false;
@@ -29,9 +16,7 @@ function isValidCoord(lat, lon) {
     return true;
 }
 
-/**
- * Haversine — khoảng cách đường chim bay (km).
- */
+// Haversine
 function distanceKm(lat1, lon1, lat2, lon2) {
     const earthRadiusKm = 6371;
     const dLat = toRad(lat2 - lat1);
@@ -43,15 +28,14 @@ function distanceKm(lat1, lon1, lat2, lon2) {
     return earthRadiusKm * c;
 }
 
-// ── Tầng chính: Google Distance Matrix (đường bộ) + cache ────────────────────
-
+// Google Distance Matrix + cache 
 const DISTANCE_MATRIX_ENDPOINT = 'https://maps.googleapis.com/maps/api/distancematrix/json';
-const ROAD_CACHE_TTL_MS = 10 * 60 * 1000; // 10 phút
+const ROAD_CACHE_TTL_MS = 10 * 60 * 1000;
 const ROAD_API_TIMEOUT_MS = 4000;
-const roadCache = new Map(); // key -> { km, expires }
+// key -> { km, expires }
+const roadCache = new Map();
 
-// Làm tròn ~111 m (3 chữ số thập phân). Nhờ làm tròn, các điểm rất gần nhau cùng
-// trỏ về một khoá cache; khi đổi địa chỉ thì khoá đổi theo nên tự hết hiệu lực.
+// Làm tròn ~111 m (3 chữ số thập phân).
 function roundCoord(value) {
     return Math.round(value * 1000) / 1000;
 }
@@ -60,10 +44,6 @@ function roadCacheKey(lat1, lon1, lat2, lon2) {
     return `${roundCoord(lat1)},${roundCoord(lon1)}|${roundCoord(lat2)},${roundCoord(lon2)}`;
 }
 
-/**
- * Khoảng cách hai tầng có suy giảm an toàn (km). Luôn trả về một giá trị hợp lệ
- * nếu toạ độ hợp lệ: ưu tiên đường bộ, hỏng thì tự quay về Haversine.
- */
 async function roadDistanceKm(lat1, lon1, lat2, lon2) {
     if (!isValidCoord(lat1, lon1) || !isValidCoord(lat2, lon2)) return null;
 
@@ -98,16 +78,13 @@ async function roadDistanceKm(lat1, lon1, lat2, lon2) {
         roadCache.set(key, { km, expires: Date.now() + ROAD_CACHE_TTL_MS });
         return km;
     } catch (err) {
-        // Mất mạng / timeout / lỗi API → suy giảm an toàn về Haversine.
         return fallback;
     } finally {
         clearTimeout(timer);
     }
 }
 
-/**
- * Lấy toạ độ của viewer (donor / receiver / volunteer) từ profile.
- */
+// Lấy toạ độ của user từ profile.
 async function getViewerLocation(viewer = null) {
     if (!viewer?.id || !viewer?.role) return null;
 

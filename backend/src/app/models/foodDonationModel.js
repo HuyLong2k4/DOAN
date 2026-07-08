@@ -1,22 +1,10 @@
 const mongoose = require('mongoose');
 
 const FOOD_TYPE       = ['COOKED', 'RAW', 'FROZEN', 'PACKAGED'];
-// Điều kiện bảo quản khuyến nghị do donor khai báo, giúp receiver/volunteer
-// nắm yêu cầu nhiệt độ khi lấy/giao, giảm rủi ro mất an toàn thực phẩm.
 const STORAGE_CONDITION = ['ROOM', 'COOL', 'FROZEN'];
-// ROOM   : Nhiệt độ thường
-// COOL   : Bảo quản mát (ngăn mát tủ lạnh)
-// FROZEN : Đông lạnh
 const DONATION_STATUS = ['PENDING', 'ACCEPTED', 'PICKED_UP', 'COMPLETED', 'EXPIRED', 'CANCELLED'];
-// PENDING   : Đã đăng, chờ ghép cặp Receiver / Volunteer
-// ACCEPTED  : Receiver hoặc Volunteer đã nhận đơn, sắp đến lấy
-// PICKED_UP : Volunteer đã lấy hàng, đang trên đường giao
-// COMPLETED : Thức ăn đến tay người nhận, Donor được cộng điểm
-// EXPIRED   : Quá expiration_datetime mà chưa được nhận
-// CANCELLED : Bị huỷ (xem cancel_reason để biết do ai / lý do gì)
 
-// Lý do huỷ — chỉ có giá trị khi status = CANCELLED. Giúp phân biệt no-show với
-// huỷ thường và để admin nắm được tình huống tại trang quản lý.
+// Lý do huỷ — chỉ có giá trị khi status = CANCELLED.
 const CANCEL_REASON = [
     'DONOR_CANCELLED',        // Donor tự huỷ đơn khi đang chờ
     'DONOR_RELEASED',         // Donor giải phóng receiver sau 30' chưa lấy (đơn từ food request)
@@ -30,8 +18,7 @@ const FoodDonationSchema = new mongoose.Schema({
     donor_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     volunteer_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     selected_receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    // Lúc receiver connect (set selected_receiver_id). Dùng làm mốc 30 phút
-    // để donor được quyền release receiver nếu chưa pickup.
+    
     selected_at: { type: Date, default: null },
     delivery_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Delivery', default: null },
     delivery_type: { type: String, default: null },
@@ -45,7 +32,6 @@ const FoodDonationSchema = new mongoose.Schema({
     quantity: { type: Number, required: true, min: 1 },
     unit:     { type: String, default: 'portion' },
 
-    // Danh sách URL ảnh
     images: [{ type: String }],
 
     expiration_datetime: { type: Date, required: true },
@@ -60,13 +46,11 @@ const FoodDonationSchema = new mongoose.Schema({
 });
 
 // Feed của receiver/volunteer lọc theo status rồi sắp theo thời gian đăng mới nhất
-// (queries.js: find({ status: {$in:[...]} }).sort({ createdAt: -1 })).
 FoodDonationSchema.index(
     { status: 1, createdAt: -1 },
     { name: 'idx_status_created_at' },
 );
 // Cron dọn đơn quá hạn quét status='PENDING' kèm expiration_datetime < now
-// (maintenance.js). Chỉ mục ghép giúp lọc nhanh các đơn cần chuyển EXPIRED.
 FoodDonationSchema.index(
     { status: 1, expiration_datetime: 1 },
     { name: 'idx_status_expiration' },

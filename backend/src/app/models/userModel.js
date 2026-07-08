@@ -22,13 +22,10 @@ const UserSchema = new mongoose.Schema({
     // Expo Push Token (ExponentPushToken[...]). Để rỗng khi user chưa cấp quyền hoặc đã logout.
     push_token: { type: String, default: '' },
 
-    // Ngôn ngữ ưa thích — dùng để render thông báo (in-app + push) đúng ngôn ngữ
-    // người nhận. App đồng bộ giá trị này khi đăng ký push-token / khi đổi ngôn ngữ.
     language: { type: String, enum: ['vi', 'en'], default: 'vi' },
-
-    // Tăng mỗi lần logout / đổi mật khẩu để vô hiệu hoá toàn bộ JWT cũ.
+    
     token_version: { type: Number, default: 0 },
-    // Cho phép admin khoá tài khoản mà không xoá hẳn dữ liệu.
+
     is_active: { type: Boolean, default: true },
 }, {
     timestamps: true,

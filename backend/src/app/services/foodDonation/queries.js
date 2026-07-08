@@ -1,10 +1,4 @@
-/**
- * Read queries — list donations, my donations, tracking, available volunteers,
- * volunteer summary, my deliveries.
- *
- * Tách khỏi action services vì chỉ đọc (không thay đổi state) và logic enrich
- * (distance, profiles, aggregate) khá dài.
- */
+// Read queries — list donations, my donations, tracking, available volunteers, volunteer summary, my deliveries.
 
 const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');

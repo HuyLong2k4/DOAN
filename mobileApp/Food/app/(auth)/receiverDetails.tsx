@@ -177,10 +177,10 @@ export default function ReceiverDetails() {
             <View style={styles.orLine} />
           </View>
           <TouchableOpacity onPress={() => setMapVisible(true)}>
-            <Text style={styles.mapLink}>📍 {t('auth.details.pinLocation')}</Text>
+            <Text style={styles.mapLink}>{t('auth.details.pinLocation')}</Text>
           </TouchableOpacity>
           {locationPinned && (
-            <Text style={styles.pinnedNote}>✅ {t('auth.details.locationPinned')}</Text>
+            <Text style={styles.pinnedNote}>{t('auth.details.locationPinned')}</Text>
           )}
 
           {err ? <Text style={styles.error}>{err}</Text> : null}

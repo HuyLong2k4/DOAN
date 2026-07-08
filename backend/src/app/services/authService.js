@@ -6,11 +6,10 @@ const { generateOtp, hashOtp, compareOtp } = require('../utils/otpUtil');
 
 const OTP_EXPIRY_MINUTES = 10;
 const MAX_OTP_ATTEMPTS   = 5;
-
+ 
 class AuthService {
 
-    // ─────────────────────────────── HELPERS ───────────────────────────────
-
+    // HELPERS
     static _makeJwt(user, expiresIn = '7d') {
         return jwt.sign(
             {
@@ -44,7 +43,6 @@ class AuthService {
 
     /**
      * Tạo OTP mới, xóa OTP cũ chưa dùng cùng mục đích, lưu DB và log ra console.
-     * TODO: Thay console.log bằng SMS service (Twilio / Firebase Phone Auth) ở production.
      */
     static async _sendOtp(phone_number, purpose) {
         await OtpSession.deleteMany({ phone_number, purpose, used_at: null });
@@ -55,12 +53,11 @@ class AuthService {
 
         await OtpSession.create({ phone_number, purpose, otp_hash, expires_at });
 
-        // DEV ONLY — xóa dòng này khi tích hợp SMS service thật
+        // in ra DEV 
         console.log(`\n[OTP][${purpose}] ${phone_number}  →  ${otp}  (hết hạn sau ${OTP_EXPIRY_MINUTES} phút)\n`);
     }
 
-    // ─────────────────────────────── SIGN UP ───────────────────────────────
-
+    // SIGN UP
     /**
      * UI: Sign Up Page (phone_number + password + confirm_password)
      * Tạo user mới → gửi OTP xác minh số điện thoại.
@@ -73,7 +70,6 @@ class AuthService {
             if (existing.is_phone_verified) {
                 throw this._error('Số điện thoại đã được đăng ký.', 409);
             }
-            // Chưa verified → cập nhật mật khẩu mới và gửi lại OTP
             const password_hash = await bcrypt.hash(password, 10);
             await User.findByIdAndUpdate(existing._id, {
                 password: password_hash,
@@ -88,14 +84,14 @@ class AuthService {
             phone_number,
             password: password_hash,
             full_name: full_name ? String(full_name).trim() : null,
-            onboarding_step: 1,   // Bước tiếp theo: xác minh OTP
+            onboarding_step: 1,
         });
 
         await this._sendOtp(phone_number, 'SIGNUP');
         return { message: 'OTP đã được gửi.' };
     }
 
-    // ─────────────────────────────── VERIFY OTP ────────────────────────────
+    // VERIFY OTP 
 
     /**
      * UI: OTP Screen
@@ -152,7 +148,7 @@ class AuthService {
         return { message: 'OTP hợp lệ.' };
     }
 
-    // ─────────────────────────────── RESEND OTP ────────────────────────────
+    // RESEND OTP 
 
     /**
      * UI: "Resend code" link trên màn hình OTP
@@ -165,7 +161,7 @@ class AuthService {
         return { message: 'OTP đã được gửi lại.' };
     }
 
-    // ─────────────────────────────── LOGIN ─────────────────────────────────
+    //LOGIN 
 
     /**
      * UI: Login Screen (phone_number hoặc email + password)
@@ -193,11 +189,7 @@ class AuthService {
         };
     }
 
-    // ─────────────────────────────── FORGOT PASSWORD ───────────────────────
-
-    /**
-     * UI: Forgot Password Screen (nhập phone/email → nhận OTP)
-     */
+    // FORGOT PASSWORD 
     static async forgotPassword(identifier) {
         const user = await User.findOne({
             $or: [{ phone_number: identifier }, { email: identifier }],
@@ -211,12 +203,7 @@ class AuthService {
         return { message: `OTP đã được gửi đến ${masked}.`, phone_number: user.phone_number };
     }
 
-    // ─────────────────────────────── RESET PASSWORD ────────────────────────
-
-    /**
-     * UI: Reset Password Screen (nhập mật khẩu mới + xác nhận)
-     * Yêu cầu reset_token từ bước verifyOtp (purpose=RESET_PASSWORD).
-     */
+    // RESET PASSWORD
     static async resetPassword(reset_token, new_password) {
         let payload;
         try {
@@ -241,11 +228,7 @@ class AuthService {
         return { message: 'Mật khẩu đã được đặt lại thành công.' };
     }
 
-    // ─────────────────────────────── SELECT ROLE ───────────────────────────
-
-    /**
-     * UI: Select Profile Screen (Donor / Receiver / Volunteer)
-     */
+    // SELECT ROLE
     static async selectRole(userId, role) {
         const VALID = ['DONOR', 'RECEIVER', 'VOLUNTEER'];
         if (!VALID.includes(role)) throw this._error('Role không hợp lệ.', 400);
@@ -260,7 +243,7 @@ class AuthService {
         return { message: 'Role đã được cập nhật.', user: this._safeUser(user) };
     }
 
-    // ─────────────────────────────── LOGOUT ────────────────────────────────
+    // LOGOUT
 
     static async logout(userId) {
         // Tăng token_version để vô hiệu hoá tất cả JWT đã phát hành cho user này.

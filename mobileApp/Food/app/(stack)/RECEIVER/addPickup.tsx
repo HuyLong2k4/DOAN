@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   optionBtnActive: { backgroundColor: roleUi.colors.primary },
-  optionText: { fontSize: 18, color: '#222', fontWeight: '500' },
+  optionText: { fontSize: 18, color: '#222', fontWeight: '500', textAlign: 'center' }, 
   optionTextActive: { color: '#fff' },
   estimateWrap: {
     borderTopWidth: 1,

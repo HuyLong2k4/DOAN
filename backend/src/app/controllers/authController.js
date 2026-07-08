@@ -65,7 +65,7 @@ class AuthController {
         }
     }
 
-    // ── POST /api/auth/login ───────────────────────────────────────────────
+    // POST /api/auth/login
     static async login(req, res) {
         try {
             const { identifier, password } = req.body;   // identifier = phone_number hoặc email
@@ -81,7 +81,7 @@ class AuthController {
         }
     }
 
-    // ── POST /api/auth/forgot-password ────────────────────────────────────
+    // POST /api/auth/forgot-password
     static async forgotPassword(req, res) {
         try {
             const { identifier } = req.body;  // phone_number hoặc email

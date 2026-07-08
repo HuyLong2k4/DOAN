@@ -23,7 +23,6 @@ const DeliverySchema = new mongoose.Schema({
     delivery_type: { type: String, enum: DELIVERY_TYPE, required: true },
     status:        { type: String, enum: DELIVERY_STATUS, default: 'WAITING_AGENT' },
 
-    // Mã lấy hàng — volunteer dùng để xác nhận với donor
     pickup_code: { type: String, default: null },
     // Chống brute-force mã pickup: đếm số lần nhập sai + thời điểm hết tạm khoá.
     pickup_attempt_count: { type: Number, default: 0 },

@@ -13,7 +13,7 @@ const OtpSessionSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Tự xóa document sau khi hết hạn (TTL index)
+// Tính năng của monDB: Tự xóa document sau khi hết hạn
 OtpSessionSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model('OtpSession', OtpSessionSchema);

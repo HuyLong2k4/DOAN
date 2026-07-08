@@ -1,9 +1,4 @@
-/**
- * Receiver actions: connect donation, chọn delivery type, tự xác nhận khi self-pickup.
- *
- * (Confirm-received cho VIA_AGENT nằm ở `./receiverConfirm.js`.)
- */
-
+//Receiver actions: connect donation, chọn delivery type, tự xác nhận khi self-pickup.
 const FoodDonation = require('../../models/foodDonationModel');
 const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
@@ -33,7 +28,7 @@ async function connectDonationByReceiver(donationId, receiverId) {
 
     if (!donation) {
         throw _error('Đơn quyên góp không tồn tại.', 404);
-    }
+    }    
 
     if (donation.status !== 'PENDING') {
         throw _error('Đơn này không còn khả dụng để connect.');

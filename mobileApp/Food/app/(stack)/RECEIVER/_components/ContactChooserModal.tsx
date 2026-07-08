@@ -24,8 +24,6 @@ type Props = {
 
 /**
  * Modal chọn đối tượng liên hệ (vd: tình nguyện viên / người tặng) — thay cho
- * Alert.alert native để đồng bộ với design system của app (card bo góc, màu
- * thương hiệu). Bấm nền hoặc nút huỷ để đóng.
  */
 export function ContactChooserModal({ visible, title, message, options, cancelLabel, onClose }: Props) {
   return (
