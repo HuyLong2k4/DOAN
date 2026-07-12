@@ -16,10 +16,16 @@ const CANCEL_REASON = [
 
 const FoodDonationSchema = new mongoose.Schema({
     donor_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    source_donation_id: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodDonation', default: null },
     volunteer_id:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     selected_receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     
     selected_at: { type: Date, default: null },
+    receiver_claim_history: [{
+        _id: false,
+        receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        claimed_at: { type: Date, required: true },
+    }],
     delivery_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Delivery', default: null },
     delivery_type: { type: String, default: null },
 
@@ -59,6 +65,11 @@ FoodDonationSchema.index(
 FoodDonationSchema.index(
     { donor_id: 1, createdAt: -1 },
     { name: 'idx_donor_created_at' },
+);
+// Lịch sử receiver từng nhận đơn, dùng để giới hạn số lần nhận trong một cửa sổ thời gian.
+FoodDonationSchema.index(
+    { 'receiver_claim_history.receiver_id': 1, 'receiver_claim_history.claimed_at': 1 },
+    { name: 'idx_receiver_claim_history' },
 );
 
 module.exports = mongoose.model('FoodDonation', FoodDonationSchema);

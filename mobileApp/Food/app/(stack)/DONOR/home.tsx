@@ -25,11 +25,10 @@ import type {
   ReceiverFoodRequest,
 } from './_components/types';
 
-const FAQS: { q: TranslationKey; a: TranslationKey }[] = [
-  { q: 'help.q1', a: 'help.a1' },
-  { q: 'help.q2', a: 'help.a2' },
-  { q: 'help.q3', a: 'help.a3' },
-];
+const FAQ_ITEMS = [
+  { q: 'receiver.faq.pickup', a: 'receiver.faq.pickupAnswer' },
+  { q: 'receiver.faq.multiple', a: 'receiver.faq.multipleAnswer' },
+] as const;
 
 // Volunteer đã thực sự nhận đơn (để donor biết "đang chờ tìm" vs "volunteer đang đến").
 const VOLUNTEER_ASSIGNED_STATUSES: DeliveryStatus[] = ['AGENT_ASSIGNED', 'ON_THE_WAY', 'AWAITING_CONFIRMATION'];
@@ -62,6 +61,7 @@ export default function HomeScreen() {
   const [donations, setDonations]         = useState<DonorDonation[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [openingChatDonationId, setOpeningChatDonationId] = useState<string | null>(null);
   const [receiverFoodRequests, setReceiverFoodRequests] = useState<ReceiverFoodRequest[]>([]);
   const [acceptingFoodRequestId, setAcceptingFoodRequestId] = useState<string | null>(null);
@@ -576,30 +576,23 @@ export default function HomeScreen() {
         )}
 
         {/* ── FAQs ── */}
-        <Text style={styles.sectionTitle}>{t('donor.faq.title')}</Text>
-        <View style={styles.card}>
-                  {FAQS.map((item, idx) => {
-                    const open = openIdx === idx;
-                    const isLast = idx === FAQS.length - 1;
+        <Text style={styles.sectionTitle}>{t('receiver.faqs')}</Text>
+                  {FAQ_ITEMS.map((faq, index) => {
+                    const expanded = openFaq === index;
                     return (
-                      <View key={item.q} style={[styles.faqItem, isLast && styles.faqItemLast]}>
+                      <View key={faq.q} style={styles.faqItem}>
                         <TouchableOpacity
-                          style={styles.faqHead}
-                          onPress={() => setOpenIdx(open ? null : idx)}
-                          activeOpacity={0.7}
+                          style={styles.faqQuestionRow}
+                          onPress={() => setOpenFaq(expanded ? null : index)}
+                          activeOpacity={0.75}
                         >
-                          <Text style={styles.faqQ}>{t(item.q)}</Text>
-                          <Ionicons
-                            name={open ? 'chevron-up' : 'chevron-down'}
-                            size={18}
-                            color="#666"
-                          />
+                          <Text style={styles.faqQuestion}>{t(faq.q)}</Text>
+                          <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color="#333" />
                         </TouchableOpacity>
-                        {open && <Text style={styles.faqA}>{t(item.a)}</Text>}
+                        {expanded ? <Text style={styles.faqAnswer}>{t(faq.a)}</Text> : null}
                       </View>
                     );
                   })}
-                </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -754,10 +747,28 @@ const styles = StyleSheet.create({
   title:           { fontSize: 16, fontWeight: 600},
   detailView:      { fontSize: 16, color: c.primary},
   sectionTitle:    { fontSize: 15, fontWeight: '700', color: '#111', paddingHorizontal: 18, marginTop: 8 },
-  faqItem:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.surface, marginHorizontal: 18, marginBottom: 8, borderRadius: r.md, paddingHorizontal: 14, paddingVertical: 16, borderWidth: 1, borderColor: c.border },
-  faqQ:            { fontSize: 14, color: '#111', flex: 1, marginRight: 8 },
-  card:            { backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#EEE', overflow: 'hidden' },
-  faqHead:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  faqItemLast:      { borderBottomWidth: 0 },
-  faqA:             { fontSize: 13, color: '#555', lineHeight: 19, marginTop: 8 }
+  faqItem: {
+    backgroundColor: c.surface,
+    borderRadius: r.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  faqQuestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  faqQuestion: { fontSize: 14, color: c.textPrimary, flex: 1, marginRight: 8 },
+  faqAnswer: {
+    fontSize: 13,
+    color: c.textSecondary,
+    lineHeight: 19,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: c.divider,
+  },
 });

@@ -260,7 +260,12 @@ class FoodDonationController {
                 return res.status(403).json({ success: false, message: 'Chỉ Receiver mới có thể connect đơn.' });
             }
 
-            const result = await FoodDonationService.connectDonationByReceiver(req.params.id, req.user.id);
+            const requestedQuantity =
+                req.body?.quantity ??
+                req.body?.requested_quantity ??
+                req.body?.claim_quantity ??
+                null;
+            const result = await FoodDonationService.connectDonationByReceiver(req.params.id, req.user.id, requestedQuantity);
             return res.status(200).json({ success: true, ...result });
         } catch (err) {
             return res.status(err.statusCode || 500).json({ success: false, message: err.message });

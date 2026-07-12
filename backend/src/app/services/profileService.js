@@ -23,6 +23,21 @@ class ProfileService {
         };
     }
 
+    static _profileModelForRole(role) {
+        if (role === 'DONOR') return DonorProfile;
+        if (role === 'RECEIVER') return ReceiverProfile;
+        if (role === 'VOLUNTEER') return VolunteerProfile;
+        return null;
+    }
+
+    static _isValidCoord(lat, lon) {
+        if (typeof lat !== 'number' || typeof lon !== 'number') return false;
+        if (Number.isNaN(lat) || Number.isNaN(lon)) return false;
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return false;
+        if (Math.abs(lat) < 1e-6 && Math.abs(lon) < 1e-6) return false;
+        return true;
+    }
+
     // ──────────────────────────────────────────────────────────────────────
     // UI: Donor Details — Restaurant / Bakery / Individual tab
     // POST /api/profile/donor
@@ -187,6 +202,37 @@ class ProfileService {
         // hỏng mọi nơi client dùng user.id (vd. viewerId màn chat, PATCH /users/:id).
         // Giữ nguyên toàn bộ field khác.
         return { user: { ...user, id: String(user._id) }, profile };
+    }
+
+    static async updateMyLocation(userId, role, data = {}) {
+        const ProfileModel = this._profileModelForRole(role);
+        if (!ProfileModel) {
+            throw this._error('Vai trò không hợp lệ.', 400);
+        }
+
+        const latitude = Number(data.latitude);
+        const longitude = Number(data.longitude);
+        if (!this._isValidCoord(latitude, longitude)) {
+            throw this._error('Tọa độ không hợp lệ.', 400);
+        }
+
+        const profile = await ProfileModel.findOneAndUpdate(
+            { user_id: userId },
+            {
+                latitude,
+                longitude,
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!profile) {
+            throw this._error('Không tìm thấy hồ sơ người dùng.', 404);
+        }
+
+        return {
+            message: 'Đã cập nhật vị trí.',
+            profile,
+        };
     }
 
     static async toggleActiveStatus(userId) {

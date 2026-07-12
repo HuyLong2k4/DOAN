@@ -19,8 +19,8 @@ export type ReportKey =
   | 'report.failedTitle';
 
 export const reportEn: Record<ReportKey, string> = {
-  'report.button': 'Report violation',
-  'report.modalTitle': 'Report a violation',
+  'report.button': 'Report donation',
+  'report.modalTitle': 'Report donation',
   'report.reasonLabel': 'Reason',
   'report.reason.SPOILED': 'Spoiled / rotten food',
   'report.reason.EXPIRED_UNSAFE': 'Expired / unsafe',
@@ -40,8 +40,8 @@ export const reportEn: Record<ReportKey, string> = {
 };
 
 export const reportVi: Record<ReportKey, string> = {
-  'report.button': 'Báo cáo vi phạm',
-  'report.modalTitle': 'Báo cáo vi phạm',
+  'report.button': 'Báo cáo đơn',
+  'report.modalTitle': 'Báo cáo đơn',
   'report.reasonLabel': 'Lý do',
   'report.reason.SPOILED': 'Thực phẩm hỏng / ôi thiu',
   'report.reason.EXPIRED_UNSAFE': 'Quá hạn / không an toàn',

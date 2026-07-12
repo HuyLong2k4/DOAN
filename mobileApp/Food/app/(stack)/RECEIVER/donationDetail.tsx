@@ -28,6 +28,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { getCurrentGps } from '../../../src/utils/location';
 import { roleUi } from '@/src/theme/roleUi';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
+import ClaimQuantityModal from '../../../src/components/ClaimQuantityModal';
 
 type DonationDetailParams = {
   donationId?: string | string[];
@@ -112,6 +113,7 @@ export default function ReceiverDonationDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [claimQuantityVisible, setClaimQuantityVisible] = useState(false);
   const [openingChat, setOpeningChat] = useState(false);
   const [data, setData] = useState<DonationDetail | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -289,6 +291,34 @@ export default function ReceiverDonationDetailScreen() {
     }
   };
 
+  const connectDonation = async (quantity: number) => {
+    if (!donationId) return;
+
+    try {
+      setConnecting(true);
+      const res = await http.patch(`/food-donations/${donationId}/connect`, { quantity });
+      const connectedDonationId = String(res.data?.donation_id || donationId);
+      const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
+
+      setClaimQuantityVisible(false);
+      Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
+        {
+          text: t('receiver.choosePickup'),
+          onPress: () => {
+            router.push({
+              pathname: '/(stack)/RECEIVER/addPickup',
+              params: { donationId: connectedDonationId, title },
+            } as any);
+          },
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   const onPrimaryAction = async () => {
     if (!donationId) {
       Alert.alert(t('receiver.missingDonationTitle'), t('donationDetail.cannotDetermineMsg'));
@@ -311,27 +341,13 @@ export default function ReceiverDonationDetailScreen() {
       return;
     }
 
-    try {
-      setConnecting(true);
-      const res = await http.patch(`/food-donations/${donationId}/connect`);
-      const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
-
-      Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
-        {
-          text: t('receiver.choosePickup'),
-          onPress: () => {
-            router.push({
-              pathname: '/(stack)/RECEIVER/addPickup',
-              params: { donationId, title },
-            } as any);
-          },
-        },
-      ]);
-    } catch (err: any) {
-      Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
-    } finally {
-      setConnecting(false);
+    const availableQuantity = Math.max(1, Math.floor(Number(data?.quantity ?? 1)));
+    if (availableQuantity > 1) {
+      setClaimQuantityVisible(true);
+      return;
     }
+
+    await connectDonation(1);
   };
 
   const onSubmitReport = async () => {
@@ -542,6 +558,16 @@ export default function ReceiverDonationDetailScreen() {
           </TouchableOpacity>
         ) : null}
       </ScrollView>
+
+      <ClaimQuantityModal
+        visible={claimQuantityVisible}
+        maxQuantity={Number(data?.quantity ?? 1)}
+        unit={data?.unit || t('receiver.portion')}
+        title={title}
+        loading={connecting}
+        onCancel={() => setClaimQuantityVisible(false)}
+        onConfirm={(quantity) => { void connectDonation(quantity); }}
+      />
 
       {/* Fullscreen image viewer */}
       <Modal

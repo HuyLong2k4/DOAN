@@ -10,6 +10,7 @@ const VolunteerProfile = require('../../models/volunteerProfileModel');
 const pickupCodeUtil = require('./pickupCode');
 const { distanceKm } = require('./distance');
 const { awardDonorCompletionPoints } = require('./points');
+const { assertReceiverClaimLimit } = require('./receiverClaimLimit');
 
 // Bán kính ưu tiên thông báo cho volunteer (km). Volunteer xa hơn ngưỡng này
 // sẽ không nhận push để tránh spam — họ vẫn có thể thấy đơn trong list nếu mở app.
@@ -19,9 +20,29 @@ function _error(message, statusCode = 400) {
     return Object.assign(new Error(message), { statusCode });
 }
 
+function _normalizeClaimQuantity(value, availableQuantity) {
+    const available = Number(availableQuantity);
+    if (!Number.isSafeInteger(available) || available < 1) {
+        throw _error('Đơn không hợp lệ: số suất còn lại không đúng.', 400);
+    }
+
+    if (value == null || value === '') return available;
+
+    const quantity = Number(value);
+    if (!Number.isSafeInteger(quantity) || quantity < 1) {
+        throw _error('Số suất muốn nhận phải là số nguyên và >= 1.', 400);
+    }
+
+    if (quantity > available) {
+        throw _error(`Chỉ còn ${available} suất có thể nhận.`, 400);
+    }
+
+    return quantity;
+}
+
 // ── PATCH /api/food-donations/:id/connect ────────────────────────────────────
 // Auto-match: receiver bấm connect → tự được chốt (selected_receiver_id).
-async function connectDonationByReceiver(donationId, receiverId) {
+async function connectDonationByReceiver(donationId, receiverId, requestedQuantity = null) {
     const donation = await FoodDonation.findById(donationId)
         .populate('donor_id', 'full_name')
         .lean();
@@ -34,6 +55,8 @@ async function connectDonationByReceiver(donationId, receiverId) {
         throw _error('Đơn này không còn khả dụng để connect.');
     }
 
+    const claimQuantity = _normalizeClaimQuantity(requestedQuantity, donation.quantity);
+
     if (donation.selected_receiver_id) {
         const selectedId = donation.selected_receiver_id.toString();
         if (selectedId === receiverId.toString()) {
@@ -41,6 +64,10 @@ async function connectDonationByReceiver(donationId, receiverId) {
                 message: 'Bạn đã được chốt cho đơn này. Hãy chọn phương thức nhận hàng.',
                 already_connected: true,
                 auto_approved: true,
+                donation_id: donation._id.toString(),
+                claimed_quantity: donation.quantity,
+                remaining_quantity: 0,
+                split: false,
             };
         }
         throw _error('Đơn này đã được donor chốt người nhận.');
@@ -55,27 +82,90 @@ async function connectDonationByReceiver(donationId, receiverId) {
         throw _error('Bạn không thể connect đơn của chính mình.');
     }
 
-    // Atomic claim — chỉ chốt khi đơn vẫn PENDING & chưa có receiver. Chống race:
-    // hai receiver bấm cùng lúc thì chỉ một người thắng, người kia nhận 409.
-    const claim = await FoodDonation.updateOne(
-        { _id: donationId, status: 'PENDING', selected_receiver_id: null },
-        { $set: { selected_receiver_id: receiverId, selected_at: new Date() } },
-    );
-    if (claim.modifiedCount === 0) {
-        throw _error('Đơn vừa được người khác nhận. Vui lòng chọn đơn khác.', 409);
+    const selectedAt = new Date();
+    await assertReceiverClaimLimit(receiverId, selectedAt, 'Bạn');
+
+    // Claim atomic: nhận toàn bộ thì gán receiver trên đơn hiện tại; nhận một phần
+    // thì giảm quantity đơn gốc và tạo đơn con đã gán receiver cho phần được nhận.
+    let connectedDonation = null;
+    let remainingQuantity = 0;
+    let split = false;
+
+    if (claimQuantity === donation.quantity) {
+        const claim = await FoodDonation.updateOne(
+            { _id: donationId, status: 'PENDING', selected_receiver_id: null },
+            {
+                $set: { selected_receiver_id: receiverId, selected_at: selectedAt },
+                $push: { receiver_claim_history: { receiver_id: receiverId, claimed_at: selectedAt } },
+            },
+        );
+        if (claim.modifiedCount === 0) {
+            throw _error('Đơn vừa được người khác nhận. Vui lòng chọn đơn khác.', 409);
+        }
+        connectedDonation = { ...donation, selected_receiver_id: receiverId, selected_at: selectedAt };
+    } else {
+        const remainingDonation = await FoodDonation.findOneAndUpdate(
+            { _id: donationId, status: 'PENDING', selected_receiver_id: null, quantity: { $gt: claimQuantity } },
+            { $inc: { quantity: -claimQuantity } },
+            { new: true },
+        ).lean();
+
+        if (remainingDonation) {
+            remainingQuantity = remainingDonation.quantity;
+            split = true;
+
+            try {
+                connectedDonation = await FoodDonation.create({
+                    donor_id: donorId,
+                    source_donation_id: donation._id,
+                    selected_receiver_id: receiverId,
+                    selected_at: selectedAt,
+                    receiver_claim_history: [{ receiver_id: receiverId, claimed_at: selectedAt }],
+                    title: donation.title,
+                    description: donation.description || null,
+                    food_type: donation.food_type,
+                    storage_condition: donation.storage_condition || 'ROOM',
+                    quantity: claimQuantity,
+                    unit: donation.unit || 'portion',
+                    images: Array.isArray(donation.images) ? donation.images : [],
+                    expiration_datetime: donation.expiration_datetime,
+                    status: 'PENDING',
+                });
+            } catch (err) {
+                await FoodDonation.updateOne(
+                    { _id: donationId, status: 'PENDING', selected_receiver_id: null },
+                    { $inc: { quantity: claimQuantity } },
+                ).catch(() => {});
+                throw _error('Không thể tách số suất cho đơn này. Vui lòng thử lại.', 500);
+            }
+        } else {
+            const claim = await FoodDonation.updateOne(
+                { _id: donationId, status: 'PENDING', selected_receiver_id: null, quantity: claimQuantity },
+                {
+                    $set: { selected_receiver_id: receiverId, selected_at: selectedAt },
+                    $push: { receiver_claim_history: { receiver_id: receiverId, claimed_at: selectedAt } },
+                },
+            );
+            if (claim.modifiedCount === 0) {
+                throw _error('Số suất còn lại vừa thay đổi. Vui lòng tải lại và chọn lại.', 409);
+            }
+            connectedDonation = { ...donation, quantity: claimQuantity, selected_receiver_id: receiverId, selected_at: selectedAt };
+        }
     }
 
     const receiver = await User.findById(receiverId).select('full_name').lean();
     const receiverName = receiver?.full_name || 'Một receiver';
+
+    const connectedDonationId = connectedDonation._id || donation._id;
 
     await NotificationService.dispatch({
         userIds: donorId,
         key: 'donation.connectedToDonor',
         params: { receiverName, title: donation.title },
         type: 'DONATION_CONNECTED_AUTO',
-        data: { donation_id: donation._id.toString() },
+        data: { donation_id: connectedDonationId.toString(), claimed_quantity: String(claimQuantity) },
         related_entity_type: 'FoodDonation',
-        related_entity_id: donation._id,
+        related_entity_id: connectedDonationId,
     });
 
     await NotificationService.dispatch({
@@ -83,15 +173,20 @@ async function connectDonationByReceiver(donationId, receiverId) {
         key: 'donation.connectApproved',
         params: { title: donation.title },
         type: 'DONATION_CONNECT_APPROVED',
-        data: { donation_id: donation._id.toString() },
+        data: { donation_id: connectedDonationId.toString(), claimed_quantity: String(claimQuantity) },
         related_entity_type: 'FoodDonation',
-        related_entity_id: donation._id,
+        related_entity_id: connectedDonationId,
     });
 
     return {
         message: 'Kết nối thành công. Bạn có thể chọn phương thức nhận ngay.',
         already_connected: false,
         auto_approved: true,
+        donation_id: connectedDonationId.toString(),
+        source_donation_id: split ? donation._id.toString() : null,
+        claimed_quantity: claimQuantity,
+        remaining_quantity: remainingQuantity,
+        split,
     };
 }
 

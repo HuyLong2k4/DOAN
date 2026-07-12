@@ -21,6 +21,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { getCurrentGps } from '../../../src/utils/location';
 import { roleUi } from '@/src/theme/roleUi';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
+import ClaimQuantityModal from '../../../src/components/ClaimQuantityModal';
 
 type TFn = (key: TranslationKey) => string;
 
@@ -72,6 +73,7 @@ export default function ReceiverDonorListScreen() {
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [donors, setDonors] = useState<DonationItem[]>([]);
   const [connectingDonationId, setConnectingDonationId] = useState<string | null>(null);
+  const [claimTarget, setClaimTarget] = useState<DonationItem | null>(null);
 
   const FILTER_OPTIONS: { key: FoodType; label: string }[] = [
     { key: 'COOKED',    label: t('request.cookedFood') },
@@ -155,6 +157,35 @@ export default function ReceiverDonorListScreen() {
     );
   };
 
+  const connectToDonation = useCallback(async (item: DonationItem, quantity: number) => {
+    try {
+      setConnectingDonationId(item._id);
+      const res = await http.patch(`/food-donations/${item._id}/connect`, { quantity });
+      const connectedDonationId = String(res.data?.donation_id || item._id);
+      const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
+
+      setClaimTarget(null);
+      Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
+        {
+          text: t('receiver.choosePickup'),
+          onPress: () => {
+            router.push({
+              pathname: '/(stack)/RECEIVER/addPickup',
+              params: {
+                donationId: connectedDonationId,
+                title: item.title,
+              },
+            } as any);
+          },
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
+    } finally {
+      setConnectingDonationId(null);
+    }
+  }, [router, t]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScreenHeader title={t('donorList.title')} />
@@ -170,9 +201,9 @@ export default function ReceiverDonorListScreen() {
           />
           <Ionicons name="search-outline" size={18} color="#666" />
         </View>
-        <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter((v) => !v)}>
+        {/* <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilter((v) => !v)}>
           <Ionicons name="options-outline" size={20} color="#111" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {showFilter && (
@@ -270,31 +301,12 @@ export default function ReceiverDonorListScreen() {
                       } as any);
                       return;
                     }
-                    void (async () => {
-                      try {
-                        setConnectingDonationId(item._id);
-                        const res = await http.patch(`/food-donations/${item._id}/connect`);
-                        const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
-                        Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
-                          {
-                            text: t('receiver.choosePickup'),
-                            onPress: () => {
-                              router.push({
-                                pathname: '/(stack)/RECEIVER/addPickup',
-                                params: {
-                                  donationId: item._id,
-                                  title: item.title,
-                                },
-                              } as any);
-                            },
-                          },
-                        ]);
-                      } catch (err: any) {
-                        Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
-                      } finally {
-                        setConnectingDonationId(null);
-                      }
-                    })();
+                    const availableQuantity = Math.max(1, Math.floor(Number(item.quantity ?? 1)));
+                    if (availableQuantity > 1) {
+                      setClaimTarget(item);
+                      return;
+                    }
+                    void connectToDonation(item, 1);
                   }}
                   connecting={connectingDonationId === item._id}
                   selectedForMe={selectedForMe}
@@ -306,6 +318,19 @@ export default function ReceiverDonorListScreen() {
           )}
         </ScrollView>
       )}
+
+      <ClaimQuantityModal
+        visible={Boolean(claimTarget)}
+        maxQuantity={Number(claimTarget?.quantity ?? 1)}
+        unit={claimTarget?.unit || t('receiver.portion')}
+        title={claimTarget?.title}
+        loading={Boolean(claimTarget && connectingDonationId === claimTarget._id)}
+        onCancel={() => setClaimTarget(null)}
+        onConfirm={(quantity) => {
+          if (!claimTarget) return;
+          void connectToDonation(claimTarget, quantity);
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -30,6 +30,7 @@ function emitNewMessage(io, result, senderId = null) {
     }
 }
 
+// Lấy jwt token từ request kết nối Socket.io
 function extractToken(socket) {
     const authToken = socket.handshake?.auth?.token;
     if (authToken) return authToken;

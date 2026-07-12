@@ -13,6 +13,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { roleUi } from '../../../src/theme/roleUi';
 import HomeHeader from '../../../src/components/HomeHeader';
 import { getCurrentGps } from '../../../src/utils/location';
+import ClaimQuantityModal from '../../../src/components/ClaimQuantityModal';
 
 type DonationItem = {
   _id: string;
@@ -129,7 +130,10 @@ function getFoodTypeVisual(foodType?: RequestItem['food_type']) {
     || { icon: 'fast-food-outline' as keyof typeof Ionicons.glyphMap, color: '#9E9E9E', bg: '#F0F0F0' };
 }
 
-const FAQ_KEYS = ['receiver.faq.pickup', 'receiver.faq.multiple'] as const;
+const FAQ_ITEMS = [
+  { q: 'receiver.faq.pickup', a: 'receiver.faq.pickupAnswer' },
+  { q: 'receiver.faq.multiple', a: 'receiver.faq.multipleAnswer' },
+] as const;
 
 export default function HomeReceiverScreen() {
   const router = useRouter();
@@ -146,6 +150,7 @@ export default function HomeReceiverScreen() {
   const [myPosts, setMyPosts] = useState<RequestItem[]>([]);
   const [donorPosts, setDonorPosts] = useState<DonationItem[]>([]);
   const [connectingDonationId, setConnectingDonationId] = useState<string | null>(null);
+  const [claimTarget, setClaimTarget] = useState<DonationItem | null>(null);
   const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
   const [stats, setStats] = useState<ReceiverStats | null>(null);
 
@@ -244,6 +249,32 @@ export default function HomeReceiverScreen() {
     .slice(0, 3);
   const donorTabCount = donorPosts.length;
 
+  const connectToDonation = useCallback(async (item: DonationItem, quantity: number) => {
+    try {
+      setConnectingDonationId(item._id);
+      const res = await http.patch(`/food-donations/${item._id}/connect`, { quantity });
+      const connectedDonationId = String(res.data?.donation_id || item._id);
+      const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
+
+      setClaimTarget(null);
+      Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
+        {
+          text: t('receiver.choosePickup'),
+          onPress: () => {
+            router.push({
+              pathname: '/(stack)/RECEIVER/addPickup',
+              params: { donationId: connectedDonationId, title: item.title },
+            } as any);
+          },
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
+    } finally {
+      setConnectingDonationId(null);
+    }
+  }, [router, t]);
+
   const renderDonorCard = (item: DonationItem) => {
     const selectedForMe =
       normalizeObjectId(item.selected_receiver_id) !== '' &&
@@ -300,28 +331,12 @@ export default function HomeReceiverScreen() {
             } as any);
             return;
           }
-          void (async () => {
-            try {
-              setConnectingDonationId(item._id);
-              const res = await http.patch(`/food-donations/${item._id}/connect`);
-              const connectMessage = res.data?.message || t('receiver.connectSuccessDefault');
-              Alert.alert(t('receiver.connectSuccessTitle'), connectMessage, [
-                {
-                  text: t('receiver.choosePickup'),
-                  onPress: () => {
-                    router.push({
-                      pathname: '/(stack)/RECEIVER/addPickup',
-                      params: { donationId: item._id, title: item.title },
-                    } as any);
-                  },
-                },
-              ]);
-            } catch (err: any) {
-              Alert.alert(t('receiver.connectFailedTitle'), err?.response?.data?.message || t('receiver.connectFailedDefault'));
-            } finally {
-              setConnectingDonationId(null);
-            }
-          })();
+          const availableQuantity = Math.max(1, Math.floor(Number(item.quantity ?? 1)));
+          if (availableQuantity > 1) {
+            setClaimTarget(item);
+            return;
+          }
+          void connectToDonation(item, 1);
         }}
         connecting={connectingDonationId === item._id}
       />
@@ -488,19 +503,37 @@ export default function HomeReceiverScreen() {
           </View>
 
           <Text style={styles.sectionTitle}>{t('receiver.faqs')}</Text>
-          {FAQ_KEYS.map((faqKey, index) => (
-            <TouchableOpacity
-              key={faqKey}
-              style={styles.faqItem}
-              onPress={() => setOpenFaq(openFaq === index ? null : index)}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.faqQuestion}>{t(faqKey)}</Text>
-              <Ionicons name={openFaq === index ? 'chevron-up' : 'chevron-down'} size={20} color="#333" />
-            </TouchableOpacity>
-          ))}
+          {FAQ_ITEMS.map((faq, index) => {
+            const expanded = openFaq === index;
+            return (
+              <View key={faq.q} style={styles.faqItem}>
+                <TouchableOpacity
+                  style={styles.faqQuestionRow}
+                  onPress={() => setOpenFaq(expanded ? null : index)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.faqQuestion}>{t(faq.q)}</Text>
+                  <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color="#333" />
+                </TouchableOpacity>
+                {expanded ? <Text style={styles.faqAnswer}>{t(faq.a)}</Text> : null}
+              </View>
+            );
+          })}
         </View>
       </ScrollView>
+
+      <ClaimQuantityModal
+        visible={Boolean(claimTarget)}
+        maxQuantity={Number(claimTarget?.quantity ?? 1)}
+        unit={claimTarget?.unit || t('receiver.portion')}
+        title={claimTarget?.title}
+        loading={Boolean(claimTarget && connectingDonationId === claimTarget._id)}
+        onCancel={() => setClaimTarget(null)}
+        onConfirm={(quantity) => {
+          if (!claimTarget) return;
+          void connectToDonation(claimTarget, quantity);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -912,12 +945,23 @@ const styles = StyleSheet.create({
     borderRadius: r.md,
     borderWidth: 1,
     borderColor: c.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 8,
   },
+  faqQuestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   faqQuestion: { fontSize: 14, color: c.textPrimary, flex: 1, marginRight: 8 },
+  faqAnswer: {
+    fontSize: 13,
+    color: c.textSecondary,
+    lineHeight: 19,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: c.divider,
+  },
 });

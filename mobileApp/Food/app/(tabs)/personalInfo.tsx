@@ -4,8 +4,9 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getMyProfile } from "../../src/api/profile.api";
+import { getMyProfile, updateProfileLocation } from "../../src/api/profile.api";
 import { updateUser, uploadAvatar } from "../../src/api/user.api";
+import LocationPickerModal, { PickedLocation } from "../../src/components/LocationPickerModal";
 import { useI18n } from "../../src/i18n/useI18n";
 import { useAuthStore } from "../../src/store/authStore";
 import { roleUi } from '@/src/theme/roleUi';
@@ -81,6 +82,8 @@ export default function PersonalInfoScreen() {
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   const openEdit = () => {
     setEditName(user?.full_name ?? '');
@@ -176,6 +179,33 @@ export default function PersonalInfoScreen() {
     }
   };
 
+  const handleLocationPicked = async (loc: PickedLocation) => {
+    if (savingLocation) return;
+
+    try {
+      setSavingLocation(true);
+      const res = await updateProfileLocation({
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+      });
+
+      setProfile((prev) => ({
+        ...(prev || {}),
+        ...(res.data?.profile || {}),
+        latitude: res.data?.profile?.latitude ?? loc.latitude,
+        longitude: res.data?.profile?.longitude ?? loc.longitude,
+      }));
+      Alert.alert(t('personalInfo.pinLocation'), t('personalInfo.locationUpdateSuccess'));
+    } catch (err: any) {
+      Alert.alert(
+        t('personalInfo.updateFailed'),
+        err?.response?.data?.message || t('personalInfo.locationUpdateFailed')
+      );
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
   const loadProfile = useCallback(async () => {
     try {
       const res = await getMyProfile();
@@ -211,6 +241,10 @@ export default function PersonalInfoScreen() {
   const latitudeText = formatCoordinate(profile?.latitude);
   const longitudeText = formatCoordinate(profile?.longitude);
   const addressText = formatAddress(profile) || notUpdated;
+  const mapInitial =
+    pinSet && Number.isFinite(profile?.latitude) && Number.isFinite(profile?.longitude)
+      ? { latitude: Number(profile?.latitude), longitude: Number(profile?.longitude) }
+      : undefined;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -277,6 +311,22 @@ export default function PersonalInfoScreen() {
             <Text style={styles.addressLabel}>{t('personalInfo.addressLabel')}</Text>
             <Text style={styles.addressValue}>{loadingProfile ? t('personalInfo.loading') : addressText}</Text>
           </View>
+
+          <TouchableOpacity
+            style={[styles.locationBtn, savingLocation && styles.locationBtnDisabled]}
+            onPress={() => setMapVisible(true)}
+            disabled={savingLocation}
+            activeOpacity={0.85}
+          >
+            {savingLocation ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Ionicons name="map-outline" size={16} color="#fff" />
+                <Text style={styles.locationBtnText}>{t('personalInfo.changeLocation')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
@@ -361,6 +411,14 @@ export default function PersonalInfoScreen() {
           </View>
         </View>
       </Modal>
+
+      <LocationPickerModal
+        visible={mapVisible}
+        onClose={() => setMapVisible(false)}
+        onConfirm={handleLocationPicked}
+        initial={mapInitial}
+        confirmOnSelect={false}
+      />
     </SafeAreaView>
   );
 }
@@ -516,6 +574,24 @@ const styles = StyleSheet.create({
     color: "#111111",
     fontWeight: "600",
     lineHeight: 20,
+  },
+  locationBtn: {
+    marginTop: 12,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: roleUi.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  locationBtnDisabled: {
+    opacity: 0.7,
+  },
+  locationBtnText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
   },
   section: {
     marginTop: 18,

@@ -107,7 +107,7 @@ export default function ReceiverRequestScreen() {
       setSuccess(true);
       setTimeout(() => {
         router.replace('/(tabs)/RECEIVER/home' as any);
-      }, 700);
+      }, 10000);
     } catch (err: unknown) {
       const message =
         (typeof err === 'object' &&
@@ -130,7 +130,7 @@ export default function ReceiverRequestScreen() {
           <Text style={styles.successTitle}>{t('request.postedTitle')}</Text>
           <Text style={styles.successSub}>{t('request.postedMsg')}</Text>
           <TouchableOpacity
-            style={styles.submitBtn}
+            style={[styles.submitBtn, styles.successActionButton]}
             onPress={() => {
               setTitle('');
               setDescription('');
@@ -145,10 +145,10 @@ export default function ReceiverRequestScreen() {
             <Text style={styles.submitBtnText}>{t('request.createAnother')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.submitBtn, styles.outlineBtn]}
+            style={[styles.submitBtn, styles.successActionButton, styles.successButtonGap]}
             onPress={() => router.replace('/(tabs)/RECEIVER/home' as any)}
           >
-            <Text style={[styles.submitBtnText, styles.outlineBtnText]}>{t('request.goHome')}</Text>
+            <Text style={styles.submitBtnText}>{t('request.goHome')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -398,6 +398,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  successActionButton: { minWidth: 220, paddingHorizontal: 20 },
+  successButtonGap: { marginTop: 12 },
 
   successBox: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   circle: {
@@ -453,11 +455,4 @@ const styles = StyleSheet.create({
     color: c.primaryStrong,
     fontWeight: '700',
   },
-  outlineBtn: {
-    marginTop: 12,
-    backgroundColor: c.surface,
-    borderWidth: 1.5,
-    borderColor: c.primary,
-  },
-  outlineBtnText: { color: c.primary },
 });

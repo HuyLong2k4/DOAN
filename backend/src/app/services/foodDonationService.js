@@ -18,8 +18,8 @@ class FoodDonationService {
     }
 
     // ── Receiver ──────────────────────────────────────────────────────────
-    static connectDonationByReceiver(donationId, receiverId) {
-        return receiverActions.connectDonationByReceiver(donationId, receiverId);
+    static connectDonationByReceiver(donationId, receiverId, requestedQuantity) {
+        return receiverActions.connectDonationByReceiver(donationId, receiverId, requestedQuantity);
     }
     static chooseDeliveryByReceiver(donationId, receiverId, deliveryType) {
         return receiverActions.chooseDeliveryByReceiver(donationId, receiverId, deliveryType);

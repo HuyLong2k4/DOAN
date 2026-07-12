@@ -3,6 +3,7 @@ const FoodDonation = require('../models/foodDonationModel');
 const User = require('../models/userModel');
 const NotificationService = require('./notificationService');
 const { findNearbyDonorIds } = require('./foodDonation/locationFilter');
+const { assertReceiverClaimLimit } = require('./foodDonation/receiverClaimLimit');
 
 class FoodRequestService {
   static _error(message, statusCode = 400) {
@@ -134,33 +135,44 @@ class FoodRequestService {
   }
 
   static async acceptRequestByDonor(requestId, donorId) {
-    const updated = await FoodRequest.findOneAndUpdate(
-      {
-        _id: requestId,
-        status: 'PENDING',
-      },
-      {
-        $set: {
-          status: 'ACCEPTED',
-          accepted_by_donor_id: donorId,
-        },
-      },
-      { new: true }
-    );
-
-    if (!updated) {
+    const pendingRequest = await FoodRequest.findOne({ _id: requestId, status: 'PENDING' })
+      .select('receiver_id')
+      .lean();
+    if (!pendingRequest) {
       throw this._error('Yêu cầu không tồn tại hoặc đã được tiếp nhận trước đó.', 404);
     }
 
+    const selectedAt = new Date();
+    await assertReceiverClaimLimit(pendingRequest.receiver_id, selectedAt, 'Receiver này');
+    let updated = null;
     let createdDonation = null;
     try {
+      updated = await FoodRequest.findOneAndUpdate(
+        {
+          _id: requestId,
+          status: 'PENDING',
+        },
+        {
+          $set: {
+            status: 'ACCEPTED',
+            accepted_by_donor_id: donorId,
+          },
+        },
+        { new: true }
+      );
+
+      if (!updated) {
+        throw this._error('Yêu cầu không tồn tại hoặc đã được tiếp nhận trước đó.', 404);
+      }
+
       const foodType = this._resolveFoodTypeFromRequest(updated);
       const expirationDatetime = this._resolveExpirationDatetimeFromRequest(updated);
 
       createdDonation = await FoodDonation.create({
         donor_id: donorId,
         selected_receiver_id: updated.receiver_id,
-        selected_at: new Date(),
+        selected_at: selectedAt,
+        receiver_claim_history: [{ receiver_id: updated.receiver_id, claimed_at: selectedAt }],
         title: updated.title,
         description: updated.description || null,
         food_type: foodType,
@@ -179,15 +191,19 @@ class FoodRequestService {
         await FoodDonation.deleteOne({ _id: createdDonation._id, donor_id: donorId }).catch(() => {});
       }
 
-      await FoodRequest.updateOne(
-        { _id: updated._id, linked_donation_id: null },
-        {
-          $set: {
-            status: 'PENDING',
-            accepted_by_donor_id: null,
+      if (updated?._id) {
+        await FoodRequest.updateOne(
+          { _id: updated._id, linked_donation_id: null },
+          {
+            $set: {
+              status: 'PENDING',
+              accepted_by_donor_id: null,
+            },
           },
-        },
-      ).catch(() => {});
+        ).catch(() => {});
+      }
+
+      if (err.statusCode === 404) throw err;
 
       throw this._error('Không thể tạo đơn từ yêu cầu này. Vui lòng thử lại.', 500);
     }

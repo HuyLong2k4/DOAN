@@ -1,8 +1,5 @@
 /**
  * Volunteer actions: accept / reject / release / pickup-start / mark-delivered.
- *
- * Lưu ý: completeDeliveryByVolunteer không set DELIVERED ngay, mà set
- * AWAITING_CONFIRMATION; receiver phải confirm-received để hoàn tất + cộng điểm.
  */
 
 const FoodDonation = require('../../models/foodDonationModel');
@@ -12,7 +9,7 @@ const NotificationService = require('../notificationService');
 const pickupCodeUtil = require('./pickupCode');
 const { archiveDonationConversationsForUser } = require('./archiveConversations');
 
-// Giới hạn số đơn một volunteer được "gánh" cùng lúc — chặn một tài khoản ôm
+// Giới hạn số đơn một volunteer được gánh cùng lúc — chặn một tài khoản ôm
 // cả mẻ rồi bỏ trốn, đồng thời tránh volunteer nhận quá sức. Đếm mọi delivery
 // chưa kết thúc, KỂ CẢ AWAITING_CONFIRMATION, để volunteer không thể markDelivered
 // nhằm xả slot rồi nhận thêm đơn (chỉ DELIVERED/CANCELLED mới được trừ ra).
@@ -23,9 +20,8 @@ function _error(message, statusCode = 400) {
     return Object.assign(new Error(message), { statusCode });
 }
 
-// ── PATCH /api/food-donations/:id/accept ────────────────────────────────────
-// Auto-match: bất kỳ volunteer nào cũng có thể accept. Ai accept trước (atomic
-// findOneAndUpdate guard bằng status: PENDING) thắng.
+// PATCH /api/food-donations/:id/accept
+// Auto-match: bất kỳ volunteer nào cũng có thể accept.
 async function acceptDonationByVolunteer(donationId, volunteerId) {
     const donation = await FoodDonation.findOne({ _id: donationId, status: 'PENDING' }).lean();
     if (!donation) {
@@ -44,8 +40,6 @@ async function acceptDonationByVolunteer(donationId, volunteerId) {
         throw _error('Không tìm thấy delivery của đơn này.', 404);
     }
 
-    // Cap số đơn đang gánh. Race hiếm: hai accept đồng thời có thể vượt cap
-    // đúng 1 đơn — chấp nhận được vì lần kế tiếp vẫn bị chặn, không cho ôm vô hạn.
     const activeCount = await Delivery.countDocuments({
         volunteer_id: volunteerId,
         status: { $in: ACTIVE_DELIVERY_STATUSES },
@@ -82,7 +76,7 @@ async function acceptDonationByVolunteer(donationId, volunteerId) {
     return updated;
 }
 
-// ── PATCH /api/food-donations/:id/reject ────────────────────────────────────
+// PATCH /api/food-donations/:id/reject 
 async function rejectDonationByVolunteer(donationId, volunteerId) {
     const updated = await FoodDonation.findOneAndUpdate(
         { _id: donationId, status: 'PENDING' },
@@ -98,7 +92,7 @@ async function rejectDonationByVolunteer(donationId, volunteerId) {
     return updated;
 }
 
-// ── PATCH /api/food-donations/:id/release ───────────────────────────────────
+// PATCH /api/food-donations/:id/release 
 // Volunteer trả lại đơn đã accept (trước khi pickup).
 async function releaseDonationByVolunteer(donationId, volunteerId) {
     const donation = await FoodDonation.findOne({
@@ -166,7 +160,7 @@ async function releaseDonationByVolunteer(donationId, volunteerId) {
     return { message: 'Đã trả lại đơn. Đơn sẽ tìm volunteer khác.' };
 }
 
-// ── PATCH /api/food-donations/:id/pickup-start ──────────────────────────────
+// PATCH /api/food-donations/:id/pickup-start 
 // Volunteer xác nhận đã lấy hàng — phải nhập đúng pickup_code do donor cung cấp.
 async function startPickupByVolunteer(donationId, volunteerId, pickupCode = null) {
     const donation = await FoodDonation.findOne({

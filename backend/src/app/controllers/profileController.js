@@ -54,8 +54,19 @@ class ProfileController {
         }
     }
 
-    // ── PATCH /api/profile/reset-role ─────────────────────────────────────
-    // Đặt lại vai trò (sửa chọn nhầm) → đưa user về màn Select Role.
+    // PATCH /api/profile/location
+    // Update the current user's pinned profile location.
+    static async updateLocation(req, res) {
+        try {
+            const result = await ProfileService.updateMyLocation(req.user.id, req.user.role, req.body);
+            return res.status(200).json({ success: true, ...result });
+        } catch (err) {
+            return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+        }
+    }
+
+    // PATCH /api/profile/reset-role
+    // Reset the selected role so the user can choose again.
     static async resetRole(req, res) {
         try {
             const result = await ProfileService.resetRoleForReselect(req.user.id, req.user.role);

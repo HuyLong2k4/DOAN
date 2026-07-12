@@ -21,13 +21,21 @@ export type ReceiverKey =
   | 'receiver.noNearbyDonors'
   | 'receiver.faqs'
   | 'receiver.faq.pickup'
+  | 'receiver.faq.pickupAnswer'
   | 'receiver.faq.multiple'
+  | 'receiver.faq.multipleAnswer'
   | 'receiver.unknownDistance'
   | 'receiver.viewDetails'
   | 'receiver.waitingAgent'
   | 'receiver.selfPickupReady'
   | 'receiver.connecting'
   | 'receiver.connect'
+  | 'receiver.claimQuantityTitle'
+  | 'receiver.claimAvailable'
+  | 'receiver.claimQuantityLabel'
+  | 'receiver.claimAll'
+  | 'receiver.claimConfirm'
+  | 'receiver.claimInvalid'
   | 'receiver.portion'
   | 'receiver.foodTypeNotSpecified'
   | 'receiver.pending'
@@ -71,13 +79,23 @@ export const receiverEn: Record<ReceiverKey, string> = {
   'receiver.noNearbyDonors': 'No nearby donors yet',
   'receiver.faqs': 'FAQs',
   'receiver.faq.pickup': 'Who will pick up the food?',
+  'receiver.faq.pickupAnswer':
+    'It depends on the delivery method. If the donor sends it via an agent, a volunteer will pick it up and deliver it to you. If you choose self-pickup, you go to the address shown in the donation to collect it yourself.',
   'receiver.faq.multiple': 'Can we perform multiple food requests at once?',
+  'receiver.faq.multipleAnswer':
+    'Yes. You can create several food requests at the same time, and each one is tracked independently in the "My Posts" tab until it is fulfilled or cancelled.',
   'receiver.unknownDistance': 'Unknown distance',
   'receiver.viewDetails': 'View Details',
   'receiver.waitingAgent': 'Waiting Agent',
   'receiver.selfPickupReady': 'Self Pickup Ready',
   'receiver.connecting': 'Connecting...',
   'receiver.connect': 'Connect',
+  'receiver.claimQuantityTitle': 'Choose quantity',
+  'receiver.claimAvailable': 'Available',
+  'receiver.claimQuantityLabel': 'Quantity to receive',
+  'receiver.claimAll': 'All',
+  'receiver.claimConfirm': 'Confirm',
+  'receiver.claimInvalid': 'Enter a valid quantity.',
   'receiver.portion': 'portion',
   'receiver.foodTypeNotSpecified': 'Food type not specified',
   'receiver.pending': 'Your request is pending',
@@ -122,13 +140,23 @@ export const receiverVi: Record<ReceiverKey, string> = {
   'receiver.noNearbyDonors': 'Chưa có người tặng nào gần bạn',
   'receiver.faqs': 'Câu hỏi thường gặp',
   'receiver.faq.pickup': 'Ai sẽ lấy thực phẩm?',
+  'receiver.faq.pickupAnswer':
+    'Tùy theo hình thức nhận. Nếu người quyên góp gửi qua tình nguyện viên, tình nguyện viên sẽ lấy và giao đến cho bạn. Nếu bạn chọn tự đến lấy, bạn đến địa chỉ hiển thị trong bài đăng để nhận trực tiếp.',
   'receiver.faq.multiple': 'Có thể tạo nhiều yêu cầu cùng lúc không?',
+  'receiver.faq.multipleAnswer':
+    'Được. Bạn có thể tạo nhiều yêu cầu thực phẩm cùng lúc, mỗi yêu cầu được theo dõi riêng trong tab "Bài đăng của tôi" cho đến khi hoàn tất hoặc bị hủy.',
   'receiver.unknownDistance': 'Không rõ khoảng cách',
   'receiver.viewDetails': 'Xem chi tiết',
   'receiver.waitingAgent': 'Đang chờ tình nguyện viên',
   'receiver.selfPickupReady': 'Sẵn sàng tự đến nhận',
   'receiver.connecting': 'Đang kết nối...',
   'receiver.connect': 'Kết nối',
+  'receiver.claimQuantityTitle': 'Chọn số suất',
+  'receiver.claimAvailable': 'Còn lại',
+  'receiver.claimQuantityLabel': 'Số suất muốn nhận',
+  'receiver.claimAll': 'Tất cả',
+  'receiver.claimConfirm': 'Xác nhận',
+  'receiver.claimInvalid': 'Nhập số lượng hợp lệ.',
   'receiver.portion': 'suất',
   'receiver.foodTypeNotSpecified': 'Chưa xác định loại thực phẩm',
   'receiver.pending': 'Yêu cầu đang chờ xử lý',

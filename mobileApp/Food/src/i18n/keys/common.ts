@@ -88,6 +88,9 @@ export type CommonKey =
   | 'personalInfo.updateSuccess'
   | 'personalInfo.updateFailed'
   | 'personalInfo.emailInvalid'
+  | 'personalInfo.changeLocation'
+  | 'personalInfo.locationUpdateSuccess'
+  | 'personalInfo.locationUpdateFailed'
   | 'pantry.qty';
 
 export const commonEn: Record<CommonKey, string> = {
@@ -180,6 +183,9 @@ export const commonEn: Record<CommonKey, string> = {
   'personalInfo.updateSuccess': 'Your information has been updated.',
   'personalInfo.updateFailed': 'Could not update your information.',
   'personalInfo.emailInvalid': 'Please enter a valid email address.',
+  'personalInfo.changeLocation': 'Choose location again',
+  'personalInfo.locationUpdateSuccess': 'Your location has been updated.',
+  'personalInfo.locationUpdateFailed': 'Could not update your location.',
   'pantry.qty': 'Qty:',
 };
 
@@ -273,5 +279,8 @@ export const commonVi: Record<CommonKey, string> = {
   'personalInfo.updateSuccess': 'Đã cập nhật thông tin của bạn.',
   'personalInfo.updateFailed': 'Không thể cập nhật thông tin.',
   'personalInfo.emailInvalid': 'Email không hợp lệ.',
+  'personalInfo.changeLocation': 'Chọn lại vị trí',
+  'personalInfo.locationUpdateSuccess': 'Đã cập nhật vị trí của bạn.',
+  'personalInfo.locationUpdateFailed': 'Không thể cập nhật vị trí.',
   'pantry.qty': 'SL:',
 };

@@ -29,6 +29,7 @@ interface Props {
   onClose:   () => void;
   onConfirm: (loc: PickedLocation) => void;
   initial?:  { latitude: number; longitude: number };
+  confirmOnSelect?: boolean;
 }
 
 interface NearbyPlace {
@@ -146,7 +147,7 @@ async function searchAddress(query: string): Promise<NearbyPlace[]> {
   }
 }
 
-export default function LocationPickerModal({ visible, onClose, onConfirm, initial }: Props) {
+export default function LocationPickerModal({ visible, onClose, onConfirm, initial, confirmOnSelect = true }: Props) {
   const mapRef = useRef<MapView>(null);
 
   const [region, setRegion]       = useState<Region>(DEFAULT_REGION);
@@ -188,7 +189,7 @@ export default function LocationPickerModal({ visible, onClose, onConfirm, initi
     const result = await reverseGeocode(lat, lng);
     setGeocode(result);
 
-    if (applyToForm) {
+    if (applyToForm && confirmOnSelect) {
       const hasAddressPayload = Boolean(
         result.address_line?.trim() || result.city?.trim() || result.display?.trim()
       );

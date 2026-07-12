@@ -60,6 +60,7 @@ class ChatController {
                 }
             }
 
+            
             const data = await ChatService.sendMessage(
                 req.params.id,
                 req.user,

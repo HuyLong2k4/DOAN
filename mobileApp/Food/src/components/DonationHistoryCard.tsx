@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Donation, useStatusConfig } from './DonationPostCard';
@@ -45,10 +44,6 @@ export default function DonationHistoryCard({ d }: { d: Donation }) {
           <View style={[styles.completedBadge, { backgroundColor: cfg.bg }]}>
             <Text style={[styles.completedText, { color: cfg.color }]} numberOfLines={1}>{cfg.label}</Text>
           </View>
-          <View style={styles.historyActions}>
-            <Ionicons name="share-outline" size={18} color="#999" style={{ marginRight: 12 }} />
-            <Ionicons name="trash-outline" size={18} color="#999" />
-          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -68,5 +63,4 @@ const styles = StyleSheet.create({
   historyBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
   completedBadge: { backgroundColor: roleUi.colors.successSoft, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, flexShrink: 1, marginRight: 8 },
   completedText: { fontSize: 11, color: roleUi.colors.successText, fontWeight: '600' },
-  historyActions: { flexDirection: 'row' },
 });

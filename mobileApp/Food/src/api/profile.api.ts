@@ -53,9 +53,25 @@ export interface MyProfileResponse {
   };
 }
 
+export interface UpdateProfileLocationRequest {
+  latitude: number;
+  longitude: number;
+}
+
+export interface UpdateProfileLocationResponse {
+  success: boolean;
+  message: string;
+  profile: any;
+}
+
 // UI: Home — lấy thông tin user + profile
 export const getMyProfile = (): Promise<AxiosResponse<MyProfileResponse>> =>
   http.get('/profile/me');
+
+export const updateProfileLocation = (
+  data: UpdateProfileLocationRequest
+): Promise<AxiosResponse<UpdateProfileLocationResponse>> =>
+  http.patch('/profile/location', data);
 
 // UI: Donor Details form
 export const completeDonorProfile = (data: DonorProfileRequest): Promise<AxiosResponse<ProfileResponse>> =>
