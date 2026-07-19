@@ -3,7 +3,9 @@ const FoodDonation = require('../models/foodDonationModel');
 const User = require('../models/userModel');
 const NotificationService = require('./notificationService');
 
-const REPORT_REASON = ['SPOILED', 'EXPIRED_UNSAFE', 'WRONG_INFO', 'FRAUD', 'INAPPROPRIATE', 'OTHER'];
+// Chỉ các reason người dùng được phép gửi qua POST /reports. Reason no-show là
+// sự cố hệ thống, chỉ được tạo từ luồng xác nhận bên trong backend.
+const USER_REPORT_REASON = ['SPOILED', 'EXPIRED_UNSAFE', 'WRONG_INFO', 'FRAUD', 'INAPPROPRIATE', 'OTHER'];
 const REPORT_STATUS_RESOLVABLE = ['RESOLVED', 'DISMISSED'];
 const REPORT_ACTIONS = ['NONE', 'WARN', 'LOCK_USER', 'REMOVE_DONATION'];
 const TERMINAL_DONATION_STATUS = ['COMPLETED', 'EXPIRED', 'CANCELLED'];
@@ -15,14 +17,50 @@ function _error(message, statusCode = 400) {
 }
 
 class ReportService {
+    // Báo cáo hệ thống được tạo từ luồng receiver báo volunteer không giao.
+    // Dùng upsert để cùng một sự cố không sinh nhiều report nếu request bị gửi lại.
+    static async ensureVolunteerNoShowReport({ reporterId, volunteerId, donationId, deliveryId }) {
+        const description = [
+            'Báo cáo tự động: Receiver xác nhận volunteer đã nhận hàng nhưng không giao đến.',
+            deliveryId ? `Delivery ID: ${deliveryId}.` : null,
+        ].filter(Boolean).join(' ');
+
+        const incidentKey = {
+            donation_id: donationId,
+            reason: 'VOLUNTEER_NO_SHOW',
+        };
+
+        try {
+            return await Report.findOneAndUpdate(
+                incidentKey,
+                {
+                    $setOnInsert: {
+                        reporter_id: reporterId,
+                        donation_id: donationId,
+                        reported_user_id: volunteerId,
+                        reason: 'VOLUNTEER_NO_SHOW',
+                        description,
+                        status: 'PENDING',
+                    },
+                },
+                { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+            );
+        } catch (err) {
+            // Hai request đồng thời có thể cùng vượt qua bước tìm trước khi unique
+            // index chặn insert thứ hai. Khi đó trả lại report đã được tạo.
+            if (err?.code === 11000) return Report.findOne(incidentKey);
+            throw err;
+        }
+    }
+
     // Người dùng đã đăng nhập gửi báo cáo. Bắt buộc reason hợp lệ và xác định
     // được đối tượng bị báo cáo (theo đơn hoặc theo người dùng). Nếu báo cáo
     // theo đơn thì tự suy ra người bị báo cáo là donor của đơn đó.
     static async createReport(reporterId, body) {
         const { donation_id, reported_user_id, reason, description } = body || {};
 
-        if (!reason || !REPORT_REASON.includes(reason)) {
-            throw _error(`reason không hợp lệ. Các giá trị hợp lệ: ${REPORT_REASON.join(', ')}`);
+        if (!reason || !USER_REPORT_REASON.includes(reason)) {
+            throw _error(`reason không hợp lệ. Các giá trị hợp lệ: ${USER_REPORT_REASON.join(', ')}`);
         }
 
         let donationId = donation_id || null;
@@ -129,17 +167,20 @@ class ReportService {
     static async _applyAction(action, report) {
         const targetUserId = report.reported_user_id || null;
 
-        let donationTitle = '';
+        let donation = null;
         if (report.donation_id) {
-            const d = await FoodDonation.findById(report.donation_id).select('title status').lean();
-            donationTitle = d?.title || '';
+            donation = await FoodDonation.findById(report.donation_id).select('title status donor_id').lean();
         }
+        const donationTitle = donation?.title || '';
+        const targetIsDonationOwner = Boolean(
+            targetUserId && donation?.donor_id && String(targetUserId) === String(donation.donor_id),
+        );
 
         if (action === 'WARN') {
             if (!targetUserId) throw _error('Báo cáo này không xác định được người dùng để cảnh báo.', 400);
             await NotificationService.dispatch({
                 userIds: targetUserId,
-                key: donationTitle ? 'report.warned' : 'report.warnedUser',
+                key: donationTitle && targetIsDonationOwner ? 'report.warned' : 'report.warnedUser',
                 params: { title: donationTitle },
                 type: 'REPORT_WARNED',
                 ...(report.donation_id
@@ -150,6 +191,9 @@ class ReportService {
         }
 
         if (action === 'REMOVE_DONATION') {
+            if (report.reason === 'VOLUNTEER_NO_SHOW') {
+                throw _error('Báo cáo no-show chỉ xử lý trên tài khoản volunteer; đơn đã được huỷ.', 400);
+            }
             if (!report.donation_id) throw _error('Báo cáo này không gắn với đơn nào để gỡ.', 400);
             const donation = await FoodDonation.findById(report.donation_id);
             if (!donation) throw _error('Không tìm thấy đơn để gỡ.', 404);

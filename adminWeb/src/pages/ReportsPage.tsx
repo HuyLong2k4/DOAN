@@ -20,6 +20,7 @@ const REASON_LABEL: Record<string, string> = {
   WRONG_INFO: 'Thông tin sai lệch',
   FRAUD: 'Có dấu hiệu gian lận',
   INAPPROPRIATE: 'Nội dung không phù hợp',
+  VOLUNTEER_NO_SHOW: 'Volunteer nhận hàng nhưng không giao',
   OTHER: 'Khác',
 };
 
@@ -37,7 +38,7 @@ const STATUS_COLOR: Record<string, { bg: string; fg: string }> = {
 
 const ACTION_LABEL: Record<string, string> = {
   NONE: 'Không áp dụng',
-  WARN: 'Cảnh báo người đăng',
+  WARN: 'Cảnh báo người bị báo cáo',
   LOCK_USER: 'Khoá tài khoản',
   REMOVE_DONATION: 'Gỡ đơn vi phạm',
 };
@@ -387,9 +388,11 @@ function ReportDetailModal({
                   style={{ marginTop: 4 }}
                 >
                   <option value="NONE">Không (chỉ ghi nhận)</option>
-                  <option value="WARN">Cảnh báo người đăng</option>
-                  {report.donation_id && <option value="REMOVE_DONATION">Gỡ đơn vi phạm</option>}
-                  <option value="LOCK_USER">Khoá tài khoản người đăng</option>
+                  <option value="WARN">Cảnh báo người bị báo cáo</option>
+                  {report.donation_id && report.reason !== 'VOLUNTEER_NO_SHOW' && (
+                    <option value="REMOVE_DONATION">Gỡ đơn vi phạm</option>
+                  )}
+                  <option value="LOCK_USER">Khoá tài khoản người bị báo cáo</option>
                 </select>
                 <span className="muted" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
                   Hành động sẽ gửi thông báo cho người bị xử lý.

@@ -101,6 +101,7 @@ export type ReportReason =
   | 'WRONG_INFO'
   | 'FRAUD'
   | 'INAPPROPRIATE'
+  | 'VOLUNTEER_NO_SHOW'
   | 'OTHER';
 
 export type ReportStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED';

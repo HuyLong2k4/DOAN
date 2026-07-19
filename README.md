@@ -20,7 +20,7 @@ Hệ thống đã chạy sẵn trên cloud (Railway). Để chấm/demo nhanh, *
 |------------|----------|
 | **Admin Web** | https://adminweb-production-ba29.up.railway.app/login |
 | **Backend API** | https://doan-production-de5f.up.railway.app/api (kiểm tra: `/health`) |
-| **Mobile App (Android)** | Cài file APK qua bản build nội bộ EAS — mở [link cài đặt](https://expo.dev/accounts/maihuylong102/projects/Food/builds/558f3e9f-3330-4325-a084-4a9ba6ac293e) rồi quét mã QR / bấm tải trên trang đó |
+| **Mobile App (Android)** | Cài file APK qua bản build nội bộ EAS — mở [link cài đặt](https://expo.dev/accounts/maihuylong102/projects/Food/builds/1c95093b-d1ab-4e9c-b19e-952ca945b841) rồi quét mã QR / bấm tải trên trang đó |
 
 **Tài khoản demo** (mật khẩu chung `123456`):
 

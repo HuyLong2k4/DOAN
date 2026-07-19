@@ -4,6 +4,7 @@ const FoodRequest = require('../../models/foodRequestModel');
 const Delivery = require('../../models/deliveryModel');
 const User = require('../../models/userModel');
 const NotificationService = require('../notificationService');
+const ReportService = require('../reportService');
 const { archiveDonationConversations } = require('./archiveConversations');
 const DonorProfile = require('../../models/donorProfileModel');
 const VolunteerProfile = require('../../models/volunteerProfileModel');
@@ -489,6 +490,28 @@ async function reportVolunteerNoShow(donationId, receiverId) {
     const delivery = await Delivery.findById(donation.delivery_id).lean();
     if (!delivery) throw _error('Không tìm thấy delivery của đơn này.', 404);
 
+    const volunteerId = delivery.volunteer_id ? String(delivery.volunteer_id) : null;
+    if (!volunteerId) {
+        throw _error('Delivery đang giao nhưng không xác định được volunteer.', 409);
+    }
+
+    // Nếu lần xử lý trước đã huỷ đơn nhưng bị ngắt trước khi trả response, request
+    // gửi lại sẽ tự sửa/đảm bảo report tồn tại thay vì trả lỗi và mất dấu sự cố.
+    const alreadyCancelledAsNoShow =
+        delivery.status === 'CANCELLED' &&
+        donation.status === 'CANCELLED' &&
+        donation.cancel_reason === 'VOLUNTEER_NO_SHOW';
+    if (alreadyCancelledAsNoShow) {
+        await ReportService.ensureVolunteerNoShowReport({
+            reporterId: receiverId,
+            volunteerId,
+            donationId: donation._id,
+            deliveryId: delivery._id,
+        });
+        await archiveDonationConversations(donation._id);
+        return { message: 'Báo cáo volunteer không giao đã được ghi nhận.', already_reported: true };
+    }
+
     if (delivery.status !== 'ON_THE_WAY') {
         throw _error('Chỉ được báo no-show khi đơn đang giao.', 400);
     }
@@ -507,8 +530,16 @@ async function reportVolunteerNoShow(donationId, receiverId) {
         { $set: { status: 'CANCELLED', cancel_reason: 'VOLUNTEER_NO_SHOW', cancelled_at: new Date() } },
     );
 
-    const volunteerId = delivery.volunteer_id ? String(delivery.volunteer_id) : null;
     const donorId = String(donation.donor_id);
+
+    // Đưa sự cố vào hàng chờ xử lý của admin, gắn đúng receiver, volunteer và
+    // donation. ReportService dùng upsert nên không tạo trùng nếu request lặp lại.
+    await ReportService.ensureVolunteerNoShowReport({
+        reporterId: receiverId,
+        volunteerId,
+        donationId: donation._id,
+        deliveryId: delivery._id,
+    });
 
     const targets = [donorId, volunteerId].filter(Boolean);
     await NotificationService.dispatch({

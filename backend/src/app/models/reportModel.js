@@ -4,12 +4,21 @@ const mongoose = require('mongoose');
 // hỏng/ôi thiu, quá hạn không an toàn, thông tin sai, gian lận, nội dung không
 // phù hợp). Là kênh để người dùng phản ánh và quản trị viên xử lý — bổ trợ cho
 // cơ chế đánh giá sau giao dịch.
-const REPORT_REASON = ['SPOILED', 'EXPIRED_UNSAFE', 'WRONG_INFO', 'FRAUD', 'INAPPROPRIATE', 'OTHER'];
+const REPORT_REASON = [
+    'SPOILED',
+    'EXPIRED_UNSAFE',
+    'WRONG_INFO',
+    'FRAUD',
+    'INAPPROPRIATE',
+    'OTHER',
+    'VOLUNTEER_NO_SHOW',
+];
 // SPOILED        : Thực phẩm hỏng / ôi thiu
 // EXPIRED_UNSAFE : Quá hạn / không bảo đảm an toàn
 // WRONG_INFO     : Thông tin đơn sai lệch
 // FRAUD          : Có dấu hiệu gian lận
 // INAPPROPRIATE  : Nội dung / hành vi không phù hợp
+// VOLUNTEER_NO_SHOW: Hệ thống tạo khi receiver báo volunteer đã lấy nhưng không giao
 // OTHER          : Lý do khác (mô tả ở description)
 
 const REPORT_STATUS = ['PENDING', 'RESOLVED', 'DISMISSED'];
@@ -35,5 +44,16 @@ const ReportSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+// Mỗi đơn chỉ có một sự cố no-show do hệ thống tạo. Partial index không ảnh
+// hưởng các loại report thủ công khác của người dùng.
+ReportSchema.index(
+    { donation_id: 1, reason: 1 },
+    {
+        unique: true,
+        name: 'unique_volunteer_no_show_per_donation',
+        partialFilterExpression: { reason: 'VOLUNTEER_NO_SHOW' },
+    },
+);
 
 module.exports = mongoose.model('Report', ReportSchema);

@@ -254,7 +254,7 @@ export const donorVi: Record<DonorKey, string> = {
   'donor.stats.donations': 'Số lượt ủng hộ',
   'donor.stats.points': 'Điểm đã nhận',
   'donor.tab.myPost': 'Bài đăng của tôi',
-  'donor.tab.requests': 'Yêu cầu từ người nhận',
+  'donor.tab.requests': 'Từ người nhận',
   'donor.empty.promptDonate': 'Bạn có thực phẩm muốn ủng hộ không?',
   'donor.empty.createMoreDonation': '+ Tạo thêm bài ủng hộ',
   'donor.empty.nothingYet': 'Chưa có dữ liệu',
